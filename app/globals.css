@@ -69,7 +69,38 @@ body::after {
   );
   pointer-events: none;
   z-index: 9990;
+  animation: scanMove 8s linear infinite;
 }
+@keyframes scanMove {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 400px; }
+}
+
+/* ГЛИТЧ ЛОГОТИПА */
+.site-logo { position: relative; }
+.site-logo::after {
+  content: 'ВЕЩАЙ';
+  position: absolute; left: 2px; top: 0;
+  color: var(--accent2); opacity: 0;
+  animation: logoGlitch 6s infinite;
+  pointer-events: none;
+}
+@keyframes logoGlitch {
+  0%, 94%, 100% { opacity: 0; transform: none; }
+  95% { opacity: 0.8; transform: translate(-2px,0); clip-path: polygon(0 20%,100% 20%,100% 40%,0 40%); }
+  96.5% { opacity: 0.5; transform: translate(2px,0); clip-path: polygon(0 60%,100% 60%,100% 80%,0 80%); }
+  98% { opacity: 0; }
+}
+
+/* СТАТУС ТОЧКИ */
+.status-dot {
+  display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent); box-shadow: 0 0 6px var(--accent);
+  animation: statusPulse 2s ease-in-out infinite;
+  transition: background 1.5s, box-shadow 1.5s;
+}
+.status-dot.red { background: var(--accent2); box-shadow: 0 0 6px var(--accent2); }
+@keyframes statusPulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
 
 /* ══ ПОГОДНЫЕ СЛОИ ══ */
 
