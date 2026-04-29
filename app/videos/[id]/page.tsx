@@ -5,47 +5,43 @@ import { createClient } from '@/lib/supabase-server'
 export default async function VideoPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
-
-  const { data: video } = await supabase
-    .from('videos')
-    .select('*')
-    .eq('id', id)
-    .single()
-
+  const { data: video } = await supabase.from('videos').select('*').eq('id', id).single()
   if (!video) notFound()
 
   return (
-    <div className="min-h-screen" style={{ background: '#0a0a0f' }}>
-      <header className="flex items-center justify-between px-8 py-4" style={{ borderBottom: '1px solid rgba(0,255,240,0.15)' }}>
-        <Link href="/" className="text-2xl font-bold tracking-widest" style={{ color: '#00FFF0', textShadow: '0 0 15px #00FFF0' }}>
-          ВЕЩАЙ
-        </Link>
-        <Link href="/videos/upload" className="px-4 py-2 text-xs tracking-widest" style={{ border: '1px solid #00FFF0', color: '#00FFF0' }}>
-          + ВИДЕО
-        </Link>
+    <div style={{ position: 'relative', zIndex: 2, paddingBottom: 80 }}>
+      <header className="site-header">
+        <Link href="/" className="site-logo">ВЕЩАЙ</Link>
+        <div style={{ marginLeft: 'auto' }}>
+          <Link href="/videos/upload" className="btn-primary-ui">+ ВИДЕО</Link>
+        </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-8">
-        <div className="w-full aspect-video mb-6" style={{ border: '1px solid rgba(0,255,240,0.2)' }}>
+      <main style={{ maxWidth: 960, margin: '0 auto', padding: '32px 32px' }}>
+        <div style={{ width: '100%', aspectRatio: '16/9', marginBottom: 24, border: '1px solid var(--border)', boxShadow: '0 0 40px var(--accent-glow)' }}>
           <iframe
             src={`https://www.youtube.com/embed/${video.youtube_id}?autoplay=1&rel=0`}
-            className="w-full h-full"
+            style={{ width: '100%', height: '100%' }}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
           />
         </div>
 
-        <h1 className="text-2xl font-bold tracking-wide mb-3" style={{ color: '#fff' }}>
-          {video.title}
-        </h1>
-        {video.description && (
-          <p className="text-sm leading-relaxed" style={{ color: '#888' }}>
-            {video.description}
-          </p>
-        )}
-        <p className="text-xs mt-4" style={{ color: '#444' }}>
-          {new Date(video.created_at).toLocaleDateString('ru-RU')}
+        <div style={{ borderLeft: '2px solid var(--accent)', paddingLeft: 20, marginBottom: 16 }}>
+          <h1 style={{ fontFamily: "'Orbitron', monospace", fontSize: 20, fontWeight: 700, color: 'var(--text)', marginBottom: 8, letterSpacing: 1 }}>
+            {video.title}
+          </h1>
+          {video.description && (
+            <p style={{ fontFamily: "'Exo 2', sans-serif", fontSize: 14, color: 'var(--subtext)', lineHeight: 1.6 }}>{video.description}</p>
+          )}
+        </div>
+        <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: 'var(--subtext)' }}>
+          // {new Date(video.created_at).toLocaleDateString('ru-RU')}
         </p>
+
+        <div style={{ marginTop: 32 }}>
+          <Link href="/" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12, color: 'var(--accent)' }}>← все видео</Link>
+        </div>
       </main>
     </div>
   )

@@ -1,26 +1,391 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=JetBrains+Mono:wght@300;400;500;700&family=Exo+2:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ══ ПОГОДНЫЕ ПЕРЕМЕННЫЕ ══ */
+
+body[data-weather="night"] {
+  --bg: #060612; --surface: #0D0D1A; --surface2: #111122;
+  --accent: #00FFF0; --accent2: #FF006E;
+  --accent-glow: rgba(0,255,240,0.35); --border: rgba(0,255,240,0.12);
+  --text: #FFFFFF; --subtext: #8892B0; --scanline: rgba(0,255,240,0.012);
+  --logo-shadow: 0 0 20px rgba(0,255,240,0.6), 0 0 40px rgba(0,255,240,0.2);
+}
+body[data-weather="clear"] {
+  --bg: #08050F; --surface: #100818; --surface2: #180E22;
+  --accent: #FFB300; --accent2: #FF6500;
+  --accent-glow: rgba(255,179,0,0.35); --border: rgba(255,179,0,0.15);
+  --text: #FFF8E0; --subtext: #A09060; --scanline: rgba(255,179,0,0.008);
+  --logo-shadow: 0 0 20px rgba(255,179,0,0.6), 0 0 50px rgba(255,100,0,0.2);
+}
+body[data-weather="rain"] {
+  --bg: #040C16; --surface: #071220; --surface2: #0A1828;
+  --accent: #3A9EFF; --accent2: #00C4FF;
+  --accent-glow: rgba(58,158,255,0.3); --border: rgba(58,158,255,0.12);
+  --text: #C0D4E8; --subtext: #507090; --scanline: rgba(58,158,255,0.010);
+  --logo-shadow: 0 0 20px rgba(58,158,255,0.5), 0 0 40px rgba(0,196,255,0.2);
+}
+body[data-weather="snow"] {
+  --bg: #05080F; --surface: #090D18; --surface2: #0D1220;
+  --accent: #90CCFF; --accent2: #D8EEFF;
+  --accent-glow: rgba(144,204,255,0.3); --border: rgba(144,204,255,0.12);
+  --text: #D8E8F4; --subtext: #5878A0; --scanline: rgba(144,204,255,0.010);
+  --logo-shadow: 0 0 20px rgba(144,204,255,0.5), 0 0 50px rgba(216,238,255,0.15);
+}
+body[data-weather="storm"] {
+  --bg: #030108; --surface: #060310; --surface2: #090518;
+  --accent: #9B10FF; --accent2: #EEE800;
+  --accent-glow: rgba(155,16,255,0.4); --border: rgba(155,16,255,0.15);
+  --text: #D0B8F8; --subtext: #6848A8; --scanline: rgba(155,16,255,0.012);
+  --logo-shadow: 0 0 20px rgba(155,16,255,0.7), 0 0 50px rgba(238,232,0,0.15);
+}
+body[data-weather="fog"] {
+  --bg: #070A0E; --surface: #0C1018; --surface2: #101620;
+  --accent: #80A8C8; --accent2: #B8D0E0;
+  --accent-glow: rgba(128,168,200,0.25); --border: rgba(128,168,200,0.10);
+  --text: #B8C8D4; --subtext: #506070; --scanline: rgba(128,168,200,0.008);
+  --logo-shadow: 0 0 15px rgba(128,168,200,0.4);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+html { scroll-behavior: smooth; }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Exo 2', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  transition: background 1.5s ease, color 1.5s ease;
 }
+
+/* СКАНЛАЙНЫ */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 2px,
+    var(--scanline) 2px, var(--scanline) 4px
+  );
+  pointer-events: none;
+  z-index: 9990;
+}
+
+/* ══ ПОГОДНЫЕ СЛОИ ══ */
+
+.weather-layer {
+  position: fixed; inset: 0;
+  pointer-events: none; z-index: 1;
+  transition: opacity 1.5s ease;
+}
+
+#layer-night { opacity: 0; }
+body[data-weather="night"] #layer-night { opacity: 1; }
+
+.star {
+  position: absolute; border-radius: 50%; background: #fff;
+  animation: starBlink ease-in-out infinite alternate;
+}
+@keyframes starBlink {
+  0% { opacity: 0.1; transform: scale(0.8); }
+  100% { opacity: 1; transform: scale(1.2); }
+}
+
+#layer-clear { opacity: 0; }
+body[data-weather="clear"] #layer-clear { opacity: 1; }
+
+.sun-container { position: absolute; top: -80px; right: 100px; width: 200px; height: 200px; }
+.sun-core {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 60px; height: 60px; border-radius: 50%;
+  background: radial-gradient(circle, #FFE080, #FFB300 60%, transparent);
+  box-shadow: 0 0 60px 20px rgba(255,179,0,0.4), 0 0 120px 40px rgba(255,100,0,0.15);
+}
+.sun-rays {
+  position: absolute; inset: 0; border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0deg, rgba(255,179,0,0.12) 5deg, transparent 10deg, transparent 20deg, rgba(255,179,0,0.10) 25deg, transparent 30deg, transparent 40deg, rgba(255,179,0,0.08) 45deg, transparent 50deg, transparent 60deg, rgba(255,179,0,0.12) 65deg, transparent 70deg, transparent 80deg, rgba(255,179,0,0.09) 85deg, transparent 90deg, transparent 100deg, rgba(255,179,0,0.11) 105deg, transparent 110deg, transparent 120deg, rgba(255,179,0,0.08) 125deg, transparent 130deg, transparent 140deg, rgba(255,179,0,0.12) 145deg, transparent 150deg, transparent 160deg, rgba(255,179,0,0.09) 165deg, transparent 170deg, transparent 180deg, rgba(255,179,0,0.11) 185deg, transparent 190deg, transparent 200deg, rgba(255,179,0,0.08) 205deg, transparent 210deg, transparent 220deg, rgba(255,179,0,0.12) 225deg, transparent 230deg, transparent 240deg, rgba(255,179,0,0.10) 245deg, transparent 250deg, transparent 260deg, rgba(255,179,0,0.09) 265deg, transparent 270deg, transparent 280deg, rgba(255,179,0,0.11) 285deg, transparent 290deg, transparent 300deg, rgba(255,179,0,0.08) 305deg, transparent 310deg, transparent 320deg, rgba(255,179,0,0.12) 325deg, transparent 330deg, transparent 340deg, rgba(255,179,0,0.10) 345deg, transparent 360deg);
+  animation: sunSpin 20s linear infinite; filter: blur(1px);
+}
+@keyframes sunSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.sun-glow {
+  position: absolute; inset: -50px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,150,0,0.06) 0%, transparent 70%);
+  animation: sunPulse 4s ease-in-out infinite alternate;
+}
+@keyframes sunPulse { 0% { transform: scale(1); } 100% { transform: scale(1.15); } }
+.sun-horizon { position: absolute; bottom: 0; left: 0; right: 0; height: 40%; background: linear-gradient(to top, rgba(255,100,0,0.06), transparent); }
+
+#layer-rain { opacity: 0; }
+body[data-weather="rain"] #layer-rain { opacity: 1; }
+.rain-drop {
+  position: absolute; top: -40px; width: 1.5px; border-radius: 1px;
+  background: linear-gradient(to bottom, transparent, rgba(58,158,255,0.5));
+  animation: rainFall linear infinite;
+}
+@keyframes rainFall {
+  0% { transform: translateY(0) skewX(-8deg); opacity: 0; }
+  5% { opacity: 1; } 95% { opacity: 0.6; }
+  100% { transform: translateY(110vh) skewX(-8deg); opacity: 0; }
+}
+.rain-mist {
+  position: absolute; bottom: 0; left: -20%; right: -20%; height: 20%;
+  background: radial-gradient(ellipse at 50% 100%, rgba(58,158,255,0.06), transparent);
+  animation: mistDrift 6s ease-in-out infinite alternate;
+}
+@keyframes mistDrift { 0% { transform: translateX(-5%); } 100% { transform: translateX(5%); } }
+
+#layer-snow { opacity: 0; }
+body[data-weather="snow"] #layer-snow { opacity: 1; }
+.snow-flake {
+  position: absolute; top: -15px; border-radius: 50%;
+  background: rgba(216,238,255,0.8);
+  animation: snowFall linear infinite;
+  box-shadow: 0 0 3px rgba(144,204,255,0.6);
+}
+@keyframes snowFall {
+  0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0; }
+  10% { opacity: 0.9; } 90% { opacity: 0.4; }
+  100% { transform: translateY(105vh) translateX(var(--drift, 30px)) rotate(360deg); opacity: 0; }
+}
+.snow-frost {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 0% 0%, rgba(144,204,255,0.04) 0%, transparent 30%),
+    radial-gradient(ellipse at 100% 100%, rgba(144,204,255,0.04) 0%, transparent 30%);
+}
+.snow-ground {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 8px;
+  background: linear-gradient(to top, rgba(144,204,255,0.15), transparent);
+  filter: blur(2px);
+}
+
+#layer-storm { opacity: 0; }
+body[data-weather="storm"] #layer-storm { opacity: 1; }
+.storm-drop {
+  position: absolute; top: -60px; width: 1.5px; border-radius: 0;
+  background: linear-gradient(to bottom, transparent, rgba(155,16,255,0.45));
+  animation: stormFall linear infinite;
+}
+@keyframes stormFall {
+  0% { transform: translateY(0) skewX(-30deg); opacity: 0; }
+  4% { opacity: 1; } 96% { opacity: 0.6; }
+  100% { transform: translateY(115vh) skewX(-30deg); opacity: 0; }
+}
+.storm-flash { position: absolute; inset: 0; background: rgba(155,16,255,0); pointer-events: none; transition: background 0.04s; z-index: 5; }
+.bolt-svg { position: absolute; pointer-events: none; opacity: 0; overflow: visible; }
+.wind-streak {
+  position: absolute; height: 1px; border-radius: 1px;
+  background: linear-gradient(to right, transparent, rgba(155,16,255,0.22) 20%, rgba(155,16,255,0.10) 70%, transparent);
+  animation: windPass linear infinite;
+}
+@keyframes windPass {
+  0% { transform: translateX(-200px); opacity: 0; }
+  12% { opacity: 1; } 88% { opacity: 0.5; }
+  100% { transform: translateX(calc(100vw + 200px)); opacity: 0; }
+}
+.storm-clouds {
+  position: absolute; top: 0; left: 0; right: 0; height: 42%;
+  background:
+    radial-gradient(ellipse at 15% 0%, rgba(70,0,120,0.22), transparent 50%),
+    radial-gradient(ellipse at 55% 0%, rgba(90,0,140,0.18), transparent 55%),
+    radial-gradient(ellipse at 88% 0%, rgba(60,0,100,0.16), transparent 45%);
+  animation: cloudsDrift 8s ease-in-out infinite alternate; filter: blur(2px);
+}
+@keyframes cloudsDrift { 0% { transform: translateX(-3%); } 100% { transform: translateX(3%); } }
+
+#layer-fog { opacity: 0; }
+body[data-weather="fog"] #layer-fog { opacity: 1; }
+.fog-blob {
+  position: absolute; border-radius: 50%; filter: blur(60px);
+  background: rgba(128,168,200,0.06);
+  animation: fogDrift ease-in-out infinite alternate;
+}
+@keyframes fogDrift {
+  0% { transform: translate(0, 0) scale(1); opacity: 0.4; }
+  100% { transform: translate(var(--fx, 5%), var(--fy, 3%)) scale(var(--fs, 1.1)); opacity: 0.7; }
+}
+.fog-haze {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, rgba(128,168,200,0.04), transparent 70%);
+  animation: hazeBreath 8s ease-in-out infinite alternate;
+}
+@keyframes hazeBreath { 0% { opacity: 0.5; } 100% { opacity: 1; } }
+
+/* ══ ФОНОВЫЙ ГРАДИЕНТ ══ */
+
+.weather-bg-gradient {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+}
+body[data-weather="night"] .weather-bg-gradient {
+  background:
+    radial-gradient(ellipse at 20% 20%, rgba(0,255,240,0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(255,0,110,0.03) 0%, transparent 50%);
+}
+body[data-weather="clear"] .weather-bg-gradient {
+  background:
+    radial-gradient(ellipse at 80% -10%, rgba(255,179,0,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 50%, rgba(255,100,0,0.04) 0%, transparent 40%);
+}
+body[data-weather="rain"] .weather-bg-gradient {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(20,60,120,0.15) 0%, transparent 60%),
+    radial-gradient(ellipse at 50% 100%, rgba(10,40,80,0.10) 0%, transparent 50%);
+}
+body[data-weather="snow"] .weather-bg-gradient {
+  background:
+    radial-gradient(ellipse at 30% 0%, rgba(80,140,220,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 100%, rgba(144,204,255,0.04) 0%, transparent 40%);
+}
+body[data-weather="storm"] .weather-bg-gradient {
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(80,0,120,0.12) 0%, transparent 60%),
+    radial-gradient(ellipse at 30% 80%, rgba(40,0,80,0.10) 0%, transparent 50%);
+}
+body[data-weather="fog"] .weather-bg-gradient {
+  background: radial-gradient(ellipse at 50% 50%, rgba(100,140,170,0.06) 0%, transparent 70%);
+}
+
+/* ══ ШАПКА ══ */
+
+.site-header {
+  position: sticky; top: 0; z-index: 100;
+  backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px; height: 60px;
+  display: flex; align-items: center; gap: 24px;
+  transition: border-color 1.5s, background 1.5s;
+  background: rgba(6,6,18,0.88);
+}
+body[data-weather="clear"] .site-header { background: rgba(8,5,15,0.88); }
+body[data-weather="rain"] .site-header { background: rgba(4,12,22,0.92); }
+body[data-weather="snow"] .site-header { background: rgba(5,8,15,0.90); }
+body[data-weather="storm"] .site-header { background: rgba(3,1,8,0.95); }
+body[data-weather="fog"] .site-header { background: rgba(7,10,14,0.90); }
+
+.site-logo {
+  font-family: 'Orbitron', monospace;
+  font-size: 18px; font-weight: 900; letter-spacing: 4px;
+  color: var(--accent); text-shadow: var(--logo-shadow);
+  transition: color 1.5s, text-shadow 1.5s;
+  text-decoration: none; white-space: nowrap;
+}
+
+.site-search {
+  flex: 1; max-width: 480px;
+}
+.search-input {
+  width: 100%;
+  background: var(--surface); border: 1px solid var(--border);
+  padding: 9px 20px; color: var(--accent);
+  font-family: 'JetBrains Mono', monospace; font-size: 13px;
+  outline: none; transition: all 1.5s;
+  clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+}
+.search-input::placeholder { color: rgba(128,200,200,0.3); transition: color 1.5s; }
+.search-input:focus { border-color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
+
+.btn-primary-ui {
+  padding: 7px 18px; font-size: 11px; font-weight: 700; cursor: pointer;
+  font-family: 'Orbitron', monospace; letter-spacing: 2px; text-transform: uppercase;
+  background: var(--accent); color: var(--bg);
+  box-shadow: 0 0 20px var(--accent-glow); transition: all 1.5s;
+  clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
+  border: none; text-decoration: none; display: inline-flex; align-items: center;
+}
+.btn-primary-ui:hover { box-shadow: 0 0 40px var(--accent-glow); transform: translateY(-1px); }
+
+.btn-ghost-ui {
+  padding: 7px 18px; font-size: 11px; font-weight: 700; cursor: pointer;
+  font-family: 'Orbitron', monospace; letter-spacing: 2px; text-transform: uppercase;
+  background: transparent; color: var(--subtext); border: 1px solid var(--border);
+  transition: all 0.2s;
+  clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
+  text-decoration: none; display: inline-flex; align-items: center;
+}
+.btn-ghost-ui:hover { color: var(--accent); border-color: var(--accent); }
+
+/* ══ КАРТОЧКИ ВИДЕО ══ */
+
+.video-card {
+  background: var(--surface); border: 1px solid var(--border);
+  cursor: pointer; position: relative; overflow: hidden;
+  transition: border-color 0.3s, transform 0.2s, box-shadow 0.3s, background 1.5s;
+  text-decoration: none; display: block;
+}
+.video-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  transform: scaleX(0); transition: transform 0.3s;
+}
+.video-card:hover { border-color: var(--accent); box-shadow: 0 0 24px var(--accent-glow), 0 8px 32px rgba(0,0,0,0.5); transform: translateY(-3px); }
+.video-card:hover::before { transform: scaleX(1); }
+
+.video-card-thumb { width: 100%; aspect-ratio: 16/9; position: relative; overflow: hidden; }
+.video-card-thumb img { width: 100%; height: 100%; object-fit: cover; transition: filter 0.3s; }
+.video-card:hover .video-card-thumb img { filter: brightness(1.1) saturate(1.2); }
+
+.video-card-play {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.25); opacity: 0; transition: opacity 0.2s;
+}
+.video-card:hover .video-card-play { opacity: 1; }
+.play-icon {
+  width: 36px; height: 36px; border: 2px solid var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 20px var(--accent-glow); background: rgba(0,0,0,0.4);
+  transition: box-shadow 1.5s, border-color 1.5s;
+}
+
+.video-card-body { padding: 12px 14px; }
+.video-card-title {
+  font-size: 13px; font-weight: 500; line-height: 1.4; margin-bottom: 6px;
+  color: var(--text); transition: color 1.5s;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.video-card-date {
+  font-size: 11px; color: var(--subtext);
+  font-family: 'JetBrains Mono', monospace; transition: color 1.5s;
+}
+
+/* ══ ПЕРЕКЛЮЧАТЕЛЬ ПОГОДЫ ══ */
+
+.weather-switcher {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999;
+  background: rgba(4, 2, 12, 0.96); backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border); padding: 12px 24px;
+  display: flex; align-items: center; gap: 10px;
+  transition: border-color 1.5s;
+}
+.weather-switcher-label {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  color: var(--subtext); letter-spacing: 2px; text-transform: uppercase;
+  white-space: nowrap; transition: color 1.5s;
+}
+.weather-btn {
+  display: flex; align-items: center; gap: 6px; padding: 6px 14px;
+  border: 1px solid rgba(255,255,255,0.08); background: transparent; cursor: pointer;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: rgba(255,255,255,0.4); transition: all 0.2s; white-space: nowrap;
+  clip-path: polygon(4px 0%, 100% 0%, calc(100% - 4px) 100%, 0% 100%);
+}
+.weather-btn:hover { color: rgba(255,255,255,0.8); border-color: rgba(255,255,255,0.2); }
+.weather-btn.active {
+  border-color: var(--accent); color: var(--accent);
+  background: rgba(0,0,0,0.4); box-shadow: 0 0 15px var(--accent-glow);
+  transition: all 1.5s;
+}
+
+/* ══ СЕКЦИИ ══ */
+
+.section-title {
+  font-family: 'Orbitron', monospace; font-size: 12px; font-weight: 700;
+  letter-spacing: 3px; text-transform: uppercase;
+  color: var(--accent); text-shadow: 0 0 10px var(--accent-glow);
+  transition: color 1.5s, text-shadow 1.5s;
+}
+
+/* ══ СКРОЛЛБАР ══ */
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); }
