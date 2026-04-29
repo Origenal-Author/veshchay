@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import { WeatherProvider } from '@/app/components/WeatherProvider'
 import WeatherSwitcher from '@/app/components/WeatherSwitcher'
+import EasterEggs from '@/app/components/EasterEggs'
 
 export const metadata: Metadata = {
   title: 'ВЕЩАЙ',
@@ -15,6 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <WeatherProvider>
           {children}
           <WeatherSwitcher />
+          <EasterEggs />
         </WeatherProvider>
       </body>
     </html>
