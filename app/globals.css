@@ -375,6 +375,11 @@ body[data-weather="fog"] .site-header { background: rgba(7,10,14,0.90); }
   transition: all 1.5s;
 }
 
+/* ══ HERO ══ */
+
+.hero-banner { transition: border-color 0.3s, box-shadow 0.3s; }
+.hero-banner:hover { border-color: var(--accent) !important; box-shadow: 0 0 40px var(--accent-glow); }
+
 /* ══ СЕКЦИИ ══ */
 
 .section-title {
