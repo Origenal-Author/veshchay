@@ -60,8 +60,38 @@ function triggerHacked() {
     overlay.style.opacity = '0'
     clearInterval(rain)
     clearInterval(progress)
-    setTimeout(() => overlay.remove(), 1000)
+    setTimeout(() => { overlay.remove(); spawnGlitchParticles() }, 1000)
   }
+}
+
+function spawnGlitchParticles() {
+  const container = document.createElement('div')
+  container.style.cssText = 'position:fixed;inset:0;z-index:9998;pointer-events:none;overflow:hidden;'
+  document.body.appendChild(container)
+
+  const colors = ['#00ff41', '#00FFF0', '#FF006E', '#9B10FF', '#FFB300', '#fff']
+
+  function spawnOne() {
+    const el = document.createElement('div')
+    const w = Math.random() * 120 + 20
+    const h = Math.random() * 8 + 2
+    const color = colors[Math.floor(Math.random() * colors.length)]
+    const x = Math.random() * (window.innerWidth - w)
+    const y = Math.random() * window.innerHeight
+    const duration = Math.random() * 300 + 100
+    el.style.cssText = `position:absolute;left:${x}px;top:${y}px;width:${w}px;height:${h}px;background:${color};opacity:${Math.random() * 0.8 + 0.2};mix-blend-mode:screen;`
+    container.appendChild(el)
+    setTimeout(() => el.remove(), duration)
+  }
+
+  // Spawn particles frequently for 10 seconds
+  const interval = setInterval(spawnOne, 80)
+  setTimeout(() => {
+    clearInterval(interval)
+    container.style.transition = 'opacity 0.5s'
+    container.style.opacity = '0'
+    setTimeout(() => container.remove(), 500)
+  }, 10000)
 }
 
 function triggerGlitch() {
