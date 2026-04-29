@@ -33,19 +33,8 @@ function mapWeatherCode(code: number, isDay: number): WeatherType {
 }
 
 async function fetchRealWeather(): Promise<WeatherType> {
-  let lat: number, lon: number
-  try {
-    const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
-      navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 })
-    )
-    lat = pos.coords.latitude
-    lon = pos.coords.longitude
-  } catch {
-    const ip = await fetch('https://ipapi.co/json/').then(r => r.json())
-    lat = ip.latitude
-    lon = ip.longitude
-  }
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=weathercode,is_day&timezone=auto`
+  const ip = await fetch('https://ipapi.co/json/').then(r => r.json())
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${ip.latitude}&longitude=${ip.longitude}&current=weathercode,is_day&timezone=auto`
   const data = await fetch(url).then(r => r.json())
   return mapWeatherCode(data.current.weathercode, data.current.is_day)
 }

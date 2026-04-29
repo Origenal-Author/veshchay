@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
 import { extractYoutubeId } from '@/lib/youtube'
 
@@ -57,9 +58,17 @@ export default function UploadPage() {
         border: '1px solid #00FFF0',
         boxShadow: '0 0 40px rgba(0,255,240,0.1)',
       }}>
-        <h2 className="text-2xl font-bold tracking-widest mb-8 text-center" style={{ color: '#00FFF0' }}>
-          ДОБАВИТЬ ВИДЕО
-        </h2>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 32 }}>
+          <Link href="/" style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, color: 'var(--subtext,#8892B0)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6 }}
+            onMouseOver={e => (e.currentTarget.style.color = '#00FFF0')}
+            onMouseOut={e => (e.currentTarget.style.color = '#8892B0')}
+          >
+            ← НАЗАД
+          </Link>
+          <h2 style={{ fontFamily: "'Orbitron',monospace", fontSize: 18, fontWeight: 700, letterSpacing: 4, color: '#00FFF0', margin: '0 auto' }}>
+            ДОБАВИТЬ ВИДЕО
+          </h2>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <input
