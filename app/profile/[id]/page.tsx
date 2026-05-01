@@ -1,14 +1,15 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase-server'
+import ProfileClient from './ProfileClient'
 
 const RANKS = [
   { xp: 0, rank: 'НОВОБРАНЕЦ', color: '#8892B0' },
   { xp: 50, rank: 'ОПЕРАТИВНИК', color: '#00FFF0' },
   { xp: 200, rank: 'АГЕНТ', color: '#7AAED4' },
   { xp: 500, rank: 'ПРИЗРАК', color: '#9B10FF' },
-  { xp: 1000, rank: 'АРХИТЕКТОР', color: '#FFB300' },
-  { xp: 2500, rank: 'ХАКЕР', color: '#FF006E' },
+  { xp: 1000, rank: 'НЕЙРОМАНТ', color: '#FFB300' },
+  { xp: 2500, rank: 'СИСТЕМНЫЙ БОГ', color: '#FF006E' },
 ]
 
 function getRankInfo(xp: number) {
@@ -36,7 +37,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
   const nextRank = getNextRank(xp)
   const progress = nextRank ? Math.round((xp / nextRank.xp) * 100) : 100
 
-  return (
+  const profileContent = (
     <div style={{ minHeight: '100vh', position: 'relative', zIndex: 2, paddingBottom: 60 }}>
       <header className="site-header">
         <Link href="/" className="site-logo">ВЕЩАЙ</Link>
@@ -114,5 +115,11 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
         )}
       </main>
     </div>
+  )
+
+  return (
+    <ProfileClient profileId={id} currentUserId={user?.id ?? null}>
+      {profileContent}
+    </ProfileClient>
   )
 }

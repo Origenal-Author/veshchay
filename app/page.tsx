@@ -20,8 +20,15 @@ function timeAgo(date: string) {
   return 'ТОЛЬКО ЧТО'
 }
 
-export default async function Home({ searchParams }: { searchParams: Promise<{ q?: string, cat?: string }> }) {
-  const { q, cat } = await searchParams
+const CAT_LABELS: Record<string, string> = {
+  secret: '#СЕКРЕТНЫЙ_ФАЙЛ', sharp: '#ОСТРЫЙ_МАТЕРИАЛ',
+  agent: '#ВЕЩАНИЕ_ИНОАГЕНТА', intercepted: '#ПЕРЕХВАЧЕННЫЙ_СИГНАЛ',
+  noise: '#ПОМЕХИ_В_ЭФИРЕ', music: 'МУЗЫКА', games: 'ИГРЫ',
+}
+
+export default async function Home({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
+  const { q } = await searchParams
+  const cat = undefined
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -29,6 +36,13 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
   if (q) query = query.ilike('title', `%${q}%`)
   if (cat) query = query.eq('category', cat)
   const { data: videos } = await query
+
+  // Подгружаем ники авторов
+  const userIds = [...new Set((videos || []).map(v => v.user_id))]
+  const { data: profilesData } = userIds.length
+    ? await supabase.from('profiles').select('id, username').in('id', userIds)
+    : { data: [] }
+  const profileMap: Record<string, string> = Object.fromEntries((profilesData || []).map(p => [p.id, p.username || 'аноним']))
 
   const featured = !q && videos && videos.length > 0 ? videos[0] : null
   const rest = featured ? videos!.slice(1) : (videos || [])
@@ -137,12 +151,19 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
                     <div style={{ position: 'absolute', bottom: 6, right: 6, background: 'rgba(6,6,18,0.9)', color: 'var(--accent)', fontSize: 10, fontFamily: "'JetBrains Mono',monospace", padding: '2px 6px', border: '1px solid rgba(0,255,240,0.2)' }}>▶</div>
                   </div>
                   <div className="video-card-body">
+                    {video.category && video.category !== 'general' && (
+                      <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 9, color: 'var(--accent2)', letterSpacing: 1, marginBottom: 4, opacity: 0.8 }}>
+                        {CAT_LABELS[video.category] || video.category}
+                      </div>
+                    )}
                     <div className="video-card-title">{video.title}</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                       <div style={{ width: 22, height: 22, background: 'linear-gradient(135deg,var(--accent),var(--subtext))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 700, color: 'var(--bg)', fontFamily: "'Orbitron',monospace", flexShrink: 0 }}>
-                        {getInitials(video.title)}
+                        {(profileMap[video.user_id] || '??').slice(0,2).toUpperCase()}
                       </div>
-                      <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 11, color: 'var(--subtext)' }}>@вещай</span>
+                      <Link href={`/profile/${video.user_id}`} style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 11, color: 'var(--subtext)', textDecoration: 'none' }}>
+                        @{profileMap[video.user_id] || 'аноним'}
+                      </Link>
                     </div>
                     <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 11, color: 'var(--subtext)', display: 'flex', gap: 8 }}>
                       <span style={{ color: 'var(--accent)', opacity: 0.7 }}>▶ СМОТРЕТЬ</span>

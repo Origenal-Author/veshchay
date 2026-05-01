@@ -8,8 +8,8 @@ const XP_RANKS = [
   { xp: 50, rank: 'ОПЕРАТИВНИК' },
   { xp: 200, rank: 'АГЕНТ' },
   { xp: 500, rank: 'ПРИЗРАК' },
-  { xp: 1000, rank: 'АРХИТЕКТОР' },
-  { xp: 2500, rank: 'ХАКЕР' },
+  { xp: 1000, rank: 'НЕЙРОМАНТ' },
+  { xp: 2500, rank: 'СИСТЕМНЫЙ БОГ' },
 ]
 
 function getRank(xp: number) {
