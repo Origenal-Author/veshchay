@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react'
 
-type WeatherType = 'night' | 'clear' | 'rain' | 'snow' | 'storm' | 'fog'
+type WeatherType = 'night' | 'clear' | 'rain' | 'snow' | 'storm' | 'fog' | 'cloudy'
 
 const WeatherContext = createContext<{
   weather: WeatherType
@@ -22,8 +22,10 @@ function getDefaultWeather(): WeatherType {
 
 function mapWeatherCode(code: number, isDay: number): WeatherType {
   if (!isDay) return 'night'
-  if (code <= 2) return 'clear'
-  if (code === 3 || code === 45 || code === 48) return 'fog'
+  if (code <= 1) return 'clear'
+  if (code === 2) return 'cloudy'
+  if (code === 3) return 'cloudy'
+  if (code === 45 || code === 48) return 'fog'
   if (code >= 51 && code <= 67) return 'rain'
   if (code >= 71 && code <= 77) return 'snow'
   if (code >= 80 && code <= 82) return 'rain'
@@ -142,6 +144,26 @@ function scheduleBolt(active: { value: boolean }) {
   boltTimeout = setTimeout(() => scheduleBolt(active), Math.random() * 30000 + 25000)
 }
 
+function generateClouds() {
+  const layer = document.getElementById('layer-cloudy')
+  if (!layer) return
+  layer.querySelectorAll('.cloud-shape').forEach(el => el.remove())
+  const clouds = [
+    { w: 340, h: 90, top: '5%', dur: 28, delay: 0, opacity: 0.18 },
+    { w: 260, h: 70, top: '15%', dur: 22, delay: -8, opacity: 0.14 },
+    { w: 420, h: 100, top: '25%', dur: 35, delay: -15, opacity: 0.12 },
+    { w: 200, h: 60, top: '8%', dur: 18, delay: -5, opacity: 0.16 },
+    { w: 380, h: 80, top: '35%', dur: 32, delay: -20, opacity: 0.10 },
+    { w: 300, h: 75, top: '20%', dur: 25, delay: -12, opacity: 0.13 },
+  ]
+  clouds.forEach((c) => {
+    const cloud = document.createElement('div')
+    cloud.className = 'cloud-shape'
+    cloud.style.cssText = `position:absolute;top:${c.top};width:${c.w}px;height:${c.h}px;opacity:${c.opacity};animation:cloudDrift ${c.dur}s linear ${c.delay}s infinite;left:-${c.w}px;`
+    layer.appendChild(cloud)
+  })
+}
+
 function generateFog() {
   const fogLayer = document.querySelector('#layer-fog .fog-layer') as HTMLElement
   if (!fogLayer) return
@@ -175,6 +197,7 @@ export function WeatherProvider({ children }: { children: React.ReactNode }) {
     if (w === 'rain') generateRain()
     if (w === 'snow') generateSnow()
     if (w === 'fog') generateFog()
+    if (w === 'cloudy') generateClouds()
     if (w === 'storm') {
       generateStorm()
       boltTimeout = setTimeout(() => scheduleBolt(stormActiveRef), Math.random() * 7000 + 5000)
@@ -185,6 +208,7 @@ export function WeatherProvider({ children }: { children: React.ReactNode }) {
     const initial = getDefaultWeather()
     generateFog()
     generateStars()
+    generateClouds()
     setWeather(initial)
     fetchRealWeather().then(real => { if (real !== initial) setWeather(real) }).catch(() => {})
   }, [])
@@ -193,6 +217,7 @@ export function WeatherProvider({ children }: { children: React.ReactNode }) {
     <WeatherContext.Provider value={{ weather, setWeather }}>
       <div className="weather-bg-gradient" />
       <div className="weather-layer" id="layer-night" />
+      <div className="weather-layer" id="layer-cloudy" />
       <div className="weather-layer" id="layer-clear">
         <div className="sun-container">
           <div className="sun-rays" /><div className="sun-core" /><div className="sun-glow" />

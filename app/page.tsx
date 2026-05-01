@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase-server'
 import { logout } from '@/app/auth/actions'
 import SearchBar from '@/app/components/SearchBar'
 import NavTabs from '@/app/components/NavTabs'
+import OnlineCount from '@/app/components/OnlineCount'
 
 function getInitials(title: string) {
   return title.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase().slice(0, 2)
@@ -19,13 +20,14 @@ function timeAgo(date: string) {
   return 'ТОЛЬКО ЧТО'
 }
 
-export default async function Home({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
-  const { q } = await searchParams
+export default async function Home({ searchParams }: { searchParams: Promise<{ q?: string, cat?: string }> }) {
+  const { q, cat } = await searchParams
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   let query = supabase.from('videos').select('*').order('created_at', { ascending: false }).limit(40)
   if (q) query = query.ilike('title', `%${q}%`)
+  if (cat) query = query.eq('category', cat)
   const { data: videos } = await query
 
   const featured = !q && videos && videos.length > 0 ? videos[0] : null
@@ -45,6 +47,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
                 {user.user_metadata?.username || user.email}
               </span>
               <Link href="/videos/upload" className="btn-primary-ui">+ ВИДЕО</Link>
+              <Link href={`/profile/${user.id}`} className="btn-ghost-ui">ПРОФИЛЬ</Link>
               <form action={logout}><button type="submit" className="btn-ghost-ui">ВЫЙТИ</button></form>
             </>
           ) : (
@@ -62,7 +65,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
       {/* СТАТУС-СТРОКА */}
       <div style={{ background: 'rgba(0,255,240,0.04)', borderBottom: '1px solid rgba(0,255,240,0.08)', padding: '6px 32px', display: 'flex', alignItems: 'center', gap: 24, fontFamily: "'JetBrains Mono',monospace", fontSize: 11, color: 'rgba(0,255,240,0.5)', position: 'relative', zIndex: 2 }}>
         <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span className="status-dot" />ОНЛАЙН: {Math.floor(Math.random() * 50000 + 10000).toLocaleString('ru')}
+          <span className="status-dot" />ОНЛАЙН: <Suspense fallback="..."><OnlineCount userId={user?.id ?? null} /></Suspense>
         </span>
         <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span className="status-dot red" />ВИДЕО: {videos?.length || 0}

@@ -26,6 +26,7 @@ export default function UploadPage() {
     const title = (form.elements.namedItem('title') as HTMLInputElement).value
     const description = (form.elements.namedItem('description') as HTMLTextAreaElement).value
     const url = (form.elements.namedItem('url') as HTMLInputElement).value
+    const category = (form.elements.namedItem('category') as HTMLSelectElement).value
 
     const youtubeId = extractYoutubeId(url)
     if (!youtubeId) {
@@ -40,7 +41,7 @@ export default function UploadPage() {
 
     const { data, error: dbError } = await supabase
       .from('videos')
-      .insert({ title, description, youtube_id: youtubeId, user_id: user.id })
+      .insert({ title, description, youtube_id: youtubeId, user_id: user.id, category })
       .select('id')
       .single()
 
@@ -93,6 +94,23 @@ export default function UploadPage() {
                 onChange={handleUrlChange}
                 style={{ width: '100%', padding: '12px 16px', background: 'var(--surface)', border: '1px solid var(--border)', borderLeft: '3px solid var(--accent)', color: 'var(--text)', fontFamily: "'JetBrains Mono',monospace", fontSize: 13, outline: 'none' }}
               />
+            </div>
+
+            <div>
+              <label style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: 'var(--subtext)', letterSpacing: 2, display: 'block', marginBottom: 6 }}>// КАТЕГОРИЯ</label>
+              <select
+                name="category"
+                style={{ width: '100%', padding: '12px 16px', background: 'var(--surface)', border: '1px solid var(--border)', borderLeft: '3px solid var(--accent)', color: 'var(--text)', fontFamily: "'JetBrains Mono',monospace", fontSize: 13, outline: 'none' }}
+              >
+                <option value="general">— БЕЗ КАТЕГОРИИ —</option>
+                <option value="secret">#СЕКРЕТНЫЙ_ФАЙЛ</option>
+                <option value="sharp">#ОСТРЫЙ_МАТЕРИАЛ</option>
+                <option value="agent">#ВЕЩАНИЕ_ИНОАГЕНТА</option>
+                <option value="intercepted">#ПЕРЕХВАЧЕННЫЙ_СИГНАЛ</option>
+                <option value="noise">#ПОМЕХИ_В_ЭФИРЕ</option>
+                <option value="music">МУЗЫКА</option>
+                <option value="games">ИГРЫ</option>
+              </select>
             </div>
 
             <div>
