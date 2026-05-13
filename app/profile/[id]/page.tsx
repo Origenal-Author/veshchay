@@ -4,12 +4,16 @@ import { createClient } from '@/lib/supabase-server'
 import ProfileClient from './ProfileClient'
 
 const RANKS = [
-  { xp: 0, rank: 'НОВОБРАНЕЦ', color: '#8892B0' },
-  { xp: 50, rank: 'ОПЕРАТИВНИК', color: '#00FFF0' },
-  { xp: 200, rank: 'АГЕНТ', color: '#7AAED4' },
-  { xp: 500, rank: 'ПРИЗРАК', color: '#9B10FF' },
-  { xp: 1000, rank: 'НЕЙРОМАНТ', color: '#FFB300' },
-  { xp: 2500, rank: 'СИСТЕМНЫЙ БОГ', color: '#FF006E' },
+  { xp: 0,     rank: 'СТАТИЧЕСКИЙ ШУМ',  color: '#8892B0' },
+  { xp: 75,    rank: 'ПИНГ',              color: '#64B5F6' },
+  { xp: 200,   rank: 'ОПЕРАТИВНИК',       color: '#00FFF0' },
+  { xp: 500,   rank: 'ВЗЛОМЩИК',          color: '#00FF88' },
+  { xp: 1000,  rank: 'АГЕНТ',             color: '#7AAED4' },
+  { xp: 2000,  rank: 'ПРИЗРАК',           color: '#9B10FF' },
+  { xp: 4000,  rank: 'НЕЙРОМАНТ',         color: '#FFB300' },
+  { xp: 7500,  rank: 'ТЕНЕВОЙ АРХИТЕКТ',  color: '#FF7B00' },
+  { xp: 15000, rank: 'СИСТЕМНЫЙ БОГ',     color: '#FF006E' },
+  { xp: 30000, rank: 'РУТОВЫЙ ДОСТУП',    color: '#FFFFFF' },
 ]
 
 function getRankInfo(xp: number) {

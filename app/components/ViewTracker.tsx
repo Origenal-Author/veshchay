@@ -4,12 +4,16 @@ import { useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
 
 const XP_RANKS = [
-  { xp: 0, rank: 'НОВОБРАНЕЦ' },
-  { xp: 50, rank: 'ОПЕРАТИВНИК' },
-  { xp: 200, rank: 'АГЕНТ' },
-  { xp: 500, rank: 'ПРИЗРАК' },
-  { xp: 1000, rank: 'НЕЙРОМАНТ' },
-  { xp: 2500, rank: 'СИСТЕМНЫЙ БОГ' },
+  { xp: 0,     rank: 'СТАТИЧЕСКИЙ ШУМ' },
+  { xp: 75,    rank: 'ПИНГ' },
+  { xp: 200,   rank: 'ОПЕРАТИВНИК' },
+  { xp: 500,   rank: 'ВЗЛОМЩИК' },
+  { xp: 1000,  rank: 'АГЕНТ' },
+  { xp: 2000,  rank: 'ПРИЗРАК' },
+  { xp: 4000,  rank: 'НЕЙРОМАНТ' },
+  { xp: 7500,  rank: 'ТЕНЕВОЙ АРХИТЕКТ' },
+  { xp: 15000, rank: 'СИСТЕМНЫЙ БОГ' },
+  { xp: 30000, rank: 'РУТОВЫЙ ДОСТУП' },
 ]
 
 function getRank(xp: number) {

@@ -1,0 +1,39 @@
+import { createClient } from '@/lib/supabase-server'
+import { redirect } from 'next/navigation'
+import Link from 'next/link'
+import GameClient from './GameClient'
+import type { Pet } from '@/lib/pets'
+
+export default async function GamePage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) redirect('/auth/login')
+
+  const { data: profile } = await supabase
+    .from('profiles').select('xp, rank').eq('id', user.id).single()
+
+  if (!profile) redirect('/')
+
+  const { data: pet } = await supabase
+    .from('pets').select('*').eq('user_id', user.id).maybeSingle()
+
+  const xp = profile.xp || 0
+
+  return (
+    <div style={{ minHeight: '100vh', position: 'relative', zIndex: 2, paddingBottom: 60 }}>
+      <header className="site-header">
+        <Link href="/" className="site-logo">ВЕЩАЙ</Link>
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: 10 }}>
+          <Link href="/profile/edit" className="btn-ghost-ui">ПРОФИЛЬ</Link>
+          <Link href="/" className="btn-ghost-ui">← ГЛАВНАЯ</Link>
+        </div>
+      </header>
+      <GameClient
+        userId={user.id}
+        xp={xp}
+        existingPet={pet as Pet | null}
+      />
+    </div>
+  )
+}

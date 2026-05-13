@@ -454,3 +454,35 @@ body[data-weather="fog"] .site-header { background: rgba(7,10,14,0.90); }
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--border); }
+
+/* ══ ИГРЫ — АНИМАЦИИ ══ */
+
+@keyframes boxShake {
+  0%,100% { transform: scale(1.1) rotate(0deg) translateY(-4px); }
+  20%  { transform: scale(1.12) rotate(-2deg) translateY(-6px); }
+  40%  { transform: scale(1.12) rotate(2deg) translateY(-6px); }
+  60%  { transform: scale(1.14) rotate(-1.5deg) translateY(-8px); }
+  80%  { transform: scale(1.14) rotate(1.5deg) translateY(-8px); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes revealPop {
+  0%   { opacity: 0; transform: scale(0.4) rotate(-8deg); }
+  70%  { opacity: 1; transform: scale(1.06) rotate(1deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+@keyframes pulse {
+  0%,100% { opacity: 1; }
+  50%      { opacity: 0.35; }
+}
+
+.game-box:hover {
+  transform: translateY(-8px) scale(1.04) !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 24px var(--accent-glow), 0 12px 32px rgba(0,0,0,0.4) !important;
+}
