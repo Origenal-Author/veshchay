@@ -61,7 +61,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
                 {user.user_metadata?.username || user.email}
               </span>
               <Link href="/videos/upload" className="btn-primary-ui">+ ВИДЕО</Link>
-              <Link href="/game" className="btn-ghost-ui">ИГРЫ</Link>
+              <Link href="/game" className="btn-ghost-ui">ПАРАЗИТЫ</Link>
               <Link href={`/profile/${user.id}`} className="btn-ghost-ui">ПРОФИЛЬ</Link>
               <form action={logout}><button type="submit" className="btn-ghost-ui">ВЫЙТИ</button></form>
             </>
