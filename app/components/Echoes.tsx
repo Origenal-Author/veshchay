@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase'
+import { checkAchievements } from './AchievementToast'
 
 type Echo = { id: string; content: string; created_at: string; user_id: string; username?: string }
 
@@ -43,6 +44,7 @@ export default function Echoes({ videoId, userId }: { videoId: string, userId: s
     if (!error) {
       setText('')
       await load()
+      checkAchievements()
     }
     setLoading(false)
   }

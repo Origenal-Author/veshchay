@@ -502,3 +502,8 @@ body[data-weather="fog"] .site-header { background: rgba(7,10,14,0.90); }
   70%  { transform: scale(1.2) rotate(5deg); opacity: 1; }
   100% { transform: scale(1) rotate(0deg); opacity: 1; }
 }
+
+@keyframes slideInRight {
+  0%   { transform: translateX(120px); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}

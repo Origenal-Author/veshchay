@@ -18,6 +18,7 @@ export async function POST(req: Request) {
 
   const xpGain = action === 'feed' ? 3 : 1
   const newXp = (pet.stage_xp || 0) + xpGain
+  const feedCount = action === 'feed' ? (pet.feed_count ?? 0) + 1 : (pet.feed_count ?? 0)
 
   let newStage = pet.stage
   if (pet.stage === 'egg' && newXp >= 50) newStage = 'baby'
@@ -25,7 +26,7 @@ export async function POST(req: Request) {
 
   const { data: updated } = await supabase
     .from('pets')
-    .update({ stage_xp: newXp, stage: newStage })
+    .update({ stage_xp: newXp, stage: newStage, feed_count: feedCount })
     .eq('id', petId)
     .select()
     .single()

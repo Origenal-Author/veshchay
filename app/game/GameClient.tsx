@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import PetCanvas from '@/app/components/PetCanvas'
+import { checkAchievements } from '@/app/components/AchievementToast'
 import {
   getPetDef, RARITY_COLOR, RARITY_GLOW,
   getStageProgress, getNextStage, STAGE_XP,
@@ -82,6 +83,10 @@ function BugRunner({ onSquash }: { onSquash: () => void }) {
     if (dead) return
     playSound('squash')
     setDead(true)
+    fetch('/api/xp/award', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'squash_bug' }),
+    }).then(() => checkAchievements()).catch(() => {})
     setTimeout(onSquash, 600)
   }
 
@@ -218,6 +223,7 @@ function PetHabitat({ pet, onUpdate }: { pet: Pet; onUpdate: (p: Pet) => void })
     const data = await res.json()
     if (data.pet) onUpdate(data.pet)
     if (data.evolved) setTimeout(() => addParticle('✦ ЭВОЛЮЦИЯ! ✦'), 100)
+    checkAchievements()
   }
 
   function submitFeed(e: React.FormEvent) {
@@ -540,6 +546,7 @@ export default function GameClient({ userId, xp, initialPets }: Props) {
     if (data.pet) {
       setNewPet(data.pet)
       setPhase('revealed')
+      checkAchievements()
     } else {
       setClaimError(data.error || 'Ошибка')
       setPhase(pets.length > 0 ? 'manage' : xp < 500 ? 'locked' : 'choose')

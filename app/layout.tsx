@@ -4,6 +4,7 @@ import { WeatherProvider } from '@/app/components/WeatherProvider'
 import EasterEggs from '@/app/components/EasterEggs'
 import SnakeWrapper from '@/app/components/SnakeWrapper'
 import DailyXP from '@/app/components/DailyXP'
+import AchievementToast from '@/app/components/AchievementToast'
 
 export const metadata: Metadata = {
   title: 'ВЕЩАЙ',
@@ -19,6 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <EasterEggs />
           <SnakeWrapper />
           <DailyXP />
+          <AchievementToast />
         </WeatherProvider>
       </body>
     </html>

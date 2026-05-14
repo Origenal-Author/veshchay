@@ -11,7 +11,7 @@ export async function POST(req: Request) {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('xp, last_login_xp_date, time_on_site, xp_avatar_given, xp_bio_given')
+    .select('xp, last_login_xp_date, time_on_site, xp_avatar_given, xp_bio_given, login_streak, bugs_squashed')
     .eq('id', user.id)
     .single()
 
@@ -23,10 +23,18 @@ export async function POST(req: Request) {
   switch (action) {
     case 'login': {
       const today = new Date().toISOString().slice(0, 10)
-      if ((profile.last_login_xp_date ?? '') !== today) {
+      const prev = profile.last_login_xp_date ?? ''
+      if (prev !== today) {
         gain = 5
         updates.last_login_xp_date = today
+        const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
+        updates.login_streak = prev === yesterday ? (profile.login_streak ?? 0) + 1 : 1
       }
+      break
+    }
+
+    case 'squash_bug': {
+      updates.bugs_squashed = (profile.bugs_squashed ?? 0) + 1
       break
     }
 

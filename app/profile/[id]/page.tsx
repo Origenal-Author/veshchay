@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase-server'
 import ProfileClient from './ProfileClient'
 import FollowButton from '@/app/components/FollowButton'
+import AchievementsGrid from '@/app/components/AchievementsGrid'
 
 const RANKS = [
   { xp: 0,     rank: 'СТАТИЧЕСКИЙ ШУМ',  color: '#8892B0' },
@@ -44,6 +45,9 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
   const isOwner = user?.id === id
 
   const { data: videos } = await supabase.from('videos').select('*').eq('user_id', id).order('created_at', { ascending: false })
+
+  const { data: userAchievements } = await supabase
+    .from('achievements').select('key').eq('user_id', id)
 
   const { count: followersCount } = await supabase
     .from('follows').select('*', { count: 'exact', head: true }).eq('following_id', id)
@@ -147,6 +151,11 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
             </div>
           </div>
         )}
+        {/* Ачивки */}
+        <AchievementsGrid
+          unlockedKeys={(userAchievements ?? []).map(a => a.key)}
+          isOwner={isOwner}
+        />
       </main>
     </div>
   )
