@@ -8,92 +8,314 @@ import {
   type Pet,
 } from '@/lib/pets'
 
-type Phase = 'locked' | 'choose' | 'opening' | 'revealed' | 'has-pet'
-
-interface Props {
-  userId: string
-  xp: number
-  existingPet: Pet | null
+// ── ЗВУК ──────────────────────────────────────────────────────────────────────
+function playSound(type: 'happy' | 'annoyed' | 'eat' | 'squash') {
+  try {
+    const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
+    const ctx = new AudioCtx()
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.connect(gain)
+    gain.connect(ctx.destination)
+    const t = ctx.currentTime
+    switch (type) {
+      case 'happy':
+        osc.type = 'sine'
+        osc.frequency.setValueAtTime(440, t)
+        osc.frequency.exponentialRampToValueAtTime(880, t + 0.13)
+        gain.gain.setValueAtTime(0.18, t)
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.22)
+        osc.start(t); osc.stop(t + 0.22)
+        break
+      case 'annoyed':
+        osc.type = 'sawtooth'
+        osc.frequency.setValueAtTime(300, t)
+        osc.frequency.exponentialRampToValueAtTime(75, t + 0.28)
+        gain.gain.setValueAtTime(0.14, t)
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.32)
+        osc.start(t); osc.stop(t + 0.32)
+        break
+      case 'eat': {
+        osc.type = 'sine'
+        osc.frequency.setValueAtTime(600, t)
+        osc.frequency.setValueAtTime(900, t + 0.06)
+        osc.frequency.setValueAtTime(500, t + 0.12)
+        gain.gain.setValueAtTime(0.1, t)
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.22)
+        osc.start(t); osc.stop(t + 0.22)
+        break
+      }
+      case 'squash':
+        osc.type = 'square'
+        osc.frequency.setValueAtTime(200, t)
+        osc.frequency.exponentialRampToValueAtTime(45, t + 0.14)
+        gain.gain.setValueAtTime(0.3, t)
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.2)
+        osc.start(t); osc.stop(t + 0.2)
+        break
+    }
+  } catch { /* AudioContext недоступен */ }
 }
 
-const BOX_LABELS = ['КОНТЕЙНЕР А', 'КОНТЕЙНЕР Б', 'КОНТЕЙНЕР В']
+// ── ЖУК ───────────────────────────────────────────────────────────────────────
+function BugRunner({ onSquash }: { onSquash: () => void }) {
+  const [pos, setPos] = useState({ x: 120, y: 120 })
+  const [dead, setDead] = useState(false)
+  const [angle, setAngle] = useState(0)
 
-// Одинаковая SVG-коробка для всех трёх
-function CrateIcon({ glowing }: { glowing?: boolean }) {
-  const C = glowing ? '#00FFF0' : '#3A5060'
+  useEffect(() => {
+    setPos({
+      x: 80 + Math.random() * (window.innerWidth - 160),
+      y: 80 + Math.random() * (window.innerHeight - 160),
+    })
+    const iv = setInterval(() => {
+      setPos(p => ({
+        x: Math.max(30, Math.min(window.innerWidth - 60, p.x + (Math.random() - 0.5) * 140)),
+        y: Math.max(30, Math.min(window.innerHeight - 60, p.y + (Math.random() - 0.5) * 140)),
+      }))
+      setAngle(a => a + (Math.random() - 0.5) * 100)
+    }, 370)
+    return () => clearInterval(iv)
+  }, [])
+
+  function squash() {
+    if (dead) return
+    playSound('squash')
+    setDead(true)
+    setTimeout(onSquash, 600)
+  }
+
   return (
-    <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
-      {/* Тело */}
-      <rect x="8" y="28" width="64" height="44" rx="4" fill={`rgba(${glowing ? '0,255,240' : '20,40,60'},0.12)`} stroke={C} strokeWidth="1.5"/>
-      {/* Крышка */}
-      <path d="M4 24 L40 14 L76 24 L76 30 L40 20 L4 30 Z" fill={`rgba(${glowing ? '0,255,240' : '20,40,60'},0.18)`} stroke={C} strokeWidth="1.5"/>
-      {/* Полоса по центру */}
-      <line x1="8" y1="50" x2="72" y2="50" stroke={C} strokeWidth="1" strokeDasharray="4 3" opacity="0.5"/>
-      {/* Замок */}
-      <rect x="33" y="44" width="14" height="12" rx="2" fill={`rgba(${glowing ? '0,255,240' : '20,40,60'},0.3)`} stroke={C} strokeWidth="1.2"/>
-      <path d="M36 44 C36 40 44 40 44 44" stroke={C} strokeWidth="1.2" fill="none"/>
-      {/* ? внутри замка */}
-      <text x="40" y="53.5" textAnchor="middle" fill={C} fontSize="7" fontFamily="Orbitron,monospace" fontWeight="700">?</text>
-      {/* Уголки */}
-      <circle cx="8" cy="28" r="2" fill={C} opacity="0.6"/>
-      <circle cx="72" cy="28" r="2" fill={C} opacity="0.6"/>
-      <circle cx="8" cy="72" r="2" fill={C} opacity="0.6"/>
-      <circle cx="72" cy="72" r="2" fill={C} opacity="0.6"/>
-    </svg>
+    <div
+      onClick={squash}
+      title="Раздави жука!"
+      style={{
+        position: 'fixed', left: pos.x, top: pos.y, zIndex: 9999,
+        fontSize: 28, cursor: dead ? 'default' : 'pointer',
+        transition: 'left 0.35s ease, top 0.35s ease',
+        transform: `rotate(${angle}deg) scale(${dead ? 0 : 1})`,
+        opacity: dead ? 0 : 1, userSelect: 'none',
+        pointerEvents: dead ? 'none' : 'auto',
+        filter: 'drop-shadow(0 0 6px rgba(255,50,0,0.7))',
+      }}
+    >
+      {dead ? '💥' : '🪲'}
+    </div>
   )
 }
 
-// Среда обитания
-function PetHabitat({ pet }: { pet: Pet }) {
+// ── ПЛАВАЮЩИЕ СИМВОЛЫ ─────────────────────────────────────────────────────────
+function FloatingSymbols({ isVirus, C }: { isVirus: boolean; C: string }) {
+  const symbols = isVirus
+    ? ['ERR', '!!', 'X0X', '///', '404', 'BUG', '$$$', '???']
+    : ['010', '{}', '</>', '||', 'fn()', '=>', '42', '::']
+  return (
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 1 }}>
+      {symbols.map((s, i) => (
+        <div key={i} style={{
+          position: 'absolute',
+          left: `${(i * 137) % 90 + 2}%`, top: `${(i * 97 + 20) % 80}%`,
+          fontFamily: 'JetBrains Mono,monospace', fontSize: 10, color: C,
+          opacity: 0.08 + (i % 3) * 0.04, letterSpacing: 1,
+          animation: `floatSym ${4 + i * 0.7}s ease-in-out infinite`,
+          animationDelay: `${i * 0.4}s`,
+        }}>{s}</div>
+      ))}
+    </div>
+  )
+}
+
+// ── ИНФО ПИТОМЦА ──────────────────────────────────────────────────────────────
+function PetInfo({ pet }: { pet: Pet }) {
   const def = getPetDef(pet.type)
   const isVirus = pet.variant === 'virus'
   const C = isVirus ? def.colorVirus : def.color
-  const [mood, setMood] = useState<'idle' | 'happy' | 'annoyed'>('idle')
-  const [clicks, setClicks] = useState(0)
+  const rColor = RARITY_COLOR[def.rarity]
+  const rGlow = RARITY_GLOW[def.rarity]
+  const progress = getStageProgress(pet.stage, pet.stage_xp)
+  const nextStage = getNextStage(pet.stage)
+  const stageLabel: Record<string, string> = { egg: 'ЯЙЦО', baby: 'ДЕТЁНЫШ', adult: 'ВЗРОСЛЫЙ' }
+
+  return (
+    <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ fontFamily: 'Orbitron,monospace', fontSize: 18, letterSpacing: 4, color: C, textShadow: `0 0 12px ${C}` }}>
+          {def.nameRu}
+        </div>
+        <span style={{
+          fontFamily: 'Orbitron,monospace', fontSize: 9, letterSpacing: 3,
+          color: rColor, border: `1px solid ${rColor}`,
+          background: `rgba(${hexToRgb(rColor)},0.1)`,
+          padding: '3px 10px', borderRadius: 4, boxShadow: `0 0 8px ${rGlow}`,
+        }}>★ {def.rarityLabel}</span>
+      </div>
+
+      <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 10, color: '#506080', letterSpacing: 2 }}>
+        {isVirus ? '// ВИРУС — проказник //' : '// КОД — безобидный //'}
+      </div>
+
+      <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+          <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 10, color: '#506080', letterSpacing: 1 }}>
+            СТАДИЯ: <span style={{ color: C }}>{stageLabel[pet.stage]}</span>
+          </span>
+          {nextStage && (
+            <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 9, color: '#3A4A5A', letterSpacing: 1 }}>
+              → {stageLabel[nextStage]} при {STAGE_XP[nextStage]} XP питомца
+            </span>
+          )}
+        </div>
+        <div style={{ width: '100%', height: 4, background: 'rgba(255,255,255,0.05)', borderRadius: 2 }}>
+          <div style={{ width: `${progress}%`, height: '100%', borderRadius: 2, background: C, boxShadow: `0 0 6px ${C}`, transition: 'width 0.5s ease' }} />
+        </div>
+        <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 9, color: '#3A4A5A', letterSpacing: 1, marginTop: 4, textAlign: 'right' }}>
+          {pet.stage_xp} XP питомца
+        </div>
+      </div>
+
+      <div style={{ padding: '12px 16px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(6,6,18,0.5)' }}>
+        <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 9, color: '#3A4A5A', letterSpacing: 3, marginBottom: 6 }}>СПОСОБНОСТЬ</div>
+        <div style={{ fontFamily: 'Exo 2,sans-serif', fontSize: 13, color: '#C0C8D0', lineHeight: 1.6 }}>
+          {isVirus ? def.abilityVirus : def.abilityKod}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── СРЕДА ОБИТАНИЯ ─────────────────────────────────────────────────────────────
+function PetHabitat({ pet, onUpdate }: { pet: Pet; onUpdate: (p: Pet) => void }) {
+  const def = getPetDef(pet.type)
+  const isVirus = pet.variant === 'virus'
+  const C = isVirus ? def.colorVirus : def.color
+
+  type Mood = 'idle' | 'happy' | 'annoyed' | 'eating'
+  const [mood, setMood] = useState<Mood>('idle')
   const [particles, setParticles] = useState<{ id: number; x: number; y: number; text: string }[]>([])
-  const particleId = useRef(0)
+  const [feedMode, setFeedMode] = useState(false)
+  const [feedInput, setFeedInput] = useState('')
+  const [poop, setPoop] = useState(false)
+  const [bug, setBug] = useState(false)
+  const [petOffset, setPetOffset] = useState({ x: 0, y: 0 })
+  const [shooPos, setShooPos] = useState<{ x: number; y: number } | null>(null)
 
-  const moodMessages = isVirus
-    ? ['...', 'ОТСТАНЬ', '!!!', 'ГРР', 'ХА-ХА']
-    : ['♥', 'хи-хи', ':)', '~', '!']
+  const pidRef = useRef(0)
+  const poopTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const habitatRef = useRef<HTMLDivElement>(null)
 
-  function handlePetClick() {
-    const newClicks = clicks + 1
-    setClicks(newClicks)
-    setMood('happy')
-    setTimeout(() => setMood('idle'), 1000)
-
-    const msg = moodMessages[Math.floor(Math.random() * moodMessages.length)]
-    const id = particleId.current++
-    setParticles(p => [...p, { id, x: 40 + (Math.random() - 0.5) * 60, y: 20, text: msg }])
-    setTimeout(() => setParticles(p => p.filter(x => x.id !== id)), 1200)
+  function addParticle(text: string, dx = 0) {
+    const id = pidRef.current++
+    setParticles(p => [...p, { id, x: dx + (Math.random() - 0.5) * 60, y: 20, text }])
+    setTimeout(() => setParticles(p => p.filter(q => q.id !== id)), 1400)
   }
 
-  // Среда КОД: сетка + плавающий код
-  // Среда ВИРУС: глитч + красные помехи
+  async function callInteract(action: 'feed' | 'pet') {
+    const res = await fetch('/api/pets/interact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ petId: pet.id, action }),
+    })
+    const data = await res.json()
+    if (data.pet) onUpdate(data.pet)
+    if (data.evolved) setTimeout(() => addParticle('✦ ЭВОЛЮЦИЯ! ✦'), 100)
+  }
+
+  function submitFeed(e: React.FormEvent) {
+    e.preventDefault()
+    const raw = feedInput.trim()
+    if (!raw) return
+    const tag = raw.startsWith('#') ? raw : '#' + raw
+    setFeedMode(false)
+    setFeedInput('')
+    setMood('eating')
+    playSound('eat')
+    addParticle(`ПОГЛОЩАЮ: ${tag}`)
+    setTimeout(() => setMood('idle'), 1300)
+    callInteract('feed')
+  }
+
+  function handlePet() {
+    if (isVirus) {
+      setMood('annoyed')
+      playSound('annoyed')
+      const msgs = ['ОТСТАНЬ!', 'ГРР!!!', '❌ НЕТ', 'УЙДИ!!']
+      addParticle(msgs[Math.floor(Math.random() * msgs.length)])
+
+      if (Math.random() < 0.3 && !poop) {
+        setTimeout(() => {
+          setPoop(true)
+          addParticle('💩', 60)
+          poopTimerRef.current = setTimeout(() => {
+            setPoop(false)
+            setBug(true)
+          }, 3000)
+        }, 800)
+      }
+      setTimeout(() => setMood('idle'), 1600)
+    } else {
+      setMood('happy')
+      playSound('happy')
+      const msgs = ['♥', '~ ~', ':3', 'хи-хи!', '≧◡≦']
+      addParticle(msgs[Math.floor(Math.random() * msgs.length)])
+      setTimeout(() => setMood('idle'), 1000)
+    }
+    callInteract('pet')
+  }
+
+  function cleanPoop() {
+    if (poopTimerRef.current) clearTimeout(poopTimerRef.current)
+    setPoop(false)
+    addParticle('убрано ✓', -60)
+  }
+
+  // Отталкивание питомца от курсора когда вирус в раздражении
+  function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
+    if (!isVirus || mood !== 'annoyed') return
+    const rect = habitatRef.current?.getBoundingClientRect()
+    if (!rect) return
+    const cx = rect.width / 2
+    const cy = rect.height / 2 + 20
+    const mx = e.clientX - rect.left
+    const my = e.clientY - rect.top
+    const dx = cx - mx
+    const dy = cy - my
+    const dist = Math.hypot(dx, dy)
+    if (dist < 130) {
+      const f = (130 - dist) / 130
+      setPetOffset({ x: dx * f * 0.35, y: dy * f * 0.3 })
+      setShooPos({ x: mx, y: my })
+      setTimeout(() => { setPetOffset({ x: 0, y: 0 }); setShooPos(null) }, 380)
+    }
+  }
+
+  const petTransform =
+    mood === 'happy' ? `translate(${petOffset.x}px,${petOffset.y - 7}px) scale(1.12)` :
+    mood === 'annoyed' ? `translate(${petOffset.x}px,${petOffset.y}px) scale(0.93) rotate(-4deg)` :
+    mood === 'eating' ? 'translate(0,-3px) scale(1.07)' :
+    `translate(${petOffset.x}px,${petOffset.y}px) scale(1)`
+
   const envBg = isVirus
     ? 'radial-gradient(ellipse at 50% 40%, rgba(255,0,110,0.08) 0%, rgba(60,0,20,0.3) 60%, rgba(6,6,18,0.95) 100%)'
     : 'radial-gradient(ellipse at 50% 40%, rgba(0,212,255,0.08) 0%, rgba(0,20,40,0.3) 60%, rgba(6,6,18,0.95) 100%)'
-
   const borderColor = isVirus ? 'rgba(255,0,110,0.3)' : 'rgba(0,212,255,0.3)'
 
   return (
     <div style={{ maxWidth: 560, margin: '0 auto' }}>
-      {/* Окошко-среда обитания */}
-      <div style={{
-        position: 'relative',
-        borderRadius: 20,
-        border: `1px solid ${borderColor}`,
-        background: envBg,
-        overflow: 'hidden',
-        boxShadow: `0 0 40px rgba(${isVirus ? '255,0,110' : '0,212,255'},0.12)`,
-      }}>
-        {/* Заголовок окна */}
+      {/* Окошко среды */}
+      <div
+        ref={habitatRef}
+        onMouseMove={handleMouseMove}
+        style={{
+          position: 'relative', borderRadius: 20,
+          border: `1px solid ${borderColor}`, background: envBg,
+          overflow: 'hidden',
+          boxShadow: `0 0 40px rgba(${isVirus ? '255,0,110' : '0,212,255'},0.12)`,
+        }}
+      >
+        {/* Заголовок */}
         <div style={{
-          display: 'flex', alignItems: 'center', gap: 8,
-          padding: '10px 16px',
-          borderBottom: `1px solid ${borderColor}`,
-          background: 'rgba(6,6,18,0.6)',
+          display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px',
+          borderBottom: `1px solid ${borderColor}`, background: 'rgba(6,6,18,0.6)',
         }}>
           <div style={{ display: 'flex', gap: 5 }}>
             {['#FF5F56', '#FFBD2E', '#27C93F'].map((c, i) => (
@@ -105,209 +327,239 @@ function PetHabitat({ pet }: { pet: Pet }) {
           </div>
         </div>
 
-        {/* Фоновая сетка / глитч */}
+        {/* Сетчатый фон */}
         <div style={{
           position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0,
           backgroundImage: isVirus
-            ? `repeating-linear-gradient(0deg, transparent, transparent 18px, rgba(255,0,110,0.04) 18px, rgba(255,0,110,0.04) 19px),
-               repeating-linear-gradient(90deg, transparent, transparent 18px, rgba(255,0,110,0.04) 18px, rgba(255,0,110,0.04) 19px)`
-            : `repeating-linear-gradient(0deg, transparent, transparent 20px, rgba(0,212,255,0.04) 20px, rgba(0,212,255,0.04) 21px),
-               repeating-linear-gradient(90deg, transparent, transparent 20px, rgba(0,212,255,0.04) 20px, rgba(0,212,255,0.04) 21px)`,
+            ? 'repeating-linear-gradient(0deg,transparent,transparent 18px,rgba(255,0,110,0.04) 18px,rgba(255,0,110,0.04) 19px),repeating-linear-gradient(90deg,transparent,transparent 18px,rgba(255,0,110,0.04) 18px,rgba(255,0,110,0.04) 19px)'
+            : 'repeating-linear-gradient(0deg,transparent,transparent 20px,rgba(0,212,255,0.04) 20px,rgba(0,212,255,0.04) 21px),repeating-linear-gradient(90deg,transparent,transparent 20px,rgba(0,212,255,0.04) 20px,rgba(0,212,255,0.04) 21px)',
         }} />
 
-        {/* Плавающие символы на фоне */}
         <FloatingSymbols isVirus={isVirus} C={C} />
 
         {/* Питомец */}
         <div style={{ position: 'relative', zIndex: 2, padding: '32px 0 16px', display: 'flex', justifyContent: 'center' }}>
-          <div
-            onClick={handlePetClick}
-            style={{
-              cursor: 'pointer',
-              transform: mood === 'happy' ? 'scale(1.12) translateY(-6px)' : 'scale(1)',
-              transition: 'transform 0.3s cubic-bezier(0.34,1.56,0.64,1)',
-              filter: mood === 'happy' ? `drop-shadow(0 0 16px ${C})` : 'none',
-            }}
-          >
+          <div style={{
+            transition: 'transform 0.35s cubic-bezier(0.34,1.56,0.64,1)',
+            transform: petTransform,
+            filter: mood === 'happy' ? `drop-shadow(0 0 18px ${C})` :
+                    mood === 'annoyed' ? 'drop-shadow(0 0 10px rgba(255,0,80,0.6))' : 'none',
+          }}>
             <PetCanvas type={pet.type} variant={pet.variant} stage={pet.stage} size={180} />
           </div>
 
-          {/* Всплывающие эмоции */}
+          {/* Частицы эмоций */}
           {particles.map(p => (
             <div key={p.id} style={{
-              position: 'absolute',
-              left: `calc(50% + ${p.x}px)`,
-              top: p.y,
-              fontFamily: 'JetBrains Mono,monospace',
-              fontSize: 14,
-              color: C,
-              fontWeight: 700,
-              animation: 'floatUp 1.2s ease forwards',
-              pointerEvents: 'none',
-              textShadow: `0 0 8px ${C}`,
-              zIndex: 10,
-            }}>
-              {p.text}
-            </div>
+              position: 'absolute', left: `calc(50% + ${p.x}px)`, top: p.y,
+              fontFamily: 'JetBrains Mono,monospace', fontSize: 13, color: C, fontWeight: 700,
+              animation: 'floatUp 1.4s ease forwards', pointerEvents: 'none',
+              textShadow: `0 0 8px ${C}`, zIndex: 10, whiteSpace: 'nowrap',
+              transform: 'translateX(-50%)',
+            }}>{p.text}</div>
           ))}
+
+          {/* Эффект отталкивания */}
+          {shooPos && (
+            <div style={{
+              position: 'absolute', left: shooPos.x, top: shooPos.y,
+              transform: 'translate(-50%,-50%)',
+              fontSize: 18, color: '#FF006E', pointerEvents: 'none', zIndex: 10,
+              animation: 'floatUp 0.45s ease forwards',
+            }}>⚡</div>
+          )}
+
+          {/* Какашка */}
+          {poop && (
+            <div
+              onClick={cleanPoop}
+              title="Убери! Иначе вылезет жук..."
+              style={{
+                position: 'absolute', bottom: 14, right: '22%',
+                fontSize: 24, cursor: 'pointer', zIndex: 5,
+                animation: 'popIn 0.3s cubic-bezier(0.34,1.56,0.64,1)',
+                filter: 'drop-shadow(0 0 8px rgba(180,100,0,0.6))',
+              }}
+            >💩</div>
+          )}
         </div>
 
         {/* Подсказка */}
-        <div style={{ textAlign: 'center', padding: '0 0 16px', position: 'relative', zIndex: 2 }}>
-          <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 9, color: 'rgba(255,255,255,0.2)', letterSpacing: 2 }}>
-            нажми на паразита
+        <div style={{ textAlign: 'center', padding: '0 0 14px', position: 'relative', zIndex: 2 }}>
+          <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 9, color: 'rgba(255,255,255,0.18)', letterSpacing: 2 }}>
+            {poop ? '⚠ убери какашку — через 3 сек вылезет жук' : 'используй кнопки ниже для взаимодействия'}
           </div>
         </div>
+      </div>
 
-        {/* Счётчик взаимодействий */}
-        {clicks > 0 && (
-          <div style={{
-            position: 'absolute', top: 48, right: 16, zIndex: 3,
-            fontFamily: 'JetBrains Mono,monospace', fontSize: 9,
-            color: C, opacity: 0.5, letterSpacing: 1,
-          }}>
-            касаний: {clicks}
+      {/* Кнопки взаимодействия */}
+      <div style={{ marginTop: 12 }}>
+        {feedMode ? (
+          <form onSubmit={submitFeed} style={{ display: 'flex', gap: 8 }}>
+            <div style={{
+              flex: 1, display: 'flex', alignItems: 'center', gap: 8,
+              background: 'rgba(10,10,22,0.95)', border: `1px solid ${C}`,
+              borderRadius: 8, padding: '8px 14px',
+              boxShadow: `0 0 12px rgba(${isVirus ? '255,0,110' : '0,212,255'},0.15)`,
+            }}>
+              <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 13, color: C, opacity: 0.7 }}>#</span>
+              <input
+                autoFocus
+                value={feedInput}
+                onChange={e => setFeedInput(e.target.value)}
+                placeholder="введи тег для питомца..."
+                maxLength={30}
+                style={{
+                  flex: 1, background: 'transparent', border: 'none', outline: 'none',
+                  fontFamily: 'JetBrains Mono,monospace', fontSize: 12, color: '#E0E8F0',
+                }}
+              />
+            </div>
+            <button type="submit" style={{ ...actionBtn, borderColor: C, color: C }}>СКОРМИТЬ</button>
+            <button type="button" onClick={() => { setFeedMode(false); setFeedInput('') }} style={{ ...actionBtn, borderColor: '#3A4A5A', color: '#3A4A5A' }}>✕</button>
+          </form>
+        ) : (
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button
+              onClick={() => setFeedMode(true)}
+              style={{ ...actionBtn, flex: 1, borderColor: C, color: C }}
+            >
+              🍖 ПОКОРМИТЬ
+            </button>
+            <button
+              onClick={handlePet}
+              style={{
+                ...actionBtn, flex: 1,
+                borderColor: isVirus ? '#FF006E' : C,
+                color: isVirus ? '#FF006E' : C,
+              }}
+            >
+              {isVirus ? '⚡ ПОГЛАДИТЬ' : '♥ ПОГЛАДИТЬ'}
+            </button>
           </div>
         )}
       </div>
 
-      {/* Инфо под окном */}
-      <PetInfo pet={pet} def={def} C={C} />
+      {/* Инфо питомца */}
+      <PetInfo pet={pet} />
+
+      {/* Жук (fixed-position, на весь экран) */}
+      {bug && <BugRunner onSquash={() => setBug(false)} />}
     </div>
   )
 }
 
-// Плавающие символы на фоне среды
-function FloatingSymbols({ isVirus, C }: { isVirus: boolean; C: string }) {
-  const symbols = isVirus
-    ? ['ERR', '!!', 'X0X', '///','404','BUG','$$$','???']
-    : ['010', '{}', '</>','||','fn()','=>','42','::']
-
+// ── ТАБЫ ПИТОМЦЕВ ─────────────────────────────────────────────────────────────
+function PetTabs({ pets, active, onSelect }: { pets: Pet[]; active: number; onSelect: (i: number) => void }) {
   return (
-    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 1 }}>
-      {symbols.map((s, i) => (
-        <div key={i} style={{
-          position: 'absolute',
-          left: `${(i * 137) % 90 + 2}%`,
-          top: `${(i * 97 + 20) % 80}%`,
-          fontFamily: 'JetBrains Mono,monospace',
-          fontSize: 10,
-          color: C,
-          opacity: 0.08 + (i % 3) * 0.04,
-          letterSpacing: 1,
-          animation: `floatSym ${4 + i * 0.7}s ease-in-out infinite`,
-          animationDelay: `${i * 0.4}s`,
-        }}>
-          {s}
-        </div>
-      ))}
-    </div>
-  )
-}
-
-// Инфо-панель питомца
-function PetInfo({ pet, def, C }: { pet: Pet; def: ReturnType<typeof getPetDef>; C: string }) {
-  const rColor = RARITY_COLOR[def.rarity]
-  const rGlow = RARITY_GLOW[def.rarity]
-  const progress = getStageProgress(pet.stage, pet.stage_xp)
-  const nextStage = getNextStage(pet.stage)
-  const stageLabel: Record<string, string> = { egg: 'ЯЙЦО', baby: 'ДЕТЁНЫШ', adult: 'ВЗРОСЛЫЙ' }
-
-  return (
-    <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
-      {/* Имя и ранг */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ fontFamily: 'Orbitron,monospace', fontSize: 18, letterSpacing: 4, color: C, textShadow: `0 0 12px ${C}` }}>
-          {def.nameRu}
-        </div>
-        <span style={{
-          fontFamily: 'Orbitron,monospace', fontSize: 9, letterSpacing: 3,
-          color: rColor, border: `1px solid ${rColor}`,
-          background: `rgba(${hexToRgbStr(rColor)},0.1)`,
-          padding: '3px 10px', borderRadius: 4,
-          boxShadow: `0 0 8px ${rGlow}`,
-        }}>
-          ★ {def.rarityLabel}
-        </span>
-      </div>
-
-      <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 10, color: '#506080', letterSpacing: 2 }}>
-        {pet.variant === 'kod' ? '// КОД — безобидный //' : '// ВИРУС — проказник //'}
-      </div>
-
-      {/* Прогресс стадии */}
-      <div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-          <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 10, color: '#506080', letterSpacing: 1 }}>
-            СТАДИЯ: <span style={{ color: C }}>{stageLabel[pet.stage]}</span>
-          </span>
-          {nextStage && (
-            <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 9, color: '#3A4A5A', letterSpacing: 1 }}>
-              → {stageLabel[nextStage]} при {STAGE_XP[nextStage]} XP
-            </span>
-          )}
-        </div>
-        <div style={{ width: '100%', height: 4, background: 'rgba(255,255,255,0.05)', borderRadius: 2 }}>
-          <div style={{ width: `${progress}%`, height: '100%', borderRadius: 2, background: C, boxShadow: `0 0 6px ${C}`, transition: 'width 0.5s ease' }} />
-        </div>
-      </div>
-
-      {/* Способность */}
-      <div style={{ padding: '12px 16px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(6,6,18,0.5)' }}>
-        <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 9, color: '#3A4A5A', letterSpacing: 3, marginBottom: 6 }}>СПОСОБНОСТЬ</div>
-        <div style={{ fontFamily: 'Exo 2,sans-serif', fontSize: 13, color: '#C0C8D0', lineHeight: 1.6 }}>
-          {pet.variant === 'kod' ? def.abilityKod : def.abilityVirus}
-        </div>
-      </div>
-
-      {/* Шансы */}
-      <div style={{ padding: '14px 16px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.04)', background: 'rgba(13,13,26,0.4)' }}>
-        <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 9, color: '#3A4A5A', letterSpacing: 3, marginBottom: 10 }}>// ШАНСЫ //</div>
-        {[
-          { label: 'ЧАСТЫЙ', pct: '50%', color: '#8892B0' },
-          { label: 'РЕДКИЙ', pct: '42%', color: '#00FFF0' },
-          { label: 'ОСОБЫЙ', pct: '7%', color: '#B44FFF' },
-          { label: 'ЛЕГЕНДАРНЫЙ', pct: '1%', color: '#FF88FF' },
-        ].map(r => (
-          <div key={r.label} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 7 }}>
-            <div style={{ width: 90, fontFamily: 'Orbitron,monospace', fontSize: 8, letterSpacing: 2, color: r.color }}>{r.label}</div>
-            <div style={{ flex: 1, height: 2, background: 'rgba(255,255,255,0.05)', borderRadius: 2 }}>
-              <div style={{ width: r.pct, height: '100%', background: r.color, borderRadius: 2 }} />
+    <div style={{ display: 'flex', gap: 10, marginBottom: 24, flexWrap: 'wrap' }}>
+      {pets.map((pet, i) => {
+        const def = getPetDef(pet.type)
+        const isVirus = pet.variant === 'virus'
+        const C = isVirus ? def.colorVirus : def.color
+        const stageLabel: Record<string, string> = { egg: 'ЯЙЦ', baby: 'ДЕТ', adult: 'ВЗР' }
+        const isActive = i === active
+        return (
+          <button
+            key={pet.id}
+            onClick={() => onSelect(i)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 10,
+              padding: '8px 16px', borderRadius: 10, cursor: 'pointer',
+              border: `1px solid ${isActive ? C : 'rgba(255,255,255,0.08)'}`,
+              background: isActive ? `rgba(${hexToRgb(C)},0.08)` : 'rgba(13,13,26,0.7)',
+              transition: 'all 0.2s',
+              boxShadow: isActive ? `0 0 14px rgba(${hexToRgb(C)},0.25)` : 'none',
+            }}
+          >
+            <PetCanvas type={pet.type} variant={pet.variant} stage={pet.stage} size={36} />
+            <div style={{ textAlign: 'left' }}>
+              <div style={{ fontFamily: 'Orbitron,monospace', fontSize: 9, letterSpacing: 2, color: C }}>
+                {def.nameRu}
+              </div>
+              <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 8, color: '#506080', letterSpacing: 1 }}>
+                {stageLabel[pet.stage]} · {isVirus ? 'ВИР' : 'КОД'}
+              </div>
             </div>
-            <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 9, color: r.color, width: 28, textAlign: 'right' }}>{r.pct}</div>
-          </div>
-        ))}
-      </div>
+          </button>
+        )
+      })}
     </div>
+  )
+}
+
+// ── SVG-ЯЩИК ──────────────────────────────────────────────────────────────────
+function CrateIcon({ glowing }: { glowing?: boolean }) {
+  const C = glowing ? '#00FFF0' : '#3A5060'
+  return (
+    <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+      <rect x="8" y="28" width="64" height="44" rx="4" fill={`rgba(${glowing ? '0,255,240' : '20,40,60'},0.12)`} stroke={C} strokeWidth="1.5"/>
+      <path d="M4 24 L40 14 L76 24 L76 30 L40 20 L4 30 Z" fill={`rgba(${glowing ? '0,255,240' : '20,40,60'},0.18)`} stroke={C} strokeWidth="1.5"/>
+      <line x1="8" y1="50" x2="72" y2="50" stroke={C} strokeWidth="1" strokeDasharray="4 3" opacity="0.5"/>
+      <rect x="33" y="44" width="14" height="12" rx="2" fill={`rgba(${glowing ? '0,255,240' : '20,40,60'},0.3)`} stroke={C} strokeWidth="1.2"/>
+      <path d="M36 44 C36 40 44 40 44 44" stroke={C} strokeWidth="1.2" fill="none"/>
+      <text x="40" y="53.5" textAnchor="middle" fill={C} fontSize="7" fontFamily="Orbitron,monospace" fontWeight="700">?</text>
+      <circle cx="8" cy="28" r="2" fill={C} opacity="0.6"/>
+      <circle cx="72" cy="28" r="2" fill={C} opacity="0.6"/>
+      <circle cx="8" cy="72" r="2" fill={C} opacity="0.6"/>
+      <circle cx="72" cy="72" r="2" fill={C} opacity="0.6"/>
+    </svg>
   )
 }
 
 // ── ГЛАВНЫЙ КОМПОНЕНТ ─────────────────────────────────────────────────────────
-export default function GameClient({ userId, xp, existingPet }: Props) {
+type Phase = 'locked' | 'choose' | 'opening' | 'revealed' | 'manage'
+const BOX_LABELS = ['КОНТЕЙНЕР А', 'КОНТЕЙНЕР Б', 'КОНТЕЙНЕР В']
+
+interface Props { userId: string; xp: number; initialPets: Pet[] }
+
+export default function GameClient({ userId, xp, initialPets }: Props) {
+  const [pets, setPets] = useState<Pet[]>(initialPets)
+  const [activePet, setActivePet] = useState(0)
   const [phase, setPhase] = useState<Phase>(
-    xp < 500 ? 'locked' : existingPet ? 'has-pet' : 'choose'
+    initialPets.length > 0 ? 'manage' : xp < 500 ? 'locked' : 'choose'
   )
   const [selected, setSelected] = useState<number | null>(null)
-  const [pet, setPet] = useState<Pet | null>(existingPet)
+  const [newPet, setNewPet] = useState<Pet | null>(null)
   const [loading, setLoading] = useState(false)
+  const [claimError, setClaimError] = useState('')
+
+  function updatePet(updated: Pet) {
+    setPets(prev => prev.map(p => p.id === updated.id ? updated : p))
+  }
 
   async function handleBox(i: number) {
     if (phase !== 'choose' || loading) return
     setSelected(i)
     setPhase('opening')
     setLoading(true)
+    setClaimError('')
     await new Promise(r => setTimeout(r, 1600))
     const res = await fetch('/api/pets/claim', { method: 'POST' })
     const data = await res.json()
-    if (data.pet) { setPet(data.pet); setPhase('revealed') }
+    if (data.pet) {
+      setNewPet(data.pet)
+      setPhase('revealed')
+    } else {
+      setClaimError(data.error || 'Ошибка')
+      setPhase(pets.length > 0 ? 'manage' : xp < 500 ? 'locked' : 'choose')
+    }
     setLoading(false)
   }
 
-  const def = pet ? getPetDef(pet.type) : null
-  const C = def ? (pet!.variant === 'virus' ? def.colorVirus : def.color) : '#00FFF0'
-  const rColor = def ? RARITY_COLOR[def.rarity] : '#00FFF0'
-  const rGlow = def ? RARITY_GLOW[def.rarity] : 'transparent'
+  function acceptPet() {
+    if (!newPet) return
+    setPets(prev => [...prev, newPet])
+    setActivePet(pets.length)
+    setNewPet(null)
+    setPhase('manage')
+  }
 
+  // Может ли пользователь получить ещё питомца
+  const lastPet = pets[pets.length - 1]
+  const canGetMore = pets.length < 3 && (pets.length === 0 || lastPet?.stage === 'adult') && xp >= 500
+
+  // ── LOCKED ──
   if (phase === 'locked') return (
     <div style={pageStyle}>
       <div style={titleStyle}>ИНКУБАТОР</div>
@@ -327,6 +579,7 @@ export default function GameClient({ userId, xp, existingPet }: Props) {
     </div>
   )
 
+  // ── CHOOSE ──
   if (phase === 'choose') return (
     <div style={pageStyle}>
       <div style={titleStyle}>ИНКУБАТОР</div>
@@ -346,19 +599,25 @@ export default function GameClient({ userId, xp, existingPet }: Props) {
           </button>
         ))}
       </div>
+      {claimError && (
+        <div style={{ textAlign: 'center', marginTop: 24, fontFamily: 'JetBrains Mono,monospace', fontSize: 11, color: '#FF006E' }}>
+          {claimError}
+        </div>
+      )}
       <div style={{ textAlign: 'center', marginTop: 48, fontFamily: 'JetBrains Mono,monospace', fontSize: 10, color: '#3A4A5A', letterSpacing: 2 }}>
         Кристалл 1% · Особый 7% · Редкий 42% · Частый 50%
       </div>
     </div>
   )
 
+  // ── OPENING ──
   if (phase === 'opening') return (
     <div style={pageStyle}>
       <div style={titleStyle}>ИНКУБАТОР</div>
       <div style={{ display: 'flex', justifyContent: 'center', gap: 32, marginTop: 60, flexWrap: 'wrap' }}>
         {BOX_LABELS.map((label, i) => (
           <div key={i} style={{
-            ...boxStyle,
+            ...boxStyle, cursor: 'default',
             opacity: i === selected ? 1 : 0.15,
             transform: i === selected ? 'scale(1.1)' : 'scale(0.88)',
             animation: i === selected ? 'boxShake 0.4s ease-in-out infinite' : 'none',
@@ -378,52 +637,104 @@ export default function GameClient({ userId, xp, existingPet }: Props) {
     </div>
   )
 
-  if (phase === 'revealed' && pet && def) return (
-    <div style={pageStyle}>
-      <div style={titleStyle}>ИНКУБАТОР</div>
-      <div style={{ textAlign: 'center', animation: 'fadeInUp 0.6s ease' }}>
-        <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 11, color: '#506080', letterSpacing: 3, marginBottom: 24 }}>
-          // новый паразит получен //
-        </div>
-        <div style={{
-          display: 'inline-block', padding: 40, borderRadius: 20,
-          border: `1px solid ${rColor}`,
-          background: `radial-gradient(ellipse at center, ${rGlow}, transparent 70%)`,
-          boxShadow: `0 0 40px ${rGlow}, 0 0 80px ${rGlow}`,
-          animation: 'revealPop 0.8s cubic-bezier(0.34,1.56,0.64,1)',
-        }}>
-          <PetCanvas type={pet.type} variant={pet.variant} stage="egg" size={160} />
-        </div>
-        <div style={{ marginTop: 20 }}>
-          <span style={{ fontFamily: 'Orbitron,monospace', fontSize: 11, letterSpacing: 4, color: rColor, border: `1px solid ${rColor}`, background: `rgba(${hexToRgbStr(rColor)},0.1)`, padding: '4px 16px', borderRadius: 4, boxShadow: `0 0 10px ${rGlow}` }}>
-            ★ {def.rarityLabel}
-          </span>
-        </div>
-        <div style={{ fontFamily: 'Orbitron,monospace', fontSize: 28, letterSpacing: 6, color: C, marginTop: 20, textShadow: `0 0 20px ${C}` }}>
-          {def.nameRu}
-        </div>
-        <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 12, color: '#506080', letterSpacing: 2, marginTop: 6 }}>
-          {pet.variant === 'kod' ? '// КОД //' : '// ВИРУС //'}
-        </div>
-        <div style={{ marginTop: 24, padding: '16px 24px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(13,13,26,0.6)', maxWidth: 380, margin: '24px auto 0' }}>
-          <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 10, color: '#3A4A5A', letterSpacing: 3, marginBottom: 8 }}>УНИКАЛЬНАЯ СПОСОБНОСТЬ</div>
-          <div style={{ fontFamily: 'Exo 2,sans-serif', fontSize: 14, color: '#C0C8D0', lineHeight: 1.6 }}>
-            {pet.variant === 'kod' ? def.abilityKod : def.abilityVirus}
+  // ── REVEALED ──
+  if (phase === 'revealed' && newPet) {
+    const def = getPetDef(newPet.type)
+    const isVirus = newPet.variant === 'virus'
+    const C = isVirus ? def.colorVirus : def.color
+    const rColor = RARITY_COLOR[def.rarity]
+    const rGlow = RARITY_GLOW[def.rarity]
+    return (
+      <div style={pageStyle}>
+        <div style={titleStyle}>ИНКУБАТОР</div>
+        <div style={{ textAlign: 'center', animation: 'fadeInUp 0.6s ease' }}>
+          <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 11, color: '#506080', letterSpacing: 3, marginBottom: 24 }}>
+            // новый паразит получен //
           </div>
+          <div style={{
+            display: 'inline-block', padding: 40, borderRadius: 20,
+            border: `1px solid ${rColor}`,
+            background: `radial-gradient(ellipse at center, ${rGlow}, transparent 70%)`,
+            boxShadow: `0 0 40px ${rGlow}, 0 0 80px ${rGlow}`,
+            animation: 'revealPop 0.8s cubic-bezier(0.34,1.56,0.64,1)',
+          }}>
+            <PetCanvas type={newPet.type} variant={newPet.variant} stage="egg" size={160} />
+          </div>
+          <div style={{ marginTop: 20 }}>
+            <span style={{
+              fontFamily: 'Orbitron,monospace', fontSize: 11, letterSpacing: 4,
+              color: rColor, border: `1px solid ${rColor}`,
+              background: `rgba(${hexToRgb(rColor)},0.1)`,
+              padding: '4px 16px', borderRadius: 4, boxShadow: `0 0 10px ${rGlow}`,
+            }}>★ {def.rarityLabel}</span>
+          </div>
+          <div style={{ fontFamily: 'Orbitron,monospace', fontSize: 28, letterSpacing: 6, color: C, marginTop: 20, textShadow: `0 0 20px ${C}` }}>
+            {def.nameRu}
+          </div>
+          <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 12, color: '#506080', letterSpacing: 2, marginTop: 6 }}>
+            {isVirus ? '// ВИРУС //' : '// КОД //'}
+          </div>
+          <div style={{ marginTop: 24, padding: '16px 24px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(13,13,26,0.6)', maxWidth: 380, margin: '24px auto 0' }}>
+            <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 10, color: '#3A4A5A', letterSpacing: 3, marginBottom: 8 }}>УНИКАЛЬНАЯ СПОСОБНОСТЬ</div>
+            <div style={{ fontFamily: 'Exo 2,sans-serif', fontSize: 14, color: '#C0C8D0', lineHeight: 1.6 }}>
+              {isVirus ? def.abilityVirus : def.abilityKod}
+            </div>
+          </div>
+          <button onClick={acceptPet} style={{ ...btnStyle, marginTop: 32, borderColor: C, color: C, boxShadow: `0 0 12px ${rGlow}` }}>
+            ПРИНЯТЬ ПАРАЗИТА
+          </button>
         </div>
-        <button onClick={() => setPhase('has-pet')} style={{ ...btnStyle, marginTop: 32, borderColor: C, color: C, boxShadow: `0 0 12px ${rGlow}` }}>
-          ПРИНЯТЬ ПАРАЗИТА
-        </button>
       </div>
-    </div>
-  )
+    )
+  }
 
-  if (phase === 'has-pet' && pet && def) return (
-    <div style={pageStyle}>
-      <div style={titleStyle}>ИНКУБАТОР</div>
-      <PetHabitat pet={pet} />
-    </div>
-  )
+  // ── MANAGE ──
+  if (phase === 'manage' && pets.length > 0) {
+    const currentPet = pets[activePet] ?? pets[0]
+    return (
+      <div style={pageStyle}>
+        <div style={titleStyle}>ИНКУБАТОР</div>
+
+        {/* Табы если несколько питомцев */}
+        {pets.length > 1 && (
+          <PetTabs pets={pets} active={activePet} onSelect={setActivePet} />
+        )}
+
+        <PetHabitat pet={currentPet} onUpdate={updatePet} />
+
+        {/* Получить ещё питомца */}
+        {canGetMore && (
+          <div style={{ marginTop: 32, textAlign: 'center' }}>
+            <div style={{
+              padding: '16px 24px', borderRadius: 12,
+              border: '1px dashed rgba(0,255,240,0.2)',
+              background: 'rgba(0,255,240,0.03)', marginBottom: 16,
+            }}>
+              <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 10, color: '#506080', letterSpacing: 2, marginBottom: 8 }}>
+                {pets.length}/3 питомца · слот свободен
+              </div>
+              <div style={{ fontFamily: 'Exo 2,sans-serif', fontSize: 13, color: '#8892B0', lineHeight: 1.5 }}>
+                Предыдущий паразит вырос. Можешь завести ещё одного.
+              </div>
+            </div>
+            <button
+              onClick={() => { setClaimError(''); setPhase('choose') }}
+              style={{ ...btnStyle, borderColor: '#00FFF0', color: '#00FFF0', boxShadow: '0 0 10px rgba(0,255,240,0.2)' }}
+            >
+              + ПОЛУЧИТЬ ЕЩЁ ПАРАЗИТА
+            </button>
+          </div>
+        )}
+
+        {/* Лимит */}
+        {pets.length >= 3 && (
+          <div style={{ marginTop: 24, textAlign: 'center', fontFamily: 'JetBrains Mono,monospace', fontSize: 10, color: '#3A4A5A', letterSpacing: 2 }}>
+            // лимит 3 питомца достигнут · разблокировка с повышением ранга //
+          </div>
+        )}
+      </div>
+    )
+  }
 
   return null
 }
@@ -454,6 +765,13 @@ const btnStyle: React.CSSProperties = {
   background: 'transparent', cursor: 'pointer', transition: 'all 0.2s',
 }
 
-function hexToRgbStr(hex: string): string {
-  return `${parseInt(hex.slice(1,3),16)},${parseInt(hex.slice(3,5),16)},${parseInt(hex.slice(5,7),16)}`
+const actionBtn: React.CSSProperties = {
+  fontFamily: 'Orbitron,monospace', fontSize: 10, letterSpacing: 3,
+  padding: '10px 18px', borderRadius: 8, border: '1px solid',
+  background: 'transparent', cursor: 'pointer', transition: 'all 0.2s',
+  whiteSpace: 'nowrap',
+}
+
+function hexToRgb(hex: string): string {
+  return `${parseInt(hex.slice(1, 3), 16)},${parseInt(hex.slice(3, 5), 16)},${parseInt(hex.slice(5, 7), 16)}`
 }

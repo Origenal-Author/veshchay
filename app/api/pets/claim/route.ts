@@ -15,12 +15,16 @@ export async function POST() {
     return NextResponse.json({ error: 'Ранг слишком низкий' }, { status: 403 })
   }
 
-  const { data: existing } = await supabase
-    .from('pets').select('id').eq('user_id', user.id).maybeSingle()
+  const { data: pets } = await supabase
+    .from('pets').select('id, stage').eq('user_id', user.id).order('created_at')
 
-  if (existing) {
-    return NextResponse.json({ error: 'Питомец уже есть' }, { status: 400 })
-  }
+  const count = pets?.length ?? 0
+
+  if (count >= 3)
+    return NextResponse.json({ error: 'Лимит питомцев: 3' }, { status: 400 })
+
+  if (count > 0 && pets![count - 1].stage !== 'adult')
+    return NextResponse.json({ error: 'Прокачай предыдущего питомца до ВЗРОСЛЫЙ' }, { status: 400 })
 
   const { type, variant } = rollPet()
 

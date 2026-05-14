@@ -15,10 +15,8 @@ export default async function GamePage() {
 
   if (!profile) redirect('/')
 
-  const { data: pet } = await supabase
-    .from('pets').select('*').eq('user_id', user.id).maybeSingle()
-
-  const xp = profile.xp || 0
+  const { data: pets } = await supabase
+    .from('pets').select('*').eq('user_id', user.id).order('created_at')
 
   return (
     <div style={{ minHeight: '100vh', position: 'relative', zIndex: 2, paddingBottom: 60 }}>
@@ -31,8 +29,8 @@ export default async function GamePage() {
       </header>
       <GameClient
         userId={user.id}
-        xp={xp}
-        existingPet={pet as Pet | null}
+        xp={profile.xp || 0}
+        initialPets={(pets ?? []) as Pet[]}
       />
     </div>
   )

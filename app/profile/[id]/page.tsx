@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase-server'
 import ProfileClient from './ProfileClient'
+import FollowButton from '@/app/components/FollowButton'
 
 const RANKS = [
   { xp: 0,     rank: 'СТАТИЧЕСКИЙ ШУМ',  color: '#8892B0' },
@@ -24,6 +25,14 @@ function getNextRank(xp: number) {
   return RANKS.find(r => xp < r.xp)
 }
 
+function getFollowLabel(n: number): string {
+  const m10 = n % 10, m100 = n % 100
+  if (m100 >= 11 && m100 <= 14) return 'наблюдают'
+  if (m10 === 1) return 'наблюдает'
+  if (m10 >= 2 && m10 <= 4) return 'наблюдают'
+  return 'наблюдают'
+}
+
 export default async function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
@@ -35,6 +44,14 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
   const isOwner = user?.id === id
 
   const { data: videos } = await supabase.from('videos').select('*').eq('user_id', id).order('created_at', { ascending: false })
+
+  const { count: followersCount } = await supabase
+    .from('follows').select('*', { count: 'exact', head: true }).eq('following_id', id)
+
+  const isFollowing = user && !isOwner
+    ? !!(await supabase.from('follows').select('id')
+        .eq('follower_id', user.id).eq('following_id', id).maybeSingle()).data
+    : false
 
   const xp = profile.xp || 0
   const rankInfo = getRankInfo(xp)
@@ -73,8 +90,21 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
             {profile.bio && <p style={{ fontFamily: "'Exo 2',sans-serif", fontSize: 14, color: 'var(--subtext)', lineHeight: 1.6 }}>{profile.bio}</p>}
           </div>
 
-          {/* XP */}
-          <div style={{ textAlign: 'right', minWidth: 140 }}>
+          {/* Кнопка мониторинга + XP */}
+          <div style={{ textAlign: 'right', minWidth: 160, display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'flex-end' }}>
+            {!isOwner && (
+              <FollowButton
+                targetId={id}
+                initialFollowing={isFollowing}
+                initialCount={followersCount ?? 0}
+                currentUserId={user?.id ?? null}
+              />
+            )}
+            {isOwner && (followersCount ?? 0) > 0 && (
+              <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 9, color: '#3A5060', letterSpacing: 2 }}>
+                {followersCount} {getFollowLabel(followersCount ?? 0)}
+              </div>
+            )}
             <div style={{ fontFamily: "'Orbitron',monospace", fontSize: 28, fontWeight: 900, color: rankInfo.color, textShadow: `0 0 20px ${rankInfo.color}` }}>
               {xp}
             </div>
