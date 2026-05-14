@@ -24,6 +24,13 @@ export default function ProfileClient({
   function handleSolve() {
     sessionStorage.setItem(`profile_unlocked_${profileId}`, '1')
     setUnlocked(true)
+    if (currentUserId && currentUserId !== profileId) {
+      fetch('/api/xp/award', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'puzzle', profileId }),
+      }).catch(() => {})
+    }
   }
 
   if (!unlocked) return <PuzzleGate onSolve={handleSolve} />

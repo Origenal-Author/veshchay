@@ -46,6 +46,14 @@ export default function UploadPage() {
       .single()
 
     if (dbError) { setError(dbError.message); setLoading(false); return }
+
+    // XP за загрузку видео
+    fetch('/api/xp/award', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'upload' }),
+    }).catch(() => {})
+
     router.push(`/videos/${data.id}`)
   }
 

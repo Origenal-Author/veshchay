@@ -35,6 +35,23 @@ export default function EditProfilePage() {
     setLoading(true)
     const supabase = createClient()
     await supabase.from('profiles').upsert({ id: userId, username, bio, avatar_url: avatarUrl })
+
+    // XP за заполнение профиля
+    const xpCalls = []
+    if (avatarUrl.trim()) {
+      xpCalls.push(fetch('/api/xp/award', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'avatar' }),
+      }))
+    }
+    if (bio.trim()) {
+      xpCalls.push(fetch('/api/xp/award', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'bio', bioLength: bio.trim().length }),
+      }))
+    }
+    await Promise.all(xpCalls).catch(() => {})
+
     setSaved(true)
     setLoading(false)
     setTimeout(() => setSaved(false), 3000)
