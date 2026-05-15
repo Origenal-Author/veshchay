@@ -238,13 +238,24 @@ const KOD_PANIC = ['мне тесно...', 'страшно 😱', 'ТЕМНО!!!
 
 // ── СРЕДА ОБИТАНИЯ ─────────────────────────────────────────────────────────────
 function PetHabitat({ pet, onUpdate }: { pet: Pet; onUpdate: (p: Pet) => void }) {
-  const [walking, setWalking] = useState(false)
+  // Синхронизируем walking только для ЭТОГО питомца
+  const [walking, setWalking] = useState(
+    () => (window as unknown as Record<string, string>).__walkingPetId === pet.id
+  )
 
   useEffect(() => {
-    const handler = () => setWalking(false)
-    window.addEventListener('pet-walk-stop', handler)
-    return () => window.removeEventListener('pet-walk-stop', handler)
-  }, [])
+    const onStart = (e: Event) => {
+      const id = (e as CustomEvent<{ pet: Pet }>).detail?.pet?.id
+      setWalking(id === pet.id)
+    }
+    const onStop = () => setWalking(false)
+    window.addEventListener('pet-walk-start', onStart)
+    window.addEventListener('pet-walk-stop', onStop)
+    return () => {
+      window.removeEventListener('pet-walk-start', onStart)
+      window.removeEventListener('pet-walk-stop', onStop)
+    }
+  }, [pet.id])
   const [collapsed, setCollapsed] = useState(false)
   const [collapseCount, setCollapseCount] = useState(0)
   const [kodMsg, setKodMsg] = useState<string | null>(null)
@@ -579,9 +590,10 @@ function PetHabitat({ pet, onUpdate }: { pet: Pet; onUpdate: (p: Pet) => void })
               <button
                 onClick={() => {
                   if (walking) {
+                    (window as unknown as Record<string, unknown>).__walkingPetId = null
                     window.dispatchEvent(new CustomEvent('pet-walk-stop'))
                   } else {
-                    setWalking(true)
+                    (window as unknown as Record<string, unknown>).__walkingPetId = pet.id
                     window.dispatchEvent(new CustomEvent('pet-walk-start', { detail: { pet } }))
                   }
                 }}
