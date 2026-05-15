@@ -10,6 +10,13 @@ async function createPlaylist(formData: FormData) {
   if (!user) return
   const title = formData.get('title') as string
   await supabase.from('playlists').insert({ user_id: user.id, title })
+  // +10 XP за первый плейлист
+  const { data: p } = await supabase.from('profiles').select('xp, xp_playlist_created').eq('id', user.id).single()
+  if (p && !p.xp_playlist_created) {
+    const { getRank } = await import('@/lib/xp')
+    const nx = (p.xp ?? 0) + 10
+    await supabase.from('profiles').update({ xp: nx, rank: getRank(nx), xp_playlist_created: true }).eq('id', user.id)
+  }
   redirect('/playlists')
 }
 

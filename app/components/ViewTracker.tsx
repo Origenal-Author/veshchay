@@ -48,6 +48,16 @@ export default function ViewTracker({ videoId, userId }: { videoId: string, user
 
         // Увеличиваем счётчик просмотров видео
         await supabase.rpc('increment_views', { video_id: videoId })
+
+        // Проверяем майлстоны просмотров для владельца видео
+        const { data: vid } = await supabase
+          .from('videos').select('user_id, views_count').eq('id', videoId).single()
+        if (vid && vid.user_id !== userId) {
+          fetch('/api/xp/award', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'views_milestone', videoId }),
+          }).catch(() => {})
+        }
       }
     }, 10000) // засчитываем после 10 сек просмотра
 

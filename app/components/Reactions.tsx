@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase'
 
 type ReactionType = 'boost' | 'jam' | null
 
-export default function Reactions({ videoId, userId }: { videoId: string, userId: string | null }) {
+export default function Reactions({ videoId, userId, videoOwnerId }: { videoId: string, userId: string | null, videoOwnerId?: string }) {
   const [boosts, setBoosts] = useState(0)
   const [jams, setJams] = useState(0)
   const [mine, setMine] = useState<ReactionType>(null)
@@ -41,8 +41,16 @@ export default function Reactions({ videoId, userId }: { videoId: string, userId
         else setJams(j => j - 1)
       }
       await supabase.from('signals').insert({ video_id: videoId, user_id: userId, type })
-      if (type === 'boost') setBoosts(b => b + 1)
-      else setJams(j => j + 1)
+      if (type === 'boost') {
+        setBoosts(b => b + 1)
+        // +2 XP владельцу видео за УСИЛИТЬ
+        if (videoOwnerId && videoOwnerId !== userId) {
+          fetch('/api/xp/award', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'got_boost', videoId }),
+          }).catch(() => {})
+        }
+      } else setJams(j => j + 1)
       setMine(type)
     }
     setLoading(false)

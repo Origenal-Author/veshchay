@@ -135,7 +135,7 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
 
         {/* Реакции и плейлист */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 8 }}>
-          <Reactions videoId={video.id} userId={user?.id ?? null} />
+          <Reactions videoId={video.id} userId={user?.id ?? null} videoOwnerId={video.user_id} />
           {user && <AddToPlaylist videoId={video.id} userId={user.id} />}
           {user && <Link href="/playlists" className="btn-ghost-ui" style={{ fontSize: 10, padding: '8px 14px' }}>МОИ ПЛЕЙЛИСТЫ</Link>}
         </div>

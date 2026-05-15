@@ -23,10 +23,18 @@ export async function POST(req: Request) {
     return NextResponse.json({ following: false })
   } else {
     await supabase.from('follows').insert({ follower_id: user.id, following_id: targetId })
-    // Уведомление владельцу профиля
-    await supabase.from('notifications').insert({
-      user_id: targetId, actor_id: user.id, type: 'follow',
-    })
+    // Уведомление и +5 XP владельцу профиля
+    await Promise.all([
+      supabase.from('notifications').insert({ user_id: targetId, actor_id: user.id, type: 'follow' }),
+      (async () => {
+        const { data: t } = await supabase.from('profiles').select('xp').eq('id', targetId).single()
+        if (t) {
+          const { getRank } = await import('@/lib/xp')
+          const nx = (t.xp ?? 0) + 5
+          await supabase.from('profiles').update({ xp: nx, rank: getRank(nx) }).eq('id', targetId)
+        }
+      })(),
+    ])
     return NextResponse.json({ following: true })
   }
 }

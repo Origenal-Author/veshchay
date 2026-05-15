@@ -31,5 +31,15 @@ export async function POST(req: Request) {
     .select()
     .single()
 
+  // +1 XP игроку за кормёжку
+  if (action === 'feed') {
+    const { data: p } = await supabase.from('profiles').select('xp').eq('id', user.id).single()
+    if (p) {
+      const { getRank } = await import('@/lib/xp')
+      const nx = (p.xp ?? 0) + 1
+      await supabase.from('profiles').update({ xp: nx, rank: getRank(nx) }).eq('id', user.id)
+    }
+  }
+
   return NextResponse.json({ pet: updated, evolved: newStage !== pet.stage })
 }
