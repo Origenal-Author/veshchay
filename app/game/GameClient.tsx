@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import PetCanvas from '@/app/components/PetCanvas'
 import { checkAchievements } from '@/app/components/AchievementToast'
+import PetWalker from '@/app/components/PetWalker'
 import {
   getPetDef, RARITY_COLOR, RARITY_GLOW,
   getStageProgress, getNextStage, STAGE_XP,
@@ -235,6 +236,7 @@ function PetInfo({ pet }: { pet: Pet }) {
 
 // ── СРЕДА ОБИТАНИЯ ─────────────────────────────────────────────────────────────
 function PetHabitat({ pet, onUpdate }: { pet: Pet; onUpdate: (p: Pet) => void }) {
+  const [walking, setWalking] = useState(false)
   const def = getPetDef(pet.type)
   const isVirus = pet.variant === 'virus'
   const C = isVirus ? def.colorVirus : def.color
@@ -470,13 +472,20 @@ function PetHabitat({ pet, onUpdate }: { pet: Pet; onUpdate: (p: Pet) => void })
             <button type="button" onClick={() => { setFeedMode(false); setFeedInput('') }} style={{ ...actionBtn, borderColor: '#3A4A5A', color: '#3A4A5A' }}>✕</button>
           </form>
         ) : (
-          <div style={{ display: 'flex', gap: 10 }}>
-            <button
-              onClick={() => setFeedMode(true)}
-              style={{ ...actionBtn, flex: 1, borderColor: C, color: C }}
-            >
-              🍖 ПОКОРМИТЬ
-            </button>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {/* Кормёжка — только для baby/adult */}
+            {pet.stage !== 'egg' ? (
+              <button onClick={() => setFeedMode(true)} style={{ ...actionBtn, flex: 1, borderColor: C, color: C }}>
+                🍖 ПОКОРМИТЬ
+              </button>
+            ) : (
+              <div style={{
+                ...actionBtn, flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                borderColor: 'rgba(255,255,255,0.08)', color: '#3A4A5A', cursor: 'default', fontSize: 9,
+              }}>
+                🥚 ВЫЛУПИТСЯ — ПОКОРМИШЬ
+              </div>
+            )}
             <button
               onClick={handlePet}
               style={{
@@ -487,9 +496,21 @@ function PetHabitat({ pet, onUpdate }: { pet: Pet; onUpdate: (p: Pet) => void })
             >
               {isVirus ? '⚡ ПОГЛАДИТЬ' : '♥ ПОГЛАДИТЬ'}
             </button>
+            {/* Выгул — только для baby/adult */}
+            {pet.stage !== 'egg' && (
+              <button
+                onClick={() => setWalking(true)}
+                style={{ ...actionBtn, flex: 1, borderColor: '#00FF88', color: '#00FF88' }}
+              >
+                🌐 ВЫГУЛ
+              </button>
+            )}
           </div>
         )}
       </div>
+
+      {/* Выгул питомца */}
+      {walking && <PetWalker pet={pet} onReturn={() => setWalking(false)} />}
 
       {/* Инфо питомца */}
       <PetInfo pet={pet} />

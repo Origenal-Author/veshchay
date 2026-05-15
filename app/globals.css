@@ -517,3 +517,29 @@ body[data-weather="fog"] .site-header { background: rgba(7,10,14,0.90); }
   0%,100% { transform: skewX(-4deg); }
   50%      { transform: skewX(4deg); }
 }
+
+@keyframes radarPulse {
+  0%   { transform: translate(-50%,-50%) scale(1); opacity: 0.9; }
+  100% { transform: translate(-50%,-50%) scale(8); opacity: 0; }
+}
+
+@keyframes scanLine {
+  0%   { top: 0; opacity: 1; }
+  100% { top: 100vh; opacity: 0; }
+}
+
+@keyframes glitchFlash {
+  0%,100% { opacity: 0; }
+  20%,60% { opacity: 1; }
+  40%,80% { opacity: 0.3; }
+}
+
+@keyframes fadeOut {
+  0%   { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes fadeInUp {
+  0%   { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
