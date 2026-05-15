@@ -23,7 +23,12 @@ export default function VideoPlayer({ src }: Props) {
   const [loop, setLoop] = useState(false)
   const [fullscreen, setFullscreen] = useState(false)
   const [showControls, setShowControls] = useState(true)
+  const [isMobile, setIsMobile] = useState(false)
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    setIsMobile(window.innerWidth < 600)
+  }, [])
 
   // Авто-скрытие контролов
   function resetHideTimer() {
