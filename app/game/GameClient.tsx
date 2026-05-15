@@ -461,7 +461,12 @@ function PetHabitat({ pet, onUpdate }: { pet: Pet; onUpdate: (p: Pet) => void })
             filter: mood === 'happy' ? `drop-shadow(0 0 18px ${C})` :
                     mood === 'annoyed' ? 'drop-shadow(0 0 10px rgba(255,0,80,0.6))' : 'none',
           }}>
-            <PetCanvas type={pet.type} variant={pet.variant} stage={pet.stage} size={180} />
+            <PetCanvas
+              type={pet.type}
+              variant={pet.variant}
+              stage={pet.stage}
+              size={pet.stage === 'egg' ? 160 : pet.stage === 'baby' ? 220 : 290}
+            />
           </div>
 
           {/* Частицы эмоций */}
