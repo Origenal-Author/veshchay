@@ -161,7 +161,7 @@ export default function PetWalker({ pet, onReturn }: { pet: Pet; onReturn: () =>
   const isVirus = pet.variant === 'virus'
   const C = isVirus ? def.colorVirus : def.color
 
-  const [pos, setPos] = useState({ x: -300, y: -300 })
+  const [pos, setPos] = useState({ x: -1000, y: -1000 })
   const [visible, setVisible] = useState(false)
   const [trail, setTrail] = useState<{ id: number; x: number; y: number }[]>([])
   const [abilityFlash, setAbilityFlash] = useState(false)
@@ -334,7 +334,7 @@ export default function PetWalker({ pet, onReturn }: { pet: Pet; onReturn: () =>
       <div style={{
         position: 'fixed', left: pos.x, top: pos.y, zIndex: 9995,
         transform: 'translate(-50%, -50%)',
-        transition,
+        transition: visible ? transition : 'none',
         filter: `drop-shadow(0 0 ${abilityFlash ? 20 : 8}px ${C})`,
         cursor: 'default',
         pointerEvents: 'none',
