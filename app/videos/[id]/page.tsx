@@ -5,7 +5,8 @@ import Reactions from '@/app/components/Reactions'
 import Echoes from '@/app/components/Echoes'
 import ViewTracker from '@/app/components/ViewTracker'
 import AddToPlaylist from '@/app/components/AddToPlaylist'
-import VideoPlayer from '@/app/components/VideoPlayer'
+import dynamic from 'next/dynamic'
+const VideoPlayer = dynamic(() => import('@/app/components/VideoPlayer'), { ssr: false })
 
 export default async function VideoPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
