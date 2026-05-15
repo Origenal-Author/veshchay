@@ -13,7 +13,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   // Начало
   { key: 'ONLINE',         name: 'ОНЛАЙН',                description: 'Первый вход на платформу',              category: 'start',    icon: '📡' },
   { key: 'FIRST_SIGNAL',   name: 'ПЕРВЫЙ СИГНАЛ',         description: 'Загрузить первое видео',                category: 'start',    icon: '▶' },
-  { key: 'IDENTITY',       name: 'ЛИЧНОСТЬ УСТАНОВЛЕНА',  description: 'Заполнить профиль полностью',           category: 'start',    icon: '🪪' },
+  { key: 'IDENTITY',       name: 'ЛИЧНОСТЬ УСТАНОВЛЕНА',  description: 'Заполнить профиль полностью',           category: 'start',    icon: '🆔' },
   { key: 'FIRST_WATCHER',  name: 'ПЕРВЫЙ НАБЛЮДАТЕЛЬ',    description: 'Получить первого подписчика',           category: 'start',    icon: '👁' },
   { key: 'FIRST_CONTACT',  name: 'ПЕРВЫЙ КОНТАКТ',        description: 'Оставить отклик на чужое видео',        category: 'start',    icon: '⚡' },
 
@@ -26,15 +26,15 @@ export const ACHIEVEMENTS: AchievementDef[] = [
 
   // Контент
   { key: 'ARCHIVE',        name: 'АРХИВ',                 description: 'Загрузить 10 видео',                   category: 'content',  icon: '📦' },
-  { key: 'VIRAL',          name: 'ВИРУСНЫЙ',              description: 'Набрать 1000 просмотров суммарно',     category: 'content',  icon: '🦠' },
+  { key: 'VIRAL',          name: 'ВИРУСНЫЙ',              description: 'Набрать 1000 просмотров суммарно',     category: 'content',  icon: '☣️' },
   { key: 'ECHO_CHAMBER',   name: 'ЭХО-КАМЕРА',           description: 'Получить 50 откликов на свои видео',   category: 'content',  icon: '🔊' },
   { key: 'NETWORK_NODE',   name: 'СЕТЕВОЙ УЗЕЛ',          description: 'Набрать 10 подписчиков',              category: 'content',  icon: '🕸' },
 
   // Питомцы
   { key: 'FIRST_PARASITE', name: 'ПЕРВЫЙ ПАРАЗИТ',        description: 'Вылупить первого питомца',             category: 'pets',     icon: '🥚' },
-  { key: 'FULL_INCUBATOR', name: 'ПОЛНЫЙ ИНКУБАТОР',      description: 'Иметь 3 питомца одновременно',         category: 'pets',     icon: '🧫' },
+  { key: 'FULL_INCUBATOR', name: 'ПОЛНЫЙ ИНКУБАТОР',      description: 'Иметь 3 питомца одновременно',         category: 'pets',     icon: '🔬' },
   { key: 'FEEDER',         name: 'КОРМИЛЕЦ',              description: 'Покормить питомца 10 раз',             category: 'pets',     icon: '🍖' },
-  { key: 'JANITOR',        name: 'САНИТАР',               description: 'Раздавить 5 жуков',                   category: 'pets',     icon: '🪲' },
+  { key: 'JANITOR',        name: 'САНИТАР',               description: 'Раздавить 5 жуков',                   category: 'pets',     icon: '🐛' },
   { key: 'LEGEND',         name: 'ЛЕГЕНДА',               description: 'Получить питомца КРИСТАЛЛ',            category: 'pets',     icon: '💎' },
 
   // Секретные

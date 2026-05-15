@@ -19,6 +19,11 @@ const RANKS = [
   { xp: 30000, rank: 'РУТОВЫЙ ДОСТУП',    color: '#FFFFFF' },
 ]
 
+const SPECIAL_ROLES: Record<string, { label: string; color: string; glow: string; badge: string }> = {
+  creator: { label: 'ПЕРВОСИГНАЛ',    color: '#FFD700', glow: 'rgba(255,215,0,0.4)',   badge: '⚡' },
+  admin:   { label: 'КУРАТОР ЭФИРА',  color: '#C084FC', glow: 'rgba(192,132,252,0.35)', badge: '◈' },
+}
+
 function getRankInfo(xp: number) {
   return [...RANKS].reverse().find(r => xp >= r.xp) ?? RANKS[0]
 }
@@ -62,6 +67,9 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
   const rankInfo = getRankInfo(xp)
   const nextRank = getNextRank(xp)
   const progress = nextRank ? Math.round((xp / nextRank.xp) * 100) : 100
+  const specialRole = SPECIAL_ROLES[profile.role ?? ''] ?? null
+  const displayColor = specialRole?.color ?? rankInfo.color
+  const displayRank = specialRole?.label ?? rankInfo.rank
 
   const profileContent = (
     <div style={{ minHeight: '100vh', position: 'relative', zIndex: 2, paddingBottom: 60 }}>
@@ -79,16 +87,29 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${rankInfo.color}, transparent)` }} />
 
           {/* Аватар */}
-          <div style={{ width: 80, height: 80, background: `linear-gradient(135deg, ${rankInfo.color}, var(--surface2))`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, fontWeight: 900, color: 'var(--bg)', fontFamily: "'Orbitron',monospace", border: `2px solid ${rankInfo.color}`, boxShadow: `0 0 20px ${rankInfo.color}40`, overflow: 'hidden' }}>
+          <div style={{ width: 80, height: 80, background: `linear-gradient(135deg, ${displayColor}, var(--surface2))`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, fontWeight: 900, color: 'var(--bg)', fontFamily: "'Orbitron',monospace", border: `2px solid ${displayColor}`, boxShadow: `0 0 20px ${displayColor}40`, overflow: 'hidden', position: 'relative' }}>
             {profile.avatar_url
               ? <img src={profile.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               : (profile.username || '??').slice(0, 2).toUpperCase()
             }
+            {specialRole && (
+              <div style={{ position: 'absolute', bottom: -2, right: -2, width: 22, height: 22, borderRadius: '50%', background: specialRole.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, boxShadow: `0 0 8px ${specialRole.glow}`, border: '1.5px solid rgba(0,0,0,0.5)' }}>
+                {specialRole.badge}
+              </div>
+            )}
           </div>
 
           {/* Инфо */}
           <div>
-            <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: rankInfo.color, letterSpacing: 3, marginBottom: 6 }}>// {rankInfo.rank}</div>
+            <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: displayColor, letterSpacing: 3, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 8 }}>
+              {specialRole ? (
+                <span style={{ background: `rgba(${displayColor === '#FFD700' ? '255,215,0' : '192,132,252'},0.12)`, border: `1px solid ${displayColor}`, padding: '2px 8px', borderRadius: 4, boxShadow: `0 0 8px ${specialRole.glow}`, letterSpacing: 3 }}>
+                  {specialRole.badge} {specialRole.label}
+                </span>
+              ) : (
+                `// ${rankInfo.rank}`
+              )}
+            </div>
             <h1 style={{ fontFamily: "'Orbitron',monospace", fontSize: 22, fontWeight: 900, color: 'var(--text)', marginBottom: 8 }}>
               @{profile.username || 'аноним'}
             </h1>
@@ -97,6 +118,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
 
           {/* Кнопка мониторинга + XP */}
           <div style={{ textAlign: 'right', minWidth: 160, display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'flex-end' }}>
+            {/* Значок ВЗЛОМАН */}
             {!isOwner && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end' }}>
                 <FollowButton
@@ -125,7 +147,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                 {followersCount} {getFollowLabel(followersCount ?? 0)}
               </div>
             )}
-            <div style={{ fontFamily: "'Orbitron',monospace", fontSize: 28, fontWeight: 900, color: rankInfo.color, textShadow: `0 0 20px ${rankInfo.color}` }}>
+            <div style={{ fontFamily: "'Orbitron',monospace", fontSize: 28, fontWeight: 900, color: displayColor, textShadow: `0 0 20px ${displayColor}` }}>
               {xp}
             </div>
             <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: 'var(--subtext)', letterSpacing: 2, marginBottom: 8 }}>XP</div>

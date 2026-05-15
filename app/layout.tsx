@@ -26,8 +26,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <AchievementToast />
           <InventoryPanel />
           <PetWalkerHost />
-          {/* Колокольчик уведомлений — фиксированный в правом верхнем углу */}
-          <div style={{ position: 'fixed', top: 14, right: 20, zIndex: 8000 }}>
+          {/* Колокольчик — над инвентарём (снизу-слева) */}
+          <div style={{ position: 'fixed', bottom: 76, left: 24, zIndex: 8000 }}>
             <NotificationBell />
           </div>
         </WeatherProvider>
