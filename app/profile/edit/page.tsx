@@ -35,23 +35,20 @@ export default function EditProfilePage() {
   async function handleAvatarFile(file: File) {
     if (!file.type.startsWith('image/')) { setError('Только изображения'); return }
     if (file.size > 5 * 1024 * 1024) { setError('Максимум 5MB'); return }
-    if (!userId) return
 
     setAvatarUploading(true)
     setError('')
-    const supabase = createClient()
-    const ext = file.name.split('.').pop()
-    const path = `${userId}/avatar.${ext}`
 
-    const { error: upErr } = await supabase.storage
-      .from('avatars')
-      .upload(path, file, { contentType: file.type, upsert: true })
+    const form = new FormData()
+    form.append('file', file)
+    form.append('bucket', 'avatars')
 
-    if (upErr) { setError(upErr.message); setAvatarUploading(false); return }
+    const res = await fetch('/api/upload', { method: 'POST', body: form })
+    const data = await res.json()
 
-    const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path)
-    // Добавляем timestamp чтобы сбросить кэш
-    setAvatarUrl(`${publicUrl}?t=${Date.now()}`)
+    if (!res.ok) { setError(data.error || 'Ошибка загрузки'); setAvatarUploading(false); return }
+
+    setAvatarUrl(data.url)
     setAvatarUploading(false)
   }
 
