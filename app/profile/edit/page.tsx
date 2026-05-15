@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
@@ -12,7 +12,10 @@ export default function EditProfilePage() {
   const [avatarUrl, setAvatarUrl] = useState('')
   const [userId, setUserId] = useState('')
   const [loading, setLoading] = useState(false)
+  const [avatarUploading, setAvatarUploading] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [error, setError] = useState('')
+  const fileRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     const supabase = createClient()
@@ -29,14 +32,37 @@ export default function EditProfilePage() {
     })
   }, [])
 
+  async function handleAvatarFile(file: File) {
+    if (!file.type.startsWith('image/')) { setError('Только изображения'); return }
+    if (file.size > 5 * 1024 * 1024) { setError('Максимум 5MB'); return }
+    if (!userId) return
+
+    setAvatarUploading(true)
+    setError('')
+    const supabase = createClient()
+    const ext = file.name.split('.').pop()
+    const path = `${userId}/avatar.${ext}`
+
+    const { error: upErr } = await supabase.storage
+      .from('avatars')
+      .upload(path, file, { contentType: file.type, upsert: true })
+
+    if (upErr) { setError(upErr.message); setAvatarUploading(false); return }
+
+    const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path)
+    // Добавляем timestamp чтобы сбросить кэш
+    setAvatarUrl(`${publicUrl}?t=${Date.now()}`)
+    setAvatarUploading(false)
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!userId || loading) return
     setLoading(true)
+    setError('')
     const supabase = createClient()
     await supabase.from('profiles').upsert({ id: userId, username, bio, avatar_url: avatarUrl })
 
-    // XP за заполнение профиля
     const xpCalls = []
     if (avatarUrl.trim()) {
       xpCalls.push(fetch('/api/xp/award', {
@@ -74,23 +100,66 @@ export default function EditProfilePage() {
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-          {/* Превью аватара */}
+          {/* Аватар — кликабельный */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 20, padding: 20, background: 'var(--surface)', border: '1px solid var(--border)' }}>
-            <div style={{ width: 64, height: 64, background: 'linear-gradient(135deg,var(--accent),var(--surface2))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 900, color: 'var(--bg)', fontFamily: "'Orbitron',monospace", border: '2px solid var(--accent)', overflow: 'hidden', flexShrink: 0 }}>
-              {avatarUrl
-                ? <img src={avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={() => setAvatarUrl('')} />
-                : (username || '??').slice(0, 2).toUpperCase()
-              }
-            </div>
-            <div style={{ flex: 1 }}>
-              <label style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: 'var(--subtext)', letterSpacing: 2, display: 'block', marginBottom: 6 }}>// ССЫЛКА НА АВАТАР (URL)</label>
+            <div style={{ position: 'relative', flexShrink: 0 }}>
+              <div
+                onClick={() => !avatarUploading && fileRef.current?.click()}
+                style={{
+                  width: 80, height: 80, cursor: 'pointer',
+                  background: 'linear-gradient(135deg,var(--accent),var(--surface2))',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 24, fontWeight: 900, color: 'var(--bg)',
+                  fontFamily: "'Orbitron',monospace",
+                  border: '2px solid var(--accent)',
+                  overflow: 'hidden', borderRadius: 4,
+                  position: 'relative',
+                  opacity: avatarUploading ? 0.5 : 1,
+                  transition: 'opacity 0.2s',
+                }}
+              >
+                {avatarUrl
+                  ? <img src={avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={() => setAvatarUrl('')} />
+                  : (username || '??').slice(0, 2).toUpperCase()
+                }
+                {/* Оверлей при наведении */}
+                <div style={{
+                  position: 'absolute', inset: 0,
+                  background: 'rgba(0,0,0,0.55)',
+                  display: 'flex', flexDirection: 'column',
+                  alignItems: 'center', justifyContent: 'center',
+                  opacity: 0, transition: 'opacity 0.2s',
+                }}
+                  className="avatar-hover-overlay"
+                  onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
+                  onMouseLeave={e => (e.currentTarget.style.opacity = '0')}
+                >
+                  <span style={{ fontSize: 20 }}>{avatarUploading ? '⏳' : '📷'}</span>
+                  <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 7, color: '#fff', letterSpacing: 1, marginTop: 4 }}>
+                    {avatarUploading ? 'ЗАГРУЗКА...' : 'ИЗМЕНИТЬ'}
+                  </span>
+                </div>
+              </div>
+
               <input
-                type="url"
-                value={avatarUrl}
-                onChange={e => setAvatarUrl(e.target.value)}
-                placeholder="https://example.com/avatar.jpg"
-                style={{ width: '100%', padding: '10px 14px', background: 'var(--surface2)', border: '1px solid var(--border)', borderLeft: '3px solid var(--accent)', color: 'var(--text)', fontFamily: "'JetBrains Mono',monospace", fontSize: 12, outline: 'none' }}
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={e => e.target.files?.[0] && handleAvatarFile(e.target.files[0])}
               />
+            </div>
+
+            <div>
+              <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 11, color: 'var(--text)', letterSpacing: 1, marginBottom: 6 }}>
+                {avatarUploading ? '// ЗАГРУЗКА...' : '// ФОТО ПРОФИЛЯ'}
+              </div>
+              <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: 'var(--subtext)', lineHeight: 1.7 }}>
+                Кликни на аватар чтобы загрузить фото
+              </div>
+              <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 9, color: 'var(--subtext)', opacity: 0.5, marginTop: 2 }}>
+                JPG, PNG, GIF · до 5MB
+              </div>
             </div>
           </div>
 
@@ -118,13 +187,20 @@ export default function EditProfilePage() {
             <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: 'var(--subtext)', textAlign: 'right', marginTop: 4 }}>{bio.length}/300</div>
           </div>
 
+          {error && (
+            <div style={{ padding: '10px 16px', background: 'rgba(255,0,110,0.08)', border: '1px solid rgba(255,0,110,0.3)', fontFamily: "'JetBrains Mono',monospace", fontSize: 12, color: '#FF006E' }}>
+              ⚠ {error}
+            </div>
+          )}
+
           {saved && (
             <div style={{ padding: '10px 16px', background: 'rgba(0,255,240,0.08)', border: '1px solid rgba(0,255,240,0.3)', fontFamily: "'JetBrains Mono',monospace", fontSize: 12, color: 'var(--accent)' }}>
               ✓ ПРОФИЛЬ СОХРАНЁН
             </div>
           )}
 
-          <button type="submit" disabled={loading} className="btn-primary-ui" style={{ width: '100%', justifyContent: 'center', padding: '14px', fontSize: 13, opacity: loading ? 0.6 : 1 }}>
+          <button type="submit" disabled={loading || avatarUploading} className="btn-primary-ui"
+            style={{ width: '100%', justifyContent: 'center', padding: '14px', fontSize: 13, opacity: (loading || avatarUploading) ? 0.6 : 1 }}>
             {loading ? '// СОХРАНЕНИЕ...' : '▶ СОХРАНИТЬ ПРОФИЛЬ'}
           </button>
         </form>
