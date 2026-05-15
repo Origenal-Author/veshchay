@@ -464,8 +464,8 @@ function drawNeuron(ctx: CanvasRenderingContext2D, w: number, h: number, t: numb
   // Связи
   nodes.forEach(node => {
     if (isVirus && node.broken) return
-    ctx.save(); ctx.shadowColor = C; ctx.shadowBlur = 4
-    ctx.strokeStyle = ca(C, 0.28); ctx.lineWidth = isVirus ? 0.8 : 1
+    ctx.save(); ctx.shadowColor = C; ctx.shadowBlur = 6
+    ctx.strokeStyle = ca(C, isVirus ? 0.5 : 0.4); ctx.lineWidth = isVirus ? 1 : 1.2
     if (isVirus) ctx.setLineDash([3, 4])
     ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(node.x, node.y); ctx.stroke()
     ctx.setLineDash([]); ctx.restore()
@@ -495,18 +495,18 @@ function drawNeuron(ctx: CanvasRenderingContext2D, w: number, h: number, t: numb
       return
     }
     const g = 0.5 + 0.5 * Math.sin(t * 0.05 + i * 0.9)
-    ctx.save(); ctx.shadowColor = C; ctx.shadowBlur = 5 + g * 6
+    ctx.save(); ctx.shadowColor = C; ctx.shadowBlur = 6 + g * 8
     ctx.beginPath(); ctx.arc(node.x, node.y, 5, 0, Math.PI * 2)
-    ctx.fillStyle = ca(C, 0.07 + g * 0.07); ctx.fill()
-    ctx.strokeStyle = ca(C, 0.6); ctx.lineWidth = 1; ctx.stroke(); ctx.restore()
+    ctx.fillStyle = ca(C, 0.15 + g * 0.15); ctx.fill()
+    ctx.strokeStyle = ca(C, 0.8); ctx.lineWidth = 1.5; ctx.stroke(); ctx.restore()
   })
 
   // Ядро
   const cg = 0.5 + 0.5 * Math.sin(t * 0.04)
   ctx.save(); ctx.shadowColor = C; ctx.shadowBlur = 10 + cg * 10
   ctx.beginPath(); ctx.arc(cx, cy, cR, 0, Math.PI * 2)
-  ctx.fillStyle = ca(C, 0.1); ctx.fill()
-  ctx.strokeStyle = ca(C, 0.8); ctx.lineWidth = 1.5; ctx.stroke(); ctx.restore()
+  ctx.fillStyle = ca(C, 0.18); ctx.fill()
+  ctx.strokeStyle = ca(C, 0.9); ctx.lineWidth = 2; ctx.stroke(); ctx.restore()
 
   drawEyes(ctx, 'neuron', cx, cy, cR * 0.9, isVirus, C, t)
 }
