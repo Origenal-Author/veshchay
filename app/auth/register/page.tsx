@@ -16,10 +16,10 @@ export default function RegisterPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', display: 'grid', gridTemplateColumns: '1fr 1fr', position: 'relative', zIndex: 2 }}>
+    <div className="auth-layout" style={{ minHeight: '100vh', display: 'grid', gridTemplateColumns: '1fr 1fr', position: 'relative', zIndex: 2 }}>
 
-      {/* ЛЕВАЯ ЧАСТЬ — БРЕНДИНГ */}
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 60, borderRight: '1px solid var(--border)', position: 'relative', overflow: 'hidden' }}>
+      {/* ЛЕВАЯ ЧАСТЬ — БРЕНДИНГ (скрывается на мобильном) */}
+      <div className="hide-mobile" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 60, borderRight: '1px solid var(--border)', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(255,0,110,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,0,110,0.03) 1px,transparent 1px)', backgroundSize: '40px 40px' }} />
         <div style={{ position: 'absolute', top: 24, left: 24, width: 20, height: 20, borderTop: '2px solid var(--accent2)', borderLeft: '2px solid var(--accent2)' }} />
         <div style={{ position: 'absolute', top: 24, right: 24, width: 20, height: 20, borderTop: '2px solid var(--accent2)', borderRight: '2px solid var(--accent2)' }} />

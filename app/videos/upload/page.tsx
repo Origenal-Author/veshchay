@@ -38,9 +38,15 @@ export default function UploadPage() {
     setYtPreview(id ? `https://img.youtube.com/vi/${id}/mqdefault.jpg` : '')
   }
 
+  const SUPPORTED = ['video/mp4', 'video/webm', 'video/quicktime']
+
   function handleFile(f: File) {
     if (!f.type.startsWith('video/')) { setError('Только видео-файлы'); return }
     if (f.size > 100 * 1024 * 1024) { setError('Максимальный размер 100MB'); return }
+    if (!SUPPORTED.includes(f.type)) {
+      setError(`Формат ${f.name.split('.').pop()?.toUpperCase()} не поддерживается на мобильных. Используй MP4, WebM или MOV.`)
+      return
+    }
     setFile(f)
     setError('')
     const url = URL.createObjectURL(f)

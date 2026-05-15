@@ -575,6 +575,11 @@ body[data-weather="fog"] .site-header { background: rgba(7,10,14,0.90); }
   .hide-mobile { display: none !important; }
   .show-mobile { display: initial !important; }
 
+  /* Страницы авторизации — убираем колонку с брендингом */
+  .auth-layout {
+    grid-template-columns: 1fr !important;
+  }
+
   /* Шапка */
   .site-header { padding: 0 14px; gap: 8px; }
   .site-logo { font-size: 18px; }

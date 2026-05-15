@@ -16,10 +16,10 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', display: 'grid', gridTemplateColumns: '1fr 1fr', position: 'relative', zIndex: 2 }}>
+    <div style={{ minHeight: '100vh', display: 'grid', gridTemplateColumns: '1fr 1fr', position: 'relative', zIndex: 2 }} className="auth-layout">
 
-      {/* ЛЕВАЯ ЧАСТЬ — БРЕНДИНГ */}
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 60, borderRight: '1px solid var(--border)', position: 'relative', overflow: 'hidden' }}>
+      {/* ЛЕВАЯ ЧАСТЬ — БРЕНДИНГ (скрывается на мобильном) */}
+      <div className="hide-mobile" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 60, borderRight: '1px solid var(--border)', position: 'relative', overflow: 'hidden' }}>
         {/* Сетка на фоне */}
         <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(0,255,240,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,240,0.03) 1px,transparent 1px)', backgroundSize: '40px 40px' }} />
         {/* Угловые акценты */}

@@ -53,12 +53,12 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
             <video
               src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/videos/${video.storage_path}`}
               controls
-              autoPlay
               style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+              playsInline
             />
           ) : (
             <iframe
-              src={`https://www.youtube.com/embed/${video.youtube_id}?autoplay=1&rel=0`}
+              src={`https://www.youtube.com/embed/${video.youtube_id}?rel=0`}
               style={{ width: '100%', height: '100%' }}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
