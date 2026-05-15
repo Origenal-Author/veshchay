@@ -7,6 +7,7 @@ import DailyXP from '@/app/components/DailyXP'
 import AchievementToast from '@/app/components/AchievementToast'
 import InventoryPanel from '@/app/components/InventoryPanel'
 import PetWalkerHost from '@/app/components/PetWalkerHost'
+import HackEffectsDisplay from '@/app/components/HackEffectsDisplay'
 import NotificationBell from '@/app/components/NotificationBell'
 
 export const metadata: Metadata = {
@@ -26,6 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <AchievementToast />
           <InventoryPanel />
           <PetWalkerHost />
+          <HackEffectsDisplay />
           {/* Колокольчик — над инвентарём (снизу-слева) */}
           <div style={{ position: 'fixed', bottom: 76, left: 24, zIndex: 8000 }}>
             <NotificationBell />

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import PetCanvas from './PetCanvas'
 import { getPetDef, type Pet, type PetType } from '@/lib/pets'
+import HackPanel from './HackPanel'
 
 // ── БОНУСЫ ВИРУСА ─────────────────────────────────────────────────────────────
 const PET_BONUSES: Record<PetType, { label: string; effect: string }> = {
@@ -350,7 +351,7 @@ function MatrixGame({ bonus, onSuccess, onFail }: { bonus: string; onSuccess: ()
 }
 
 // ── ГЛАВНЫЙ МОДАЛ ─────────────────────────────────────────────────────────────
-type Step = 'select' | 'pet' | 'game' | 'success' | 'fail'
+type Step = 'select' | 'pet' | 'game' | 'success' | 'fail' | 'hacking'
 type Method = 'code' | 'signal' | 'password' | 'matrix'
 
 const METHODS: { key: Method; name: string; desc: string; icon: string }[] = [
@@ -501,15 +502,25 @@ export default function AttackModal({ targetId, targetUsername, virusPets, onClo
           </>
         )}
 
-        {/* Успех */}
+        {/* Успех — выбор: хакнуть или закрыть */}
         {step === 'success' && (
           <div style={{ textAlign: 'center', padding: '20px 0' }}>
             <div style={{ fontSize: 56, marginBottom: 16 }}>💀</div>
             <div style={{ fontFamily: 'Orbitron,monospace', fontSize: 18, letterSpacing: 4, color: '#00FF88', textShadow: '0 0 20px #00FF88', marginBottom: 8 }}>ВЗЛОМ УСПЕШЕН</div>
-            <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 11, color: '#506080', marginBottom: 4 }}>Канал @{targetUsername} помечен как ВЗЛОМАН на 24ч</div>
-            <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 11, color: '#00FF88', marginBottom: 24 }}>+20 XP</div>
-            <button onClick={onClose} style={actionStyle('#00FF88')}>ЗАКРЫТЬ</button>
+            <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 11, color: '#506080', marginBottom: 4 }}>Канал @{targetUsername} под контролем на 2.5 минуты</div>
+            <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 11, color: '#00FF88', marginBottom: 20 }}>+20 XP</div>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+              <button onClick={() => setStep('hacking')} style={actionStyle('#FF006E')}>
+                ⚡ ВОЙТИ В СИСТЕМУ
+              </button>
+              <button onClick={onClose} style={actionStyle('#506080')}>ЗАКРЫТЬ</button>
+            </div>
           </div>
+        )}
+
+        {/* Хакер-панель */}
+        {step === 'hacking' && (
+          <HackPanel victimId={targetId} victimName={targetUsername} onClose={onClose} />
         )}
 
         {/* Провал */}
