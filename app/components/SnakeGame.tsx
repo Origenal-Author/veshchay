@@ -33,8 +33,10 @@ export default function SnakeGame({ onClose }: { onClose: () => void }) {
     score: 0,
     dead: false,
   })
-  const [score, setScore] = useState(0)
+  const TARGET = 7
+  const [collected, setCollected] = useState(0)
   const [dead, setDead] = useState(false)
+  const [won, setWon] = useState(false)
   const rafRef = useRef<number>(0)
   const lastRef = useRef(0)
 
@@ -109,7 +111,18 @@ export default function SnakeGame({ onClose }: { onClose: () => void }) {
     const ate = head.x === s.food.x && head.y === s.food.y
     s.snake = [head, ...s.snake]
     if (!ate) s.snake.pop()
-    else { s.score += 10; setScore(s.score); spawnFood() }
+    else {
+      s.score += 10
+      const newCollected = s.score / 10
+      setCollected(newCollected)
+      spawnFood()
+      if (newCollected >= 7) {
+        s.dead = true
+        setWon(true)
+        draw()
+        return
+      }
+    }
 
     draw()
     rafRef.current = requestAnimationFrame(tick)
@@ -139,7 +152,7 @@ export default function SnakeGame({ onClose }: { onClose: () => void }) {
       food: { x: 15, y: 7 }, foodLabel: FILES[0],
       score: 0, dead: false,
     }
-    setScore(0); setDead(false)
+    setCollected(0); setDead(false); setWon(false)
     lastRef.current = 0
     spawnFood()
     rafRef.current = requestAnimationFrame(tick)
@@ -185,19 +198,56 @@ export default function SnakeGame({ onClose }: { onClose: () => void }) {
         </div>
       </div>
 
-      {/* Счёт */}
-      <div style={{ fontFamily: "'Orbitron',monospace", fontSize: isMobile ? 11 : 14, color: '#00FFF0', letterSpacing: 3, marginBottom: isMobile ? 8 : 12 }}>
-        ФАЙЛОВ: <span style={{ textShadow: '0 0 10px #00FFF0' }}>{score}</span>
+      {/* Прогресс */}
+      <div style={{ marginBottom: isMobile ? 8 : 12, textAlign: 'center' }}>
+        <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: isMobile ? 9 : 10, color: 'rgba(0,255,240,0.5)', letterSpacing: 2, marginBottom: 6 }}>
+          ПОХИТЬ 7 ФАЙЛОВ ЧТОБЫ ВОЙТИ
+        </div>
+        <div style={{ display: 'flex', gap: 6, justifyContent: 'center' }}>
+          {Array.from({ length: TARGET }, (_, i) => (
+            <div key={i} style={{
+              width: isMobile ? 20 : 26, height: isMobile ? 20 : 26,
+              border: `1px solid ${i < collected ? '#00FFF0' : 'rgba(0,255,240,0.2)'}`,
+              background: i < collected ? 'rgba(0,255,240,0.15)' : 'transparent',
+              borderRadius: 4,
+              boxShadow: i < collected ? '0 0 8px rgba(0,255,240,0.4)' : 'none',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: isMobile ? 10 : 12,
+              transition: 'all 0.2s',
+            }}>
+              {i < collected ? '📁' : ''}
+            </div>
+          ))}
+        </div>
+        <div style={{ fontFamily: "'Orbitron',monospace", fontSize: isMobile ? 10 : 12, color: '#00FFF0', letterSpacing: 3, marginTop: 6 }}>
+          {collected} / {TARGET}
+        </div>
       </div>
 
       {/* Канвас */}
       <div style={{ border: '1px solid rgba(0,255,240,0.3)', boxShadow: '0 0 30px rgba(0,255,240,0.1)', position: 'relative', maxWidth: '100%' }}>
         <canvas ref={canvasRef} width={W} height={H} style={{ display: 'block', maxWidth: '100%' }} />
-        {dead && (
+        {won && (
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(6,6,18,0.95)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, animation: 'popIn 0.5s ease' }}>
+            <div style={{ fontSize: 36 }}>💀</div>
+            <div style={{ fontFamily: "'Orbitron',monospace", fontSize: isMobile ? 13 : 17, fontWeight: 900, color: '#00FFF0', letterSpacing: 3, textShadow: '0 0 20px #00FFF0', textAlign: 'center' }}>
+              ДОСТУП ПОЛУЧЕН
+            </div>
+            <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: isMobile ? 9 : 11, color: 'rgba(0,255,240,0.6)', letterSpacing: 2, textAlign: 'center' }}>
+              // все файлы похищены · добро пожаловать //
+            </div>
+            <button onClick={onClose} className="btn-primary-ui" style={{ marginTop: 4 }}>
+              ▶ ВОЙТИ НА САЙТ
+            </button>
+          </div>
+        )}
+        {dead && !won && (
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(6,6,18,0.92)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
             <div style={{ fontFamily: "'Orbitron',monospace", fontSize: isMobile ? 14 : 18, fontWeight: 900, color: '#FF006E', letterSpacing: 4, textShadow: '0 0 20px #FF006E' }}>СИГНАЛ ПРЕРВАН</div>
-            <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, color: 'rgba(255,255,255,0.6)' }}>Счёт: {score}</div>
-            <button onClick={restart} className="btn-primary-ui">↺ ПЕРЕЗАПУСК</button>
+            <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, color: 'rgba(255,255,255,0.6)' }}>
+              Собрано: {collected} / {TARGET} файлов
+            </div>
+            <button onClick={restart} className="btn-primary-ui">↺ ПОПРОБОВАТЬ СНОВА</button>
           </div>
         )}
       </div>
