@@ -81,7 +81,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
         </div>
       </header>
 
-      <main style={{ maxWidth: 960, margin: '0 auto', padding: '40px 32px' }}>
+      <main className="mobile-pad" style={{ maxWidth: 960, margin: '0 auto', padding: '40px 32px' }}>
         {/* Шапка профиля */}
         <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', gap: 32, alignItems: 'start', marginBottom: 40, padding: 32, background: 'var(--surface)', border: '1px solid var(--border)', position: 'relative', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${rankInfo.color}, transparent)` }} />
@@ -169,7 +169,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
             <div style={{ fontFamily: "'Orbitron',monospace", fontSize: 12, fontWeight: 700, letterSpacing: 3, color: 'var(--accent)', marginBottom: 16, paddingBottom: 12, borderBottom: '1px solid var(--border)' }}>
               // СИГНАЛЫ ПОЛЬЗОВАТЕЛЯ ({videos.length})
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
+            <div className="profile-video-grid">
               {videos.map(v => (
                 <Link key={v.id} href={`/videos/${v.id}`} className="video-card">
                   <div className="video-card-thumb">

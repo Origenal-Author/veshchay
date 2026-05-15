@@ -46,7 +46,7 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
         </div>
       </header>
 
-      <main style={{ maxWidth: 960, margin: '0 auto', padding: '32px 32px' }}>
+      <main className="mobile-pad" style={{ maxWidth: 960, margin: '0 auto', padding: '32px 32px' }}>
         {/* Плеер */}
         <div style={{ width: '100%', aspectRatio: '16/9', marginBottom: 24, border: '1px solid var(--border)', boxShadow: '0 0 40px var(--accent-glow)', background: '#000', overflow: 'hidden' }}>
           {video.video_type === 'upload' && video.storage_path ? (

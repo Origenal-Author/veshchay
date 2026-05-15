@@ -610,6 +610,41 @@ body[data-weather="fog"] .site-header { background: rgba(7,10,14,0.90); }
 }
 
 @media (max-width: 400px) {
-  .video-grid { grid-template-columns: 1fr 1fr; gap: 6px; }
-  .site-logo { font-size: 16px; }
+  .video-grid { grid-template-columns: 1fr 1fr !important; gap: 6px; }
+  .profile-video-grid { grid-template-columns: 1fr 1fr !important; gap: 6px; }
+  .site-logo { font-size: 14px; }
+  .hero-banner { height: 150px !important; }
+  .btn-primary-ui, .btn-ghost-ui { padding: 5px 8px !important; font-size: 9px !important; }
+}
+
+/* ══ ПРОФИЛЬ — адаптивный грид видео ══ */
+.profile-video-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+@media (max-width: 900px) {
+  .profile-video-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .video-grid { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+}
+@media (max-width: 640px) {
+  .profile-video-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  /* Шапка */
+  .site-header { padding: 0 12px; gap: 6px; }
+  .site-logo { font-size: 16px; letter-spacing: 2px; }
+  /* Кнопки */
+  .btn-primary-ui { padding: 6px 10px; font-size: 9px; letter-spacing: 1px; }
+  .btn-ghost-ui   { padding: 6px 8px;  font-size: 9px; letter-spacing: 1px; }
+  /* Карточки */
+  .video-card-body  { padding: 7px 8px; }
+  .video-card-title { font-size: 11px; }
+  .video-card-date  { font-size: 9px; }
+  /* Hero */
+  .hero-banner { margin: 8px 12px !important; height: 180px !important; }
+  /* Отступы */
+  .mobile-pad { padding-left: 12px !important; padding-right: 12px !important; }
+  /* Поиск */
+  .search-input { font-size: 11px; }
+  /* NavTabs */
+  nav button { padding: 10px 10px !important; font-size: 9px !important; }
 }

@@ -55,7 +55,7 @@ export default async function LeaderboardPage() {
         </div>
       </header>
 
-      <main style={{ maxWidth: 720, margin: '0 auto', padding: '40px 32px' }}>
+      <main className="mobile-pad" style={{ maxWidth: 720, margin: '0 auto', padding: '40px 32px' }}>
         <div style={{ marginBottom: 32 }}>
           <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 10, color: 'var(--accent2)', letterSpacing: 3, marginBottom: 8 }}>
             // РЕЙТИНГ
