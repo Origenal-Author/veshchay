@@ -22,6 +22,7 @@ export interface Pet {
   variant: PetVariant
   stage: PetStage
   stage_xp: number
+  feed_count: number
   name: string | null
   created_at: string
 }

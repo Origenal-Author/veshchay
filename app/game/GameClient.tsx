@@ -58,11 +58,54 @@ function playSound(type: 'happy' | 'annoyed' | 'eat' | 'squash') {
   } catch { /* AudioContext недоступен */ }
 }
 
+// ── SVG ТАРАКАН ───────────────────────────────────────────────────────────────
+function CockroachSVG({ walk }: { walk: boolean }) {
+  return (
+    <svg width="40" height="50" viewBox="-6 -6 44 56" fill="none" style={{
+      filter: 'drop-shadow(0 0 5px rgba(200,0,0,0.8))',
+      animation: walk ? 'cockroachWalk 0.35s linear infinite' : 'none',
+    }}>
+      {/* Усы */}
+      <line x1="13" y1="3" x2="0" y2="-5" stroke="#8B0000" strokeWidth="1" strokeLinecap="round"/>
+      <line x1="19" y1="3" x2="32" y2="-5" stroke="#8B0000" strokeWidth="1" strokeLinecap="round"/>
+      <circle cx="0" cy="-5" r="1.2" fill="#FF2200"/>
+      <circle cx="32" cy="-5" r="1.2" fill="#FF2200"/>
+      {/* Голова */}
+      <ellipse cx="16" cy="6" rx="6" ry="5" fill="#5A0000"/>
+      {/* Глаза */}
+      <circle cx="12.5" cy="5" r="2" fill="#FF0000"/>
+      <circle cx="19.5" cy="5" r="2" fill="#FF0000"/>
+      <circle cx="13" cy="4.5" r="0.7" fill="#FF8888"/>
+      <circle cx="20" cy="4.5" r="0.7" fill="#FF8888"/>
+      {/* Тело */}
+      <ellipse cx="16" cy="22" rx="8" ry="14" fill="#3A0000"/>
+      {/* Блик на теле */}
+      <ellipse cx="13" cy="17" rx="3.5" ry="6" fill="#5A0000" opacity="0.35"/>
+      {/* Сегменты */}
+      <ellipse cx="16" cy="15" rx="7.5" ry="2.5" fill="#480000" opacity="0.7"/>
+      <ellipse cx="16" cy="21" rx="7.5" ry="2.5" fill="#480000" opacity="0.7"/>
+      <ellipse cx="16" cy="27" rx="6.5" ry="2" fill="#480000" opacity="0.7"/>
+      {/* Левые лапки */}
+      <path d="M8 15 Q3 12 0 10" stroke="#7A0000" strokeWidth="1.3" strokeLinecap="round"/>
+      <path d="M8 21 Q2 20 0 19" stroke="#7A0000" strokeWidth="1.3" strokeLinecap="round"/>
+      <path d="M8 27 Q3 29 1 32" stroke="#7A0000" strokeWidth="1.3" strokeLinecap="round"/>
+      {/* Правые лапки */}
+      <path d="M24 15 Q29 12 32 10" stroke="#7A0000" strokeWidth="1.3" strokeLinecap="round"/>
+      <path d="M24 21 Q30 20 32 19" stroke="#7A0000" strokeWidth="1.3" strokeLinecap="round"/>
+      <path d="M24 27 Q29 29 31 32" stroke="#7A0000" strokeWidth="1.3" strokeLinecap="round"/>
+      {/* Хвостовые усики */}
+      <path d="M13 35 Q11 40 9 44" stroke="#6A0000" strokeWidth="0.9" strokeLinecap="round"/>
+      <path d="M19 35 Q21 40 23 44" stroke="#6A0000" strokeWidth="0.9" strokeLinecap="round"/>
+    </svg>
+  )
+}
+
 // ── ЖУК ───────────────────────────────────────────────────────────────────────
 function BugRunner({ onSquash }: { onSquash: () => void }) {
   const [pos, setPos] = useState({ x: 120, y: 120 })
   const [dead, setDead] = useState(false)
   const [angle, setAngle] = useState(0)
+  const [walk, setWalk] = useState(false)
 
   useEffect(() => {
     setPos({
@@ -74,7 +117,9 @@ function BugRunner({ onSquash }: { onSquash: () => void }) {
         x: Math.max(30, Math.min(window.innerWidth - 60, p.x + (Math.random() - 0.5) * 140)),
         y: Math.max(30, Math.min(window.innerHeight - 60, p.y + (Math.random() - 0.5) * 140)),
       }))
-      setAngle(a => a + (Math.random() - 0.5) * 100)
+      setAngle(a => a + (Math.random() - 0.5) * 80)
+      setWalk(true)
+      setTimeout(() => setWalk(false), 300)
     }, 370)
     return () => clearInterval(iv)
   }, [])
@@ -93,18 +138,18 @@ function BugRunner({ onSquash }: { onSquash: () => void }) {
   return (
     <div
       onClick={squash}
-      title="Раздави жука!"
+      title="Раздави таракана!"
       style={{
         position: 'fixed', left: pos.x, top: pos.y, zIndex: 9999,
-        fontSize: 28, cursor: dead ? 'default' : 'pointer',
+        cursor: dead ? 'default' : 'pointer',
         transition: 'left 0.35s ease, top 0.35s ease',
-        transform: `rotate(${angle}deg) scale(${dead ? 0 : 1})`,
+        transform: `rotate(${angle}deg) scale(${dead ? 0.1 : 1})`,
         opacity: dead ? 0 : 1, userSelect: 'none',
         pointerEvents: dead ? 'none' : 'auto',
-        filter: 'drop-shadow(0 0 6px rgba(255,50,0,0.7))',
+        fontSize: dead ? 32 : 'inherit',
       }}
     >
-      {dead ? '💥' : '🪲'}
+      {dead ? <span style={{ fontSize: 32 }}>💥</span> : <CockroachSVG walk={walk} />}
     </div>
   )
 }
