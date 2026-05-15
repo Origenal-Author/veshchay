@@ -27,12 +27,14 @@ function timeAgo(date: string) {
 function notifText(n: Notification, actorName: string) {
   if (n.type === 'follow') return `${actorName} начал мониторить тебя`
   if (n.type === 'echo') return `${actorName} оставил отклик на «${n.entity_title ?? 'видео'}»`
+  if (n.type === 'attack') return `⚡ ${actorName} атаковал твой канал!`
   return 'Новое уведомление'
 }
 
 function notifIcon(type: string) {
   if (type === 'follow') return '👁'
   if (type === 'echo') return '💬'
+  if (type === 'attack') return '💀'
   return '📡'
 }
 

@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase-server'
 import ProfileClient from './ProfileClient'
 import FollowButton from '@/app/components/FollowButton'
 import AchievementsGrid from '@/app/components/AchievementsGrid'
+import AttackButton from '@/app/components/AttackButton'
 
 const RANKS = [
   { xp: 0,     rank: 'СТАТИЧЕСКИЙ ШУМ',  color: '#8892B0' },
@@ -97,12 +98,27 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
           {/* Кнопка мониторинга + XP */}
           <div style={{ textAlign: 'right', minWidth: 160, display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'flex-end' }}>
             {!isOwner && (
-              <FollowButton
-                targetId={id}
-                initialFollowing={isFollowing}
-                initialCount={followersCount ?? 0}
-                currentUserId={user?.id ?? null}
-              />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end' }}>
+                <FollowButton
+                  targetId={id}
+                  initialFollowing={isFollowing}
+                  initialCount={followersCount ?? 0}
+                  currentUserId={user?.id ?? null}
+                />
+                {user && <AttackButton targetId={id} targetUsername={profile.username || 'аноним'} />}
+              </div>
+            )}
+            {/* Значок ВЗЛОМАН */}
+            {profile.hacked_until && new Date(profile.hacked_until) > new Date() && (
+              <div style={{
+                fontFamily: 'JetBrains Mono,monospace', fontSize: 9, letterSpacing: 3,
+                color: '#FF006E', border: '1px solid #FF006E',
+                background: 'rgba(255,0,110,0.08)', padding: '3px 10px', borderRadius: 4,
+                boxShadow: '0 0 10px rgba(255,0,110,0.2)',
+                animation: 'glitchFlash 3s ease infinite',
+              }}>
+                ☠ ВЗЛОМАН
+              </div>
             )}
             {isOwner && (followersCount ?? 0) > 0 && (
               <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 9, color: '#3A5060', letterSpacing: 2 }}>
