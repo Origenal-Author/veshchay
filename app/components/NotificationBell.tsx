@@ -130,7 +130,7 @@ export default function NotificationBell() {
       {/* Дропдаун */}
       {open && (
         <div style={{
-          position: 'absolute', top: 44, right: 0, width: 300, maxHeight: '70vh',
+          position: 'absolute', bottom: 44, left: 0, width: 300, maxHeight: '70vh',
           background: 'rgba(6,6,18,0.98)', border: '1px solid rgba(0,255,240,0.15)',
           borderRadius: 12, overflow: 'hidden', zIndex: 9000,
           boxShadow: '0 0 40px rgba(0,255,240,0.08)',
