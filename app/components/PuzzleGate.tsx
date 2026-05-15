@@ -73,6 +73,13 @@ export default function PuzzleGate({ onSolve }: { onSolve: () => void }) {
         <div style={{ marginTop: 20, fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: 'var(--subtext)', opacity: 0.6 }}>
           Ответь на все вопросы чтобы получить доступ к профилю
         </div>
+
+        <button
+          onClick={() => window.history.back()}
+          style={{ marginTop: 16, background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'JetBrains Mono',monospace", fontSize: 11, color: 'var(--subtext)', letterSpacing: 2, opacity: 0.5 }}
+        >
+          ← вернуться назад
+        </button>
       </div>
 
       <style>{`
