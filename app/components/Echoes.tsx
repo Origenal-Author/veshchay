@@ -6,7 +6,7 @@ import { checkAchievements } from './AchievementToast'
 
 type Echo = { id: string; content: string; created_at: string; user_id: string; username?: string }
 
-export default function Echoes({ videoId, userId }: { videoId: string, userId: string | null }) {
+export default function Echoes({ videoId, userId, videoOwnerId, videoTitle }: { videoId: string, userId: string | null, videoOwnerId?: string, videoTitle?: string }) {
   const [echoes, setEchoes] = useState<Echo[]>([])
   const [text, setText] = useState('')
   const [loading, setLoading] = useState(false)
@@ -45,6 +45,17 @@ export default function Echoes({ videoId, userId }: { videoId: string, userId: s
       setText('')
       await load()
       checkAchievements()
+      // Уведомление автору видео
+      if (videoOwnerId && videoOwnerId !== userId) {
+        fetch('/api/notifications', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: videoOwnerId, actor_id: userId,
+            type: 'echo', entity_id: videoId, entity_title: videoTitle ?? 'видео',
+          }),
+        }).catch(() => {})
+      }
     }
     setLoading(false)
   }

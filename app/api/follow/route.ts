@@ -23,6 +23,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ following: false })
   } else {
     await supabase.from('follows').insert({ follower_id: user.id, following_id: targetId })
+    // Уведомление владельцу профиля
+    await supabase.from('notifications').insert({
+      user_id: targetId, actor_id: user.id, type: 'follow',
+    })
     return NextResponse.json({ following: true })
   }
 }

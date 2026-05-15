@@ -7,6 +7,7 @@ import DailyXP from '@/app/components/DailyXP'
 import AchievementToast from '@/app/components/AchievementToast'
 import InventoryPanel from '@/app/components/InventoryPanel'
 import PetWalkerHost from '@/app/components/PetWalkerHost'
+import NotificationBell from '@/app/components/NotificationBell'
 
 export const metadata: Metadata = {
   title: 'ВЕЩАЙ',
@@ -25,6 +26,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <AchievementToast />
           <InventoryPanel />
           <PetWalkerHost />
+          {/* Колокольчик уведомлений — фиксированный в правом верхнем углу */}
+          <div style={{ position: 'fixed', top: 14, right: 20, zIndex: 8000 }}>
+            <NotificationBell />
+          </div>
         </WeatherProvider>
       </body>
     </html>

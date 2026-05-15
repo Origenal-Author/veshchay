@@ -76,7 +76,7 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
         </div>
 
         {/* Отклики */}
-        <Echoes videoId={video.id} userId={user?.id ?? null} />
+        <Echoes videoId={video.id} userId={user?.id ?? null} videoOwnerId={video.user_id} videoTitle={video.title} />
       </main>
     </div>
   )
