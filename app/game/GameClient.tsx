@@ -238,15 +238,17 @@ const KOD_PANIC = ['мне тесно...', 'страшно 😱', 'ТЕМНО!!!
 
 // ── СРЕДА ОБИТАНИЯ ─────────────────────────────────────────────────────────────
 function PetHabitat({ pet, onUpdate }: { pet: Pet; onUpdate: (p: Pet) => void }) {
-  // Синхронизируем walking только для ЭТОГО питомца
-  const [walking, setWalking] = useState(
-    () => (window as unknown as Record<string, string>).__walkingPetId === pet.id
-  )
+  const [walking, setWalking] = useState(false)
 
   useEffect(() => {
+    // Проверяем при маунте — вдруг этот питомец уже гуляет
+    const current = (window as unknown as Record<string, unknown>).__walkingPetId
+    if (current === pet.id) setWalking(true)
+
     const onStart = (e: Event) => {
       const id = (e as CustomEvent<{ pet: Pet }>).detail?.pet?.id
-      setWalking(id === pet.id)
+      // walking=true ТОЛЬКО если это наш питомец
+      if (id === pet.id) setWalking(true)
     }
     const onStop = () => setWalking(false)
     window.addEventListener('pet-walk-start', onStart)
