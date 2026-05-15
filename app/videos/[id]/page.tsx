@@ -48,13 +48,22 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
 
       <main style={{ maxWidth: 960, margin: '0 auto', padding: '32px 32px' }}>
         {/* Плеер */}
-        <div style={{ width: '100%', aspectRatio: '16/9', marginBottom: 24, border: '1px solid var(--border)', boxShadow: '0 0 40px var(--accent-glow)' }}>
-          <iframe
-            src={`https://www.youtube.com/embed/${video.youtube_id}?autoplay=1&rel=0`}
-            style={{ width: '100%', height: '100%' }}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
+        <div style={{ width: '100%', aspectRatio: '16/9', marginBottom: 24, border: '1px solid var(--border)', boxShadow: '0 0 40px var(--accent-glow)', background: '#000', overflow: 'hidden' }}>
+          {video.video_type === 'upload' && video.storage_path ? (
+            <video
+              src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/videos/${video.storage_path}`}
+              controls
+              autoPlay
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+            />
+          ) : (
+            <iframe
+              src={`https://www.youtube.com/embed/${video.youtube_id}?autoplay=1&rel=0`}
+              style={{ width: '100%', height: '100%' }}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          )}
         </div>
 
         {/* Заголовок */}

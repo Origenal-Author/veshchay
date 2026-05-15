@@ -151,7 +151,10 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
               {videos.map(v => (
                 <Link key={v.id} href={`/videos/${v.id}`} className="video-card">
                   <div className="video-card-thumb">
-                    <img src={`https://img.youtube.com/vi/${v.youtube_id}/mqdefault.jpg`} alt={v.title} />
+                    {v.video_type === 'upload'
+                      ? <div style={{ width: '100%', height: '100%', background: 'rgba(0,255,240,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32 }}>🎬</div>
+                      : <img src={`https://img.youtube.com/vi/${v.youtube_id}/mqdefault.jpg`} alt={v.title} />
+                    }
                     <div className="video-card-play">
                       <div className="play-icon">
                         <svg viewBox="0 0 24 24" fill="none" width="14" height="14"><path d="M8 5.14v14l11-7-11-7z" fill="currentColor" style={{ color: 'var(--accent)' }} /></svg>
