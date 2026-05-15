@@ -20,21 +20,33 @@ function timeAgo(date: string) {
   return 'ТОЛЬКО ЧТО'
 }
 
-const CAT_LABELS: Record<string, string> = {
+const TAG_LABELS: Record<string, string> = {
   secret: '#СЕКРЕТНЫЙ_ФАЙЛ', sharp: '#ОСТРЫЙ_МАТЕРИАЛ',
   agent: '#ВЕЩАНИЕ_ИНОАГЕНТА', intercepted: '#ПЕРЕХВАЧЕННЫЙ_СИГНАЛ',
-  noise: '#ПОМЕХИ_В_ЭФИРЕ', music: 'МУЗЫКА', games: 'ИГРЫ',
+  noise: '#ПОМЕХИ_В_ЭФИРЕ',
 }
 
-export default async function Home({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
-  const { q } = await searchParams
-  const cat = undefined
+const GENRE_LABELS: Record<string, string> = {
+  music: 'МУЗЫКА', film: 'КИНО', games: 'ИГРЫ',
+  streams: 'СТРИМЫ', podcasts: 'ПОДКАСТЫ', anime: 'АНИМЕ',
+}
+
+function getVideoTag(v: { content_tag?: string; category?: string }) {
+  return TAG_LABELS[v.content_tag ?? ''] ?? TAG_LABELS[v.category ?? ''] ?? ''
+}
+
+function getVideoGenre(v: { genre?: string; category?: string }) {
+  return GENRE_LABELS[v.genre ?? ''] ?? GENRE_LABELS[v.category ?? ''] ?? ''
+}
+
+export default async function Home({ searchParams }: { searchParams: Promise<{ q?: string; genre?: string }> }) {
+  const { q, genre } = await searchParams
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   let query = supabase.from('videos').select('*').order('created_at', { ascending: false }).limit(40)
   if (q) query = query.ilike('title', `%${q}%`)
-  if (cat) query = query.eq('category', cat)
+  if (genre) query = query.eq('genre', genre)
   const { data: videos } = await query
 
   // Подгружаем ники авторов
@@ -153,9 +165,18 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
                     <div style={{ position: 'absolute', bottom: 6, right: 6, background: 'rgba(6,6,18,0.9)', color: 'var(--accent)', fontSize: 10, fontFamily: "'JetBrains Mono',monospace", padding: '2px 6px', border: '1px solid rgba(0,255,240,0.2)' }}>▶</div>
                   </div>
                   <div className="video-card-body">
-                    {video.category && video.category !== 'general' && (
-                      <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 9, color: 'var(--accent2)', letterSpacing: 1, marginBottom: 4, opacity: 0.8 }}>
-                        {CAT_LABELS[video.category] || video.category}
+                    {(getVideoTag(video) || getVideoGenre(video)) && (
+                      <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 4 }}>
+                        {getVideoTag(video) && (
+                          <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 8, color: 'var(--accent2)', letterSpacing: 1, opacity: 0.85 }}>
+                            {getVideoTag(video)}
+                          </span>
+                        )}
+                        {getVideoGenre(video) && (
+                          <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 8, color: 'var(--subtext)', letterSpacing: 1, opacity: 0.6 }}>
+                            {getVideoTag(video) ? '·' : ''} {getVideoGenre(video)}
+                          </span>
+                        )}
                       </div>
                     )}
                     <div className="video-card-title">{video.title}</div>

@@ -8,16 +8,6 @@ import { extractYoutubeId } from '@/lib/youtube'
 
 type Mode = 'youtube' | 'file'
 
-const CATEGORIES = [
-  { value: 'general',     label: '— БЕЗ КАТЕГОРИИ —' },
-  { value: 'secret',      label: '#СЕКРЕТНЫЙ_ФАЙЛ' },
-  { value: 'sharp',       label: '#ОСТРЫЙ_МАТЕРИАЛ' },
-  { value: 'agent',       label: '#ВЕЩАНИЕ_ИНОАГЕНТА' },
-  { value: 'intercepted', label: '#ПЕРЕХВАЧЕННЫЙ_СИГНАЛ' },
-  { value: 'noise',       label: '#ПОМЕХИ_В_ЭФИРЕ' },
-  { value: 'music',       label: 'МУЗЫКА' },
-  { value: 'games',       label: 'ИГРЫ' },
-]
 
 export default function UploadPage() {
   const router = useRouter()
@@ -26,7 +16,8 @@ export default function UploadPage() {
   // Общие поля
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
-  const [category, setCategory] = useState('general')
+  const [genre, setGenre] = useState('other')
+  const [contentTag, setContentTag] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -74,7 +65,7 @@ export default function UploadPage() {
 
     const { data, error: dbError } = await supabase
       .from('videos')
-      .insert({ title, description, youtube_id: youtubeId, user_id: user.id, category, video_type: 'youtube' })
+      .insert({ title, description, youtube_id: youtubeId, user_id: user.id, genre, content_tag: contentTag, video_type: 'youtube' })
       .select('id').single()
 
     if (dbError) { setError(dbError.message); return }
@@ -113,7 +104,7 @@ export default function UploadPage() {
     const { data, error: dbError } = await supabase
       .from('videos')
       .insert({
-        title, description, user_id: user.id, category,
+        title, description, user_id: user.id, genre, content_tag: contentTag,
         video_type: 'upload', storage_path: storageData.path,
       })
       .select('id').single()
@@ -256,11 +247,30 @@ export default function UploadPage() {
               </div>
             )}
 
-            <div>
-              <label style={labelStyle}>// КАТЕГОРИЯ</label>
-              <select value={category} onChange={e => setCategory(e.target.value)} style={{ ...inputStyle, fontFamily: "'JetBrains Mono',monospace" }}>
-                {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
-              </select>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div>
+                <label style={labelStyle}>// ЖАНР</label>
+                <select value={genre} onChange={e => setGenre(e.target.value)} style={{ ...inputStyle, fontFamily: "'JetBrains Mono',monospace" }}>
+                  <option value="other">— ПРОЧЕЕ —</option>
+                  <option value="music">МУЗЫКА</option>
+                  <option value="film">КИНО</option>
+                  <option value="games">ИГРЫ</option>
+                  <option value="streams">СТРИМЫ</option>
+                  <option value="podcasts">ПОДКАСТЫ</option>
+                  <option value="anime">АНИМЕ</option>
+                </select>
+              </div>
+              <div>
+                <label style={labelStyle}>// ТЕГ <span style={{ opacity: 0.5 }}>(НЕОБЯЗАТЕЛЬНО)</span></label>
+                <select value={contentTag} onChange={e => setContentTag(e.target.value)} style={{ ...inputStyle, fontFamily: "'JetBrains Mono',monospace" }}>
+                  <option value="">— БЕЗ ТЕГА —</option>
+                  <option value="secret">#СЕКРЕТНЫЙ_ФАЙЛ</option>
+                  <option value="sharp">#ОСТРЫЙ_МАТЕРИАЛ</option>
+                  <option value="agent">#ВЕЩАНИЕ_ИНОАГЕНТА</option>
+                  <option value="intercepted">#ПЕРЕХВАЧЕННЫЙ_СИГНАЛ</option>
+                  <option value="noise">#ПОМЕХИ_В_ЭФИРЕ</option>
+                </select>
+              </div>
             </div>
 
             <div>
