@@ -237,8 +237,24 @@ function PetInfo({ pet }: { pet: Pet }) {
 const KOD_PANIC = ['мне тесно...', 'страшно 😱', 'ТЕМНО!!!', 'ВЫПУСТИ МЕНЯ!', 'помогите...', 'открой пожалуйста', 'я тут один...', 'АААА!!!']
 
 // ── СРЕДА ОБИТАНИЯ ─────────────────────────────────────────────────────────────
+// Слова-сородичи по типу питомца
+const KIN_WORDS: Record<string, string[]> = {
+  jellyfish: ['медуз', 'jellyfish', 'medusa', 'сородич', 'брат', 'сестр', 'родственн'],
+  hologram:  ['голограмм', 'hologram'],
+  ghost:     ['призрак', 'ghost'],
+  signal:    ['сигнал', 'signal'],
+  radar:     ['радар', 'radar'],
+  neuron:    ['нейрон', 'neuron'],
+  plasma:    ['плазм', 'plasma'],
+  crystal:   ['кристалл', 'crystal'],
+}
+const BAD_FOOD = ['яд', 'poison', 'мусор', 'null', 'error', 'delete', 'удали', 'токсин']
+
 function PetHabitat({ pet, onUpdate }: { pet: Pet; onUpdate: (p: Pet) => void }) {
   const [walking, setWalking] = useState(false)
+  const [sessionFeeds, setSessionFeeds] = useState(0)
+  const [virusKinCount, setVirusKinCount] = useState(0)
+  const MAX_FEEDS = 5
 
   useEffect(() => {
     // Проверяем при маунте — вдруг этот питомец уже гуляет
@@ -335,12 +351,89 @@ function PetHabitat({ pet, onUpdate }: { pet: Pet; onUpdate: (p: Pet) => void })
     const raw = feedInput.trim()
     if (!raw) return
     const tag = raw.startsWith('#') ? raw : '#' + raw
+    const lower = raw.toLowerCase()
     setFeedMode(false)
     setFeedInput('')
+
+    // ── Объелся ──────────────────────────────────────────────────────────────
+    if (sessionFeeds >= MAX_FEEDS) {
+      if (!isVirus) {
+        setMood('annoyed')
+        addParticle('ОБЪЕЛСЯ... не могу больше 🤢')
+        playSound('annoyed')
+        setTimeout(() => setMood('idle'), 2000)
+      } else {
+        setMood('happy')
+        addParticle('ОБОЖРАЛСЯ 🤢 ....доволен')
+        playSound('annoyed')
+        setTimeout(() => { playSound('happy'); setMood('idle') }, 1200)
+      }
+      return
+    }
+
+    // ── Сородич ──────────────────────────────────────────────────────────────
+    const kinWords = KIN_WORDS[pet.type] ?? []
+    const isKin = kinWords.some(w => lower.includes(w))
+    if (isKin) {
+      if (!isVirus) {
+        // КОД плачет и кричит капсом
+        setMood('annoyed')
+        playSound('annoyed')
+        const cries = [
+          'НЕТ!!! ЭТО МОЙ СОРОДИЧ!!!',
+          'НЕ БУДУ ЕСТЬ СВОЕГО БРАТА!!',
+          'МОНСТР!!! ОНА МНЕ КАК СЕСТРА!!',
+          'Я СКОРЕЕ УМРУ ЧЕМ ЭТО СЪЕМ!!!',
+        ]
+        addParticle(cries[Math.floor(Math.random() * cries.length)])
+        setTimeout(() => addParticle('😭😭😭'), 600)
+        setTimeout(() => setMood('idle'), 2500)
+        return
+      } else {
+        // ВИРУС требует ещё
+        const newCount = virusKinCount + 1
+        setVirusKinCount(newCount)
+        setMood('happy')
+        if (newCount >= 3) {
+          addParticle('НАСЫТИЛСЯ... 😈')
+          playSound('happy')
+          setTimeout(() => { playSound('eat'); setMood('idle') }, 800)
+          setVirusKinCount(0)
+        } else {
+          addParticle(`ЕЩЁ!!! НЕМЕДЛЕННО!!! (${newCount}/3)`)
+          playSound('eat')
+          setTimeout(() => setMood('idle'), 1000)
+        }
+        setSessionFeeds(n => n + 1)
+        callInteract('feed')
+        return
+      }
+    }
+
+    // ── Плохая еда ────────────────────────────────────────────────────────────
+    const isBad = BAD_FOOD.some(w => lower.includes(w))
+    if (isBad) {
+      setMood('annoyed')
+      playSound('annoyed')
+      if (!isVirus) {
+        addParticle('ФУ!!! Я ЭТО НЕ ЕМ!!!')
+      } else {
+        addParticle('ВКУСНО 😈 ЕЩЁ ДАВАЙ')
+        setSessionFeeds(n => n + 1)
+        callInteract('feed')
+        setTimeout(() => setMood('idle'), 1200)
+        return
+      }
+      setTimeout(() => setMood('idle'), 1500)
+      return
+    }
+
+    // ── Обычная еда ──────────────────────────────────────────────────────────
     setMood('eating')
     playSound('eat')
     addParticle(`ПОГЛОЩАЮ: ${tag}`)
     setTimeout(() => setMood('idle'), 1300)
+    setSessionFeeds(n => n + 1)
     callInteract('feed')
   }
 

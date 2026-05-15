@@ -104,14 +104,12 @@ function drawEyes(ctx: CanvasRenderingContext2D, type: PetType, cx: number, cy: 
     }
     case 'jellyfish': {
       if (!isVirus) {
-        // Широкие круглые точки
-        const er = blink ? 0.3 : 4
+        const er = blink ? 0.3 : Math.max(1.5, r * 0.12)
         ctx.beginPath(); ctx.arc(cx - eo, eyY, er, 0, Math.PI * 2); ctx.fill()
         ctx.beginPath(); ctx.arc(cx + eo, eyY, er, 0, Math.PI * 2); ctx.fill()
       } else {
-        // Треугольники ▽
-        const s = 4;
-        [[cx - eo, eyY], [cx + eo, eyY]].forEach(([ex, ey]) => {
+        const s = Math.max(1.8, r * 0.13)
+        ;[[cx - eo, eyY], [cx + eo, eyY]].forEach(([ex, ey]) => {
           ctx.beginPath(); ctx.moveTo(ex - s, ey - s); ctx.lineTo(ex + s, ey - s); ctx.lineTo(ex, ey + s); ctx.closePath(); ctx.fill()
         })
       }
