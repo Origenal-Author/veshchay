@@ -19,12 +19,11 @@ function ca(hex: string, a: number) {
 }
 
 // ── ЯЙЦО ──────────────────────────────────────────────────────────────────────
-function drawEgg(ctx: CanvasRenderingContext2D, cx: number, cy: number, isVirus: boolean, C: string, t: number) {
-  const ew = 18, eh = 23
+function drawEgg(ctx: CanvasRenderingContext2D, cx: number, cy: number, isVirus: boolean, C: string, t: number, size: number) {
+  const ew = size * 0.26, eh = size * 0.32
   const pulse = 0.5 + 0.5 * Math.sin(t * 0.04)
 
   if (isVirus) {
-    // Шипы коронавирус-стиль
     ctx.save()
     ctx.fillStyle = C
     ctx.shadowColor = C; ctx.shadowBlur = 8
@@ -33,11 +32,11 @@ function drawEgg(ctx: CanvasRenderingContext2D, cx: number, cy: number, isVirus:
       const angle = (i / spikeN) * Math.PI * 2
       const sx = cx + Math.cos(angle) * ew
       const sy = cy + Math.sin(angle) * eh
-      const spikeLen = 5 + Math.sin(i * 2.3) * 2
+      const spikeLen = ew * 0.22 + Math.sin(i * 2.3) * ew * 0.08
       const tx2 = cx + Math.cos(angle) * (ew + spikeLen)
       const ty2 = cy + Math.sin(angle) * (eh + spikeLen)
       const perp = angle + Math.PI / 2
-      const sw = 1.5
+      const sw = Math.max(1, ew * 0.06)
       ctx.beginPath()
       ctx.moveTo(tx2, ty2)
       ctx.lineTo(sx + Math.cos(perp) * sw, sy + Math.sin(perp) * sw)
@@ -53,7 +52,6 @@ function drawEgg(ctx: CanvasRenderingContext2D, cx: number, cy: number, isVirus:
   ctx.beginPath(); ctx.ellipse(cx, cy, ew, eh, 0, 0, Math.PI * 2)
   ctx.fillStyle = ca(C, 0.1 + pulse * 0.05); ctx.fill()
   ctx.strokeStyle = ca(C, 0.65); ctx.lineWidth = 1.5; ctx.stroke()
-  // Внутренний блик
   const ig = ctx.createRadialGradient(cx - ew * 0.25, cy - eh * 0.25, 0, cx, cy, ew)
   ig.addColorStop(0, ca(C, 0.18))
   ig.addColorStop(1, ca(C, 0))
@@ -661,12 +659,12 @@ export default function PetCanvas({ type, variant, stage, size = 120 }: Props) {
       ctx.clearRect(0, 0, w, h)
 
       if (stage === 'egg') {
-        drawEgg(ctx, w / 2, h / 2, isVirus, C, t)
+        drawEgg(ctx, w / 2, h / 2, isVirus, C, t, size)
       } else {
         if (stage === 'baby') {
           ctx.save()
-          ctx.translate(w * 0.2, h * 0.2)
-          ctx.scale(0.6, 0.6)
+          ctx.translate(w * 0.13, h * 0.13)
+          ctx.scale(0.74, 0.74)
           DRAW_MAP[type](ctx, w, h, t, isVirus, C)
           ctx.restore()
         } else {

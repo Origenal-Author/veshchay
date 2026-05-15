@@ -234,9 +234,19 @@ function PetInfo({ pet }: { pet: Pet }) {
   )
 }
 
+// КОД-паника при свёртке
+const KOD_PANIC = ['мне тесно...', 'страшно 😱', 'ТЕМНО!!!', 'ВЫПУСТИ МЕНЯ!', 'помогите...', 'открой пожалуйста', 'я тут один...', 'АААА!!!']
+
 // ── СРЕДА ОБИТАНИЯ ─────────────────────────────────────────────────────────────
 function PetHabitat({ pet, onUpdate }: { pet: Pet; onUpdate: (p: Pet) => void }) {
   const [walking, setWalking] = useState(false)
+  const [collapsed, setCollapsed] = useState(false)
+  const [collapseCount, setCollapseCount] = useState(0)
+  const [kodMsg, setKodMsg] = useState<string | null>(null)
+  const [showAds, setShowAds] = useState(false)
+  const [shaking, setShaking] = useState(false)
+  const collapseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const kodTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const def = getPetDef(pet.type)
   const isVirus = pet.variant === 'virus'
   const C = isVirus ? def.colorVirus : def.color
@@ -254,6 +264,35 @@ function PetHabitat({ pet, onUpdate }: { pet: Pet; onUpdate: (p: Pet) => void })
   const pidRef = useRef(0)
   const poopTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const habitatRef = useRef<HTMLDivElement>(null)
+
+  function handleCollapse() {
+    if (collapsed) return
+    setCollapsed(true)
+    if (!isVirus) {
+      // КОД: паникует
+      let idx = 0
+      kodTimerRef.current = setInterval(() => {
+        setKodMsg(KOD_PANIC[idx % KOD_PANIC.length])
+        idx++
+      }, 1800)
+    } else {
+      // ВИРУС: сам открывает через 2.5с
+      collapseTimerRef.current = setTimeout(() => {
+        setCollapsed(false)
+        setShaking(true)
+        setTimeout(() => setShaking(false), 700)
+        const next = collapseCount + 1
+        setCollapseCount(next)
+        if (next >= 3) setShowAds(true)
+      }, 2500)
+    }
+  }
+
+  function handleOpen() {
+    setCollapsed(false)
+    if (kodTimerRef.current) clearInterval(kodTimerRef.current)
+    setKodMsg(null)
+  }
 
   function addParticle(text: string, dx = 0) {
     const id = pidRef.current++
@@ -363,6 +402,7 @@ function PetHabitat({ pet, onUpdate }: { pet: Pet; onUpdate: (p: Pet) => void })
           border: `1px solid ${borderColor}`, background: envBg,
           overflow: 'hidden',
           boxShadow: `0 0 40px rgba(${isVirus ? '255,0,110' : '0,212,255'},0.12)`,
+          animation: shaking ? 'shake 0.6s ease' : 'none',
         }}
       >
         {/* Заголовок */}
@@ -371,15 +411,33 @@ function PetHabitat({ pet, onUpdate }: { pet: Pet; onUpdate: (p: Pet) => void })
           borderBottom: `1px solid ${borderColor}`, background: 'rgba(6,6,18,0.6)',
         }}>
           <div style={{ display: 'flex', gap: 5 }}>
-            {['#FF5F56', '#FFBD2E', '#27C93F'].map((c, i) => (
-              <div key={i} style={{ width: 10, height: 10, borderRadius: '50%', background: c, opacity: 0.7 }} />
-            ))}
+            <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#FF5F56', opacity: 0.7 }} />
+            {/* Жёлтая точка — кнопка сворачивания */}
+            <button
+              onClick={collapsed ? handleOpen : handleCollapse}
+              title={collapsed ? 'Развернуть' : 'Свернуть'}
+              style={{
+                width: 10, height: 10, borderRadius: '50%', background: '#FFBD2E',
+                border: 'none', cursor: 'pointer', padding: 0, opacity: 0.85,
+                transition: 'opacity 0.2s',
+              }}
+            />
+            <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#27C93F', opacity: 0.7 }} />
           </div>
-          <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 10, color: C, letterSpacing: 2, marginLeft: 8 }}>
-            {isVirus ? '// ЗОНА ЗАРАЖЕНИЯ //' : '// ЦИФРОВОЕ ГНЕЗДО //'}
+          <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 10, color: C, letterSpacing: 2, marginLeft: 8, flex: 1 }}>
+            {collapsed
+              ? (isVirus ? '// СВЁРНУТО //' : kodMsg ? `// ${kodMsg}` : '// СВЁРНУТО //')
+              : (isVirus ? '// ЗОНА ЗАРАЖЕНИЯ //' : '// ЦИФРОВОЕ ГНЕЗДО //')}
           </div>
+          {/* Стрелка expand для КОД */}
+          {collapsed && !isVirus && (
+            <button onClick={handleOpen} style={{ background: 'none', border: `1px solid ${C}`, color: C, borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontFamily: 'JetBrains Mono,monospace', fontSize: 9 }}>
+              ОТКРЫТЬ
+            </button>
+          )}
         </div>
 
+        {!collapsed && <>
         {/* Сетчатый фон */}
         <div style={{
           position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0,
@@ -440,13 +498,14 @@ function PetHabitat({ pet, onUpdate }: { pet: Pet; onUpdate: (p: Pet) => void })
         {/* Подсказка */}
         <div style={{ textAlign: 'center', padding: '0 0 14px', position: 'relative', zIndex: 2 }}>
           <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 9, color: 'rgba(255,255,255,0.18)', letterSpacing: 2 }}>
-            {poop ? '⚠ убери какашку — через 3 сек вылезет жук' : 'используй кнопки ниже для взаимодействия'}
+            {poop ? '⚠ убери какашку — через 3 сек вылезет жук' : '// нажми жёлтую точку чтобы свернуть //'}
           </div>
         </div>
+        </>}
       </div>
 
-      {/* Кнопки взаимодействия */}
-      <div style={{ marginTop: 12 }}>
+      {/* Кнопки взаимодействия — скрыты когда свёрнуто */}
+      <div style={{ marginTop: 12, display: collapsed ? 'none' : 'block' }}>
         {feedMode ? (
           <form onSubmit={submitFeed} style={{ display: 'flex', gap: 8 }}>
             <div style={{
@@ -513,7 +572,10 @@ function PetHabitat({ pet, onUpdate }: { pet: Pet; onUpdate: (p: Pet) => void })
       {walking && <PetWalker pet={pet} onReturn={() => setWalking(false)} />}
 
       {/* Инфо питомца */}
-      <PetInfo pet={pet} />
+      {!collapsed && <PetInfo pet={pet} />}
+
+      {/* Фейковая реклама от злого вируса */}
+      {showAds && <FakeAds onAllClosed={() => setShowAds(false)} />}
 
       {/* Жук (fixed-position, на весь экран) */}
       {bug && <BugRunner onSquash={() => setBug(false)} />}
@@ -560,22 +622,122 @@ function PetTabs({ pets, active, onSelect }: { pets: Pet[]; active: number; onSe
   )
 }
 
-// ── SVG-ЯЩИК ──────────────────────────────────────────────────────────────────
+// ── SVG-КОНТЕЙНЕР (ШЕСТИУГОЛЬНИК) ────────────────────────────────────────────
 function CrateIcon({ glowing }: { glowing?: boolean }) {
   const C = glowing ? '#00FFF0' : '#3A5060'
+  const fill = glowing ? 'rgba(0,255,240,0.07)' : 'rgba(20,40,60,0.1)'
+  const pts = Array.from({ length: 6 }, (_, i) => {
+    const a = (i / 6) * Math.PI * 2 - Math.PI / 6
+    return `${40 + 34 * Math.cos(a)},${40 + 34 * Math.sin(a)}`
+  }).join(' ')
+  const ptsInner = Array.from({ length: 6 }, (_, i) => {
+    const a = (i / 6) * Math.PI * 2 - Math.PI / 6
+    return `${40 + 22 * Math.cos(a)},${40 + 22 * Math.sin(a)}`
+  }).join(' ')
   return (
     <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
-      <rect x="8" y="28" width="64" height="44" rx="4" fill={`rgba(${glowing ? '0,255,240' : '20,40,60'},0.12)`} stroke={C} strokeWidth="1.5"/>
-      <path d="M4 24 L40 14 L76 24 L76 30 L40 20 L4 30 Z" fill={`rgba(${glowing ? '0,255,240' : '20,40,60'},0.18)`} stroke={C} strokeWidth="1.5"/>
-      <line x1="8" y1="50" x2="72" y2="50" stroke={C} strokeWidth="1" strokeDasharray="4 3" opacity="0.5"/>
-      <rect x="33" y="44" width="14" height="12" rx="2" fill={`rgba(${glowing ? '0,255,240' : '20,40,60'},0.3)`} stroke={C} strokeWidth="1.2"/>
-      <path d="M36 44 C36 40 44 40 44 44" stroke={C} strokeWidth="1.2" fill="none"/>
-      <text x="40" y="53.5" textAnchor="middle" fill={C} fontSize="7" fontFamily="Orbitron,monospace" fontWeight="700">?</text>
-      <circle cx="8" cy="28" r="2" fill={C} opacity="0.6"/>
-      <circle cx="72" cy="28" r="2" fill={C} opacity="0.6"/>
-      <circle cx="8" cy="72" r="2" fill={C} opacity="0.6"/>
-      <circle cx="72" cy="72" r="2" fill={C} opacity="0.6"/>
+      {/* Внешний шестиугольник */}
+      <polygon points={pts} fill={fill} stroke={C} strokeWidth="1.5"/>
+      {/* Внутренний шестиугольник (пунктир) */}
+      <polygon points={ptsInner} fill="none" stroke={C} strokeWidth="0.8" strokeDasharray="3 3" opacity="0.5"/>
+      {/* Диагональные линии от вершин к центру */}
+      {Array.from({ length: 6 }, (_, i) => {
+        const a = (i / 6) * Math.PI * 2 - Math.PI / 6
+        const x = 40 + 34 * Math.cos(a)
+        const y = 40 + 34 * Math.sin(a)
+        return <line key={i} x1={x} y1={y} x2="40" y2="40" stroke={C} strokeWidth="0.5" opacity="0.15"/>
+      })}
+      {/* Угловые точки */}
+      {Array.from({ length: 6 }, (_, i) => {
+        const a = (i / 6) * Math.PI * 2 - Math.PI / 6
+        return <circle key={i} cx={40 + 34 * Math.cos(a)} cy={40 + 34 * Math.sin(a)} r="2.5" fill={C} opacity="0.7"/>
+      })}
+      {/* Замок по центру */}
+      <rect x="31" y="35" width="18" height="14" rx="2.5" fill={fill} stroke={C} strokeWidth="1.3"/>
+      <path d="M34 35 C34 29 46 29 46 35" stroke={C} strokeWidth="1.3" fill="none"/>
+      {/* ? */}
+      <text x="40" y="45.5" textAnchor="middle" fill={C} fontSize="8" fontFamily="Orbitron,monospace" fontWeight="700">?</text>
+      {/* Статус-индикатор сверху */}
+      <circle cx="40" cy="7" r="3" fill={glowing ? C : 'none'} stroke={C} strokeWidth="1" opacity="0.8"/>
+      {glowing && <circle cx="40" cy="7" r="5" fill="none" stroke={C} strokeWidth="0.5" opacity="0.4"/>}
     </svg>
+  )
+}
+
+// ── ФЕЙКОВАЯ РЕКЛАМА ──────────────────────────────────────────────────────────
+const FAKE_ADS = [
+  {
+    title: '🎉 ПОЗДРАВЛЯЕМ!',
+    body: 'Вы стали 1 000 000-м посетителем!\nНажмите OK для получения СУПЕРПРИЗА',
+    pos: { left: '15%', top: '18%' },
+  },
+  {
+    title: '⚠ ОШИБКА СИСТЕМЫ',
+    body: 'Обнаружено 47 вирусов-паразитов!\nНемедленно скачайте ANTIPET_PRO.exe',
+    pos: { right: '12%', top: '25%' },
+  },
+  {
+    title: '🔥 ТОЛЬКО СЕГОДНЯ',
+    body: 'Скидка 999% на корм для питомца!\nПредложение истекает через 00:03',
+    pos: { left: '30%', bottom: '20%' },
+  },
+]
+
+function FakeAds({ onAllClosed }: { onAllClosed: () => void }) {
+  const [closed, setClosed] = useState([false, false, false])
+
+  useEffect(() => {
+    if (closed.every(Boolean)) onAllClosed()
+  }, [closed, onAllClosed])
+
+  return (
+    <>
+      {FAKE_ADS.map((ad, i) => closed[i] ? null : (
+        <div key={i} style={{
+          position: 'fixed', zIndex: 99992, width: 260,
+          ...ad.pos as React.CSSProperties,
+          background: 'rgba(6,6,18,0.98)',
+          border: '1px solid #FF006E',
+          borderRadius: 8,
+          boxShadow: '0 0 30px rgba(255,0,110,0.35), 0 0 60px rgba(255,0,110,0.1)',
+          animation: 'popIn 0.4s cubic-bezier(0.34,1.56,0.64,1)',
+          overflow: 'hidden',
+        }}>
+          <div style={{
+            background: 'rgba(255,0,110,0.18)', padding: '7px 12px',
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            borderBottom: '1px solid rgba(255,0,110,0.3)',
+          }}>
+            <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 9, color: '#FF006E', letterSpacing: 1 }}>
+              {ad.title}
+            </span>
+            <button
+              onClick={() => setClosed(c => c.map((v, j) => j === i || v))}
+              style={{
+                background: 'rgba(255,0,110,0.2)', border: '1px solid #FF006E',
+                color: '#FF006E', width: 18, height: 18, borderRadius: 3,
+                cursor: 'pointer', fontSize: 10, lineHeight: 1,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}
+            >✕</button>
+          </div>
+          <div style={{ padding: '14px 14px', fontFamily: 'JetBrains Mono,monospace', fontSize: 10, color: '#E0E8F0', lineHeight: 1.8, whiteSpace: 'pre-line' }}>
+            {ad.body}
+          </div>
+          <div style={{ padding: '0 14px 12px', display: 'flex', gap: 8 }}>
+            <button
+              onClick={() => setClosed(c => c.map((v, j) => j === i || v))}
+              style={{
+                flex: 1, padding: '6px', background: 'rgba(255,0,110,0.15)',
+                border: '1px solid #FF006E', color: '#FF006E',
+                fontFamily: 'Orbitron,monospace', fontSize: 8, letterSpacing: 2,
+                cursor: 'pointer', borderRadius: 4,
+              }}
+            >ЗАКРЫТЬ</button>
+          </div>
+        </div>
+      ))}
+    </>
   )
 }
 
