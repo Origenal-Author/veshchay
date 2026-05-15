@@ -5,6 +5,7 @@ import Reactions from '@/app/components/Reactions'
 import Echoes from '@/app/components/Echoes'
 import ViewTracker from '@/app/components/ViewTracker'
 import AddToPlaylist from '@/app/components/AddToPlaylist'
+import VideoPlayer from '@/app/components/VideoPlayer'
 
 export default async function VideoPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -50,11 +51,8 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
         {/* Плеер */}
         <div style={{ width: '100%', aspectRatio: '16/9', marginBottom: 24, border: '1px solid var(--border)', boxShadow: '0 0 40px var(--accent-glow)', background: '#000', overflow: 'hidden' }}>
           {video.video_type === 'upload' && video.storage_path ? (
-            <video
+            <VideoPlayer
               src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/videos/${video.storage_path}`}
-              controls
-              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-              playsInline
             />
           ) : (
             <iframe
