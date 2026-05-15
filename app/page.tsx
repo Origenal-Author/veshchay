@@ -69,14 +69,14 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginLeft: 'auto' }}>
           {user ? (
             <>
-              <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, color: 'var(--accent2)', whiteSpace: 'nowrap' }}>
+              <span className="hide-mobile" style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, color: 'var(--accent2)', whiteSpace: 'nowrap' }}>
                 {user.user_metadata?.username || user.email}
               </span>
               <Link href="/videos/upload" className="btn-primary-ui">+ ВИДЕО</Link>
-              <Link href="/leaderboard" className="btn-ghost-ui">ТОП</Link>
-              <Link href="/game" className="btn-ghost-ui">ПАРАЗИТЫ</Link>
+              <Link href="/leaderboard" className="btn-ghost-ui hide-mobile">ТОП</Link>
+              <Link href="/game" className="btn-ghost-ui hide-mobile">ПАРАЗИТЫ</Link>
               <Link href={`/profile/${user.id}`} className="btn-ghost-ui">ПРОФИЛЬ</Link>
-              <form action={logout}><button type="submit" className="btn-ghost-ui">ВЫЙТИ</button></form>
+              <form action={logout} className="hide-mobile"><button type="submit" className="btn-ghost-ui">ВЫЙТИ</button></form>
             </>
           ) : (
             <>
@@ -136,7 +136,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
       )}
 
       {/* СЕТКА ВИДЕО */}
-      <div style={{ padding: '0 32px 40px', position: 'relative', zIndex: 2 }}>
+      <div className="mobile-pad" style={{ padding: '0 32px 40px', position: 'relative', zIndex: 2 }}>
         {q && (
           <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
             <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, color: 'var(--subtext)' }}>
@@ -152,7 +152,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
               <span className="section-title">// АКТИВНЫЕ_СИГНАЛЫ</span>
               <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 11, color: 'var(--subtext)', letterSpacing: 1 }}>СМОТРЕТЬ ВСЕ [→]</span>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16 }}>
+            <div className="video-grid">
               {rest.map((video) => (
                 <Link key={video.id} href={`/videos/${video.id}`} className="video-card">
                   <div className="video-card-thumb">

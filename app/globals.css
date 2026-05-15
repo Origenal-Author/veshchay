@@ -553,3 +553,63 @@ body[data-weather="fog"] .site-header { background: rgba(7,10,14,0.90); }
   75%      { transform: translateX(-4px); }
   90%      { transform: translateX(4px); }
 }
+
+/* ══ МОБИЛЬНАЯ АДАПТАЦИЯ ══════════════════════════════════════════════════ */
+
+/* Утилиты */
+.hide-mobile { display: initial; }
+.show-mobile { display: none; }
+
+/* Видео-грид — адаптивный */
+.video-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .video-grid { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+}
+
+@media (max-width: 640px) {
+  .hide-mobile { display: none !important; }
+  .show-mobile { display: initial !important; }
+
+  /* Шапка */
+  .site-header { padding: 0 14px; gap: 8px; }
+  .site-logo { font-size: 18px; }
+
+  /* Кнопки меньше */
+  .btn-primary-ui { padding: 6px 12px; font-size: 10px; letter-spacing: 1px; }
+  .btn-ghost-ui   { padding: 6px 10px; font-size: 10px; letter-spacing: 1px; }
+
+  /* Грид — 2 колонки */
+  .video-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+
+  /* Карточки */
+  .video-card-body { padding: 8px 10px; }
+  .video-card-title { font-size: 12px; }
+  .video-card-date  { font-size: 10px; }
+
+  /* Hero banner */
+  .hero-banner { height: 220px !important; margin: 10px 14px !important; }
+
+  /* Контент с отступами */
+  .mobile-pad { padding-left: 14px !important; padding-right: 14px !important; }
+  .hero-banner { margin: 10px 14px !important; height: 220px !important; }
+
+  /* Поиск */
+  .search-bar-wrap { max-width: 160px; }
+  .search-input { font-size: 11px; }
+
+  /* NavTabs */
+  nav .tab-btn { padding: 12px 12px; font-size: 10px; }
+
+  /* Инвентарь и колокольчик — меньше */
+  .inventory-btn, .notif-btn { width: 38px; height: 38px; }
+}
+
+@media (max-width: 400px) {
+  .video-grid { grid-template-columns: 1fr 1fr; gap: 6px; }
+  .site-logo { font-size: 16px; }
+}
