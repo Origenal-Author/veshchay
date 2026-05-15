@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase-server'
 import { rollPet } from '@/lib/pets'
+import { getMaxPets } from '@/lib/xp'
 import { NextResponse } from 'next/server'
 
 export async function POST() {
@@ -19,9 +20,10 @@ export async function POST() {
     .from('pets').select('id, stage').eq('user_id', user.id).order('created_at')
 
   const count = pets?.length ?? 0
+  const maxPets = getMaxPets(profile.xp ?? 0)
 
-  if (count >= 3)
-    return NextResponse.json({ error: 'Лимит питомцев: 3' }, { status: 400 })
+  if (count >= maxPets)
+    return NextResponse.json({ error: `Лимит питомцев: ${maxPets} (повысь ранг)` }, { status: 400 })
 
   if (count > 0 && pets![count - 1].stage !== 'adult')
     return NextResponse.json({ error: 'Прокачай предыдущего питомца до ВЗРОСЛЫЙ' }, { status: 400 })

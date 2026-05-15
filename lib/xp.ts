@@ -21,3 +21,14 @@ export function calcBioXp(length: number): number {
   if (length <= 100) return 15
   return 30
 }
+
+export function getMaxPets(xp: number): number {
+  if (xp >= 30000) return 10 // РУТОВЫЙ ДОСТУП
+  if (xp >= 15000) return 8  // СИСТЕМНЫЙ БОГ
+  if (xp >= 7500)  return 7  // ТЕНЕВОЙ АРХИТЕКТ
+  if (xp >= 4000)  return 6  // НЕЙРОМАНТ
+  if (xp >= 2000)  return 5  // ПРИЗРАК
+  if (xp >= 1000)  return 4  // АГЕНТ
+  if (xp >= 500)   return 3  // ВЗЛОМЩИК
+  return 0
+}

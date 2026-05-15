@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import PetCanvas from '@/app/components/PetCanvas'
 import { checkAchievements } from '@/app/components/AchievementToast'
+import { getMaxPets } from '@/lib/xp'
 import {
   getPetDef, RARITY_COLOR, RARITY_GLOW,
   getStageProgress, getNextStage, STAGE_XP,
@@ -291,7 +292,10 @@ function PetHabitat({ pet, onUpdate }: { pet: Pet; onUpdate: (p: Pet) => void })
   const [feedMode, setFeedMode] = useState(false)
   const [feedInput, setFeedInput] = useState('')
   const [poop, setPoop] = useState(false)
-  const [bug, setBug] = useState(false)
+  const [poopPos, setPoopPos] = useState({ right: '22%', bottom: 14 })
+  const [bugs, setBugs] = useState<number[]>([])
+  const bugIdRef = useRef(0)
+  const MAX_BUGS = 5
   const [petOffset, setPetOffset] = useState({ x: 0, y: 0 })
   const [shooPos, setShooPos] = useState<{ x: number; y: number } | null>(null)
 
@@ -446,11 +450,17 @@ function PetHabitat({ pet, onUpdate }: { pet: Pet; onUpdate: (p: Pet) => void })
 
       if (Math.random() < 0.3 && !poop) {
         setTimeout(() => {
+          // Случайная позиция какашки
+          const randomRight = `${10 + Math.random() * 55}%`
+          const randomBottom = 10 + Math.random() * 20
+          setPoopPos({ right: randomRight, bottom: randomBottom })
           setPoop(true)
           addParticle('💩', 60)
           poopTimerRef.current = setTimeout(() => {
             setPoop(false)
-            setBug(true)
+            if (bugs.length < MAX_BUGS) {
+              setBugs(b => [...b, bugIdRef.current++])
+            }
           }, 3000)
         }, 800)
       }
@@ -611,7 +621,7 @@ function PetHabitat({ pet, onUpdate }: { pet: Pet; onUpdate: (p: Pet) => void })
               onClick={cleanPoop}
               title="Убери! Иначе вылезет жук..."
               style={{
-                position: 'absolute', bottom: 14, right: '22%',
+                position: 'absolute', bottom: poopPos.bottom, right: poopPos.right,
                 fontSize: 24, cursor: 'pointer', zIndex: 5,
                 animation: 'popIn 0.3s cubic-bezier(0.34,1.56,0.64,1)',
                 filter: 'drop-shadow(0 0 8px rgba(180,100,0,0.6))',
@@ -712,8 +722,10 @@ function PetHabitat({ pet, onUpdate }: { pet: Pet; onUpdate: (p: Pet) => void })
       {/* Фейковая реклама от злого вируса */}
       {showAds && <FakeAds onAllClosed={() => setShowAds(false)} />}
 
-      {/* Жук (fixed-position, на весь экран) */}
-      {bug && <BugRunner onSquash={() => setBug(false)} />}
+      {/* Жуки (fixed-position, на весь экран, до 5 штук) */}
+      {bugs.map(id => (
+        <BugRunner key={id} onSquash={() => setBugs(b => b.filter(x => x !== id))} />
+      ))}
     </div>
   )
 }
@@ -927,7 +939,8 @@ export default function GameClient({ userId, xp, initialPets }: Props) {
 
   // Может ли пользователь получить ещё питомца
   const lastPet = pets[pets.length - 1]
-  const canGetMore = pets.length < 3 && (pets.length === 0 || lastPet?.stage === 'adult') && xp >= 500
+  const maxPets = getMaxPets(xp)
+  const canGetMore = pets.length < maxPets && (pets.length === 0 || lastPet?.stage === 'adult') && xp >= 500
 
   // ── LOCKED ──
   if (phase === 'locked') return (
@@ -1081,7 +1094,7 @@ export default function GameClient({ userId, xp, initialPets }: Props) {
               background: 'rgba(0,255,240,0.03)', marginBottom: 16,
             }}>
               <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 10, color: '#506080', letterSpacing: 2, marginBottom: 8 }}>
-                {pets.length}/3 питомца · слот свободен
+                {pets.length}/{maxPets} питомца · слот свободен
               </div>
               <div style={{ fontFamily: 'Exo 2,sans-serif', fontSize: 13, color: '#8892B0', lineHeight: 1.5 }}>
                 Предыдущий паразит вырос. Можешь завести ещё одного.
@@ -1097,9 +1110,9 @@ export default function GameClient({ userId, xp, initialPets }: Props) {
         )}
 
         {/* Лимит */}
-        {pets.length >= 3 && (
+        {pets.length >= maxPets && maxPets > 0 && (
           <div style={{ marginTop: 24, textAlign: 'center', fontFamily: 'JetBrains Mono,monospace', fontSize: 10, color: '#3A4A5A', letterSpacing: 2 }}>
-            // лимит 3 питомца достигнут · разблокировка с повышением ранга //
+            // лимит {maxPets} питомца · следующий слот откроется с повышением ранга //
           </div>
         )}
       </div>
