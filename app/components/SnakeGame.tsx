@@ -69,11 +69,18 @@ export default function SnakeGame({ onClose }: { onClose: () => void }) {
     ctx.shadowBlur = 0
 
     // Лейбл еды
-    ctx.fillStyle = 'rgba(255,0,110,0.9)'
-    ctx.font = `${isMobile ? 7 : 8}px JetBrains Mono, monospace`
+    ctx.fillStyle = 'rgba(255,0,110,0.95)'
+    ctx.font = `bold ${isMobile ? 7 : 8}px JetBrains Mono, monospace`
     ctx.textAlign = 'center'
-    const label = s.foodLabel.length > 10 ? s.foodLabel.slice(0, 9) + '…' : s.foodLabel
-    ctx.fillText(label, fx + CELL / 2, fy - 2)
+    // Полное название — без обрезки
+    const words = s.foodLabel.split(' ')
+    if (words.length > 1 && s.foodLabel.length > 10) {
+      // Два слова — на двух строках
+      ctx.fillText(words[0], fx + CELL / 2, fy - 9)
+      ctx.fillText(words.slice(1).join(' '), fx + CELL / 2, fy - 1)
+    } else {
+      ctx.fillText(s.foodLabel, fx + CELL / 2, fy - 3)
+    }
     ctx.textAlign = 'left'
 
     // Змея

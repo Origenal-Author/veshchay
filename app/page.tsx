@@ -5,6 +5,7 @@ import { logout } from '@/app/auth/actions'
 import SearchBar from '@/app/components/SearchBar'
 import NavTabs from '@/app/components/NavTabs'
 import OnlineCount from '@/app/components/OnlineCount'
+import MobileMenu from '@/app/components/MobileMenu'
 
 function getInitials(title: string) {
   return title.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase().slice(0, 2)
@@ -77,11 +78,13 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
               <Link href="/game" className="btn-ghost-ui hide-mobile">ПАРАЗИТЫ</Link>
               <Link href={`/profile/${user.id}`} className="btn-ghost-ui">ПРОФИЛЬ</Link>
               <form action={logout} className="hide-mobile"><button type="submit" className="btn-ghost-ui">ВЫЙТИ</button></form>
+              <MobileMenu userId={user.id} />
             </>
           ) : (
             <>
-              <Link href="/auth/login" className="btn-ghost-ui">ВОЙТИ</Link>
-              <Link href="/auth/register" className="btn-primary-ui">РЕГИСТРАЦИЯ</Link>
+              <Link href="/auth/login" className="btn-ghost-ui hide-mobile">ВОЙТИ</Link>
+              <Link href="/auth/register" className="btn-primary-ui hide-mobile">РЕГИСТРАЦИЯ</Link>
+              <MobileMenu userId={null} />
             </>
           )}
         </div>
