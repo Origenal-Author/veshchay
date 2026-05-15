@@ -6,13 +6,29 @@ import dynamic from 'next/dynamic'
 const SnakeGame = dynamic(() => import('./SnakeGame'), { ssr: false })
 
 export default function SnakeWrapper() {
-  const [show, setShow] = useState(false)
+  const [show, setShow] = useState(true) // показываем сразу при загрузке
 
   useEffect(() => {
-    const seen = sessionStorage.getItem('snake_seen')
-    if (!seen) {
-      setShow(true)
-      sessionStorage.setItem('snake_seen', '1')
+    // Авто-закрытие через 4 секунды после загрузки страницы
+    const timer = setTimeout(() => {
+      setShow(false)
+    }, 4000)
+
+    // Если страница загрузилась быстро — закроем раньше
+    function onLoad() {
+      clearTimeout(timer)
+      setTimeout(() => setShow(false), 1500) // 1.5 сек после загрузки
+    }
+
+    if (document.readyState === 'complete') {
+      onLoad()
+    } else {
+      window.addEventListener('load', onLoad)
+    }
+
+    return () => {
+      clearTimeout(timer)
+      window.removeEventListener('load', onLoad)
     }
   }, [])
 

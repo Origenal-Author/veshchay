@@ -5,16 +5,9 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 const FILES = [
   'СУПЕР СЕКРЕТНО', 'ВЗЛОМ ПЕНТАГОНА', 'ДАННЫЕ РОСКОМНАДЗОРА',
   'ЯДЕРНЫЕ КОДЫ', 'ПРОЕКТ ПРИЗРАК', 'ОПЕРАЦИЯ ТЕНЬ',
-  'БАЗА ЦРУ', 'ШИФР МАТРИЦЫ', 'ПРОТОКОЛ ОМЕГА',
-  'ЛИЧНОЕ ДЕЛО ФСБ', 'ДОСЬЕ №7734', 'СЕРВЕРА ПЕНТАГОНА',
-  'АРХИВ НЕКСУС', 'КОД СУДНОГО ДНЯ', 'ФАЙЛЫ X-77',
+  'BASE ЦРУ', 'ШИФР МАТРИЦЫ', 'ПРОТОКОЛ ОМЕГА',
+  'ЛИЧНОЕ ДЕЛО ФСБ', 'ДОСЬЕ №7734', 'АРХИВ НЕКСУС',
 ]
-
-const CELL = 20
-const COLS = 25
-const ROWS = 20
-const W = COLS * CELL
-const H = ROWS * CELL
 
 type Point = { x: number; y: number }
 type Dir = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT'
@@ -22,12 +15,20 @@ type Dir = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT'
 function rand(max: number) { return Math.floor(Math.random() * max) }
 
 export default function SnakeGame({ onClose }: { onClose: () => void }) {
+  // Адаптивный размер под экран
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 600
+  const CELL = isMobile ? 14 : 20
+  const COLS = isMobile ? 17 : 25
+  const ROWS = isMobile ? 14 : 20
+  const W = COLS * CELL
+  const H = ROWS * CELL
+
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const stateRef = useRef({
-    snake: [{ x: 12, y: 10 }, { x: 11, y: 10 }, { x: 10, y: 10 }],
+    snake: [{ x: 8, y: 7 }, { x: 7, y: 7 }, { x: 6, y: 7 }],
     dir: 'RIGHT' as Dir,
     nextDir: 'RIGHT' as Dir,
-    food: { x: 18, y: 10 },
+    food: { x: 15, y: 7 },
     foodLabel: FILES[0],
     score: 0,
     dead: false,
@@ -57,40 +58,34 @@ export default function SnakeGame({ onClose }: { onClose: () => void }) {
     for (let x = 0; x <= W; x += CELL) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke() }
     for (let y = 0; y <= H; y += CELL) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke() }
 
-    // Еда (папка)
+    // Еда
     const fx = s.food.x * CELL, fy = s.food.y * CELL
     ctx.fillStyle = '#FF006E'
+    ctx.shadowColor = '#FF006E'; ctx.shadowBlur = 8
     ctx.fillRect(fx + 2, fy + 4, CELL - 4, CELL - 6)
-    ctx.fillRect(fx + 2, fy + 2, 8, 3) // ярлычок папки
-    ctx.shadowColor = '#FF006E'
-    ctx.shadowBlur = 8
-
-    // Название файла
+    ctx.fillRect(fx + 2, fy + 2, Math.min(8, CELL - 4), 3)
     ctx.shadowBlur = 0
+
+    // Лейбл еды
     ctx.fillStyle = 'rgba(255,0,110,0.9)'
-    ctx.font = '8px JetBrains Mono, monospace'
+    ctx.font = `${isMobile ? 7 : 8}px JetBrains Mono, monospace`
     ctx.textAlign = 'center'
-    const label = s.foodLabel.length > 12 ? s.foodLabel.slice(0, 11) + '…' : s.foodLabel
-    ctx.fillText(label, fx + CELL / 2, fy - 3)
+    const label = s.foodLabel.length > 10 ? s.foodLabel.slice(0, 9) + '…' : s.foodLabel
+    ctx.fillText(label, fx + CELL / 2, fy - 2)
     ctx.textAlign = 'left'
 
     // Змея
     s.snake.forEach((seg, i) => {
       const x = seg.x * CELL, y = seg.y * CELL
       const ratio = i / s.snake.length
-      const r = Math.round(0 + ratio * 0)
       const g = Math.round(255 - ratio * 100)
       const b = Math.round(240 - ratio * 100)
-      ctx.fillStyle = i === 0 ? '#00FFF0' : `rgb(${r},${g},${b})`
+      ctx.fillStyle = i === 0 ? '#00FFF0' : `rgb(0,${g},${b})`
+      if (i === 0) { ctx.shadowColor = '#00FFF0'; ctx.shadowBlur = 12 }
       ctx.fillRect(x + 1, y + 1, CELL - 2, CELL - 2)
-      if (i === 0) {
-        ctx.shadowColor = '#00FFF0'
-        ctx.shadowBlur = 12
-        ctx.fillRect(x + 1, y + 1, CELL - 2, CELL - 2)
-        ctx.shadowBlur = 0
-      }
+      ctx.shadowBlur = 0
     })
-  }, [])
+  }, [W, H, CELL, COLS, ROWS, isMobile])
 
   const tick = useCallback((ts: number) => {
     if (stateRef.current.dead) return
@@ -104,17 +99,11 @@ export default function SnakeGame({ onClose }: { onClose: () => void }) {
     if (s.dir === 'DOWN') head.y++
     if (s.dir === 'LEFT') head.x--
     if (s.dir === 'RIGHT') head.x++
-
-    // Стены — проходим сквозь
     head.x = (head.x + COLS) % COLS
     head.y = (head.y + ROWS) % ROWS
 
-    // Столкновение с собой
     if (s.snake.some(seg => seg.x === head.x && seg.y === head.y)) {
-      s.dead = true
-      setDead(true)
-      draw()
-      return
+      s.dead = true; setDead(true); draw(); return
     }
 
     const ate = head.x === s.food.x && head.y === s.food.y
@@ -124,7 +113,7 @@ export default function SnakeGame({ onClose }: { onClose: () => void }) {
 
     draw()
     rafRef.current = requestAnimationFrame(tick)
-  }, [draw])
+  }, [draw, COLS, ROWS])
 
   useEffect(() => {
     spawnFood()
@@ -145,9 +134,9 @@ export default function SnakeGame({ onClose }: { onClose: () => void }) {
 
   function restart() {
     stateRef.current = {
-      snake: [{ x: 12, y: 10 }, { x: 11, y: 10 }, { x: 10, y: 10 }],
+      snake: [{ x: 8, y: 7 }, { x: 7, y: 7 }, { x: 6, y: 7 }],
       dir: 'RIGHT', nextDir: 'RIGHT',
-      food: { x: 18, y: 10 }, foodLabel: FILES[0],
+      food: { x: 15, y: 7 }, foodLabel: FILES[0],
       score: 0, dead: false,
     }
     setScore(0); setDead(false)
@@ -156,50 +145,81 @@ export default function SnakeGame({ onClose }: { onClose: () => void }) {
     rafRef.current = requestAnimationFrame(tick)
   }
 
+  function move(dir: Dir) {
+    const s = stateRef.current
+    if (dir==='UP'&&s.dir!=='DOWN') s.nextDir='UP'
+    if (dir==='DOWN'&&s.dir!=='UP') s.nextDir='DOWN'
+    if (dir==='LEFT'&&s.dir!=='RIGHT') s.nextDir='LEFT'
+    if (dir==='RIGHT'&&s.dir!=='LEFT') s.nextDir='RIGHT'
+  }
+
+  const btnStyle: React.CSSProperties = {
+    padding: isMobile ? '14px 18px' : '10px',
+    background: 'var(--surface)', border: '1px solid var(--border)',
+    color: 'var(--accent)', fontFamily: "'Orbitron',monospace",
+    fontSize: isMobile ? 18 : 14, cursor: 'pointer',
+    borderRadius: 6, touchAction: 'manipulation',
+    minWidth: isMobile ? 52 : 40, minHeight: isMobile ? 52 : 40,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+  }
+
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(6,6,18,0.97)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 99999,
+      background: 'rgba(6,6,18,0.97)',
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
+      padding: isMobile ? '12px 8px' : '20px',
+      overflowY: 'auto',
+    }}>
       {/* Заголовок */}
-      <div style={{ textAlign: 'center', marginBottom: 20 }}>
-        <div style={{ fontFamily: "'Orbitron',monospace", fontSize: 10, color: 'var(--accent2)', letterSpacing: 4, marginBottom: 6 }}>// ЗАГРУЗКА_СИГНАЛА</div>
-        <div style={{ fontFamily: "'Orbitron',monospace", fontSize: 22, fontWeight: 900, letterSpacing: 6, color: '#00FFF0', textShadow: '0 0 20px #00FFF0' }}>ЦИФРОВОЙ ЧЕРВЬ</div>
-        <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 11, color: 'rgba(0,255,240,0.5)', marginTop: 6 }}>
-          Управляй стрелками · Собирай секретные файлы
+      <div style={{ textAlign: 'center', marginBottom: isMobile ? 10 : 16 }}>
+        <div style={{ fontFamily: "'Orbitron',monospace", fontSize: isMobile ? 8 : 10, color: 'var(--accent2)', letterSpacing: 3, marginBottom: 4 }}>
+          // ЗАГРУЗКА_СИГНАЛА
+        </div>
+        <div style={{ fontFamily: "'Orbitron',monospace", fontSize: isMobile ? 16 : 22, fontWeight: 900, letterSpacing: isMobile ? 4 : 6, color: '#00FFF0', textShadow: '0 0 20px #00FFF0' }}>
+          ЦИФРОВОЙ ЧЕРВЬ
+        </div>
+        <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: isMobile ? 9 : 11, color: 'rgba(0,255,240,0.5)', marginTop: 4 }}>
+          {isMobile ? 'Нажимай кнопки' : 'Управляй стрелками'} · Собирай файлы
         </div>
       </div>
 
       {/* Счёт */}
-      <div style={{ fontFamily: "'Orbitron',monospace", fontSize: 14, color: '#00FFF0', letterSpacing: 4, marginBottom: 12 }}>
-        ФАЙЛОВ ПОХИЩЕНО: <span style={{ textShadow: '0 0 10px #00FFF0' }}>{score}</span>
+      <div style={{ fontFamily: "'Orbitron',monospace", fontSize: isMobile ? 11 : 14, color: '#00FFF0', letterSpacing: 3, marginBottom: isMobile ? 8 : 12 }}>
+        ФАЙЛОВ: <span style={{ textShadow: '0 0 10px #00FFF0' }}>{score}</span>
       </div>
 
       {/* Канвас */}
-      <div style={{ border: '1px solid rgba(0,255,240,0.3)', boxShadow: '0 0 40px rgba(0,255,240,0.1)', position: 'relative' }}>
-        <canvas ref={canvasRef} width={W} height={H} />
+      <div style={{ border: '1px solid rgba(0,255,240,0.3)', boxShadow: '0 0 30px rgba(0,255,240,0.1)', position: 'relative', maxWidth: '100%' }}>
+        <canvas ref={canvasRef} width={W} height={H} style={{ display: 'block', maxWidth: '100%' }} />
         {dead && (
-          <div style={{ position: 'absolute', inset: 0, background: 'rgba(6,6,18,0.9)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
-            <div style={{ fontFamily: "'Orbitron',monospace", fontSize: 18, fontWeight: 900, color: '#FF006E', letterSpacing: 4, textShadow: '0 0 20px #FF006E' }}>СИГНАЛ ПРЕРВАН</div>
-            <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, color: 'rgba(255,255,255,0.6)' }}>Счёт: {score} очков</div>
-            <button onClick={restart} className="btn-primary-ui" style={{ marginTop: 8 }}>↺ ПЕРЕЗАПУСК</button>
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(6,6,18,0.92)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+            <div style={{ fontFamily: "'Orbitron',monospace", fontSize: isMobile ? 14 : 18, fontWeight: 900, color: '#FF006E', letterSpacing: 4, textShadow: '0 0 20px #FF006E' }}>СИГНАЛ ПРЕРВАН</div>
+            <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, color: 'rgba(255,255,255,0.6)' }}>Счёт: {score}</div>
+            <button onClick={restart} className="btn-primary-ui">↺ ПЕРЕЗАПУСК</button>
           </div>
         )}
       </div>
 
-      {/* Мобильные кнопки */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gridTemplateRows: '1fr 1fr', gap: 6, marginTop: 16, width: 120 }}>
-        {[['↑','UP',1,0],['←','LEFT',0,1],['↓','DOWN',1,1],['→','RIGHT',2,1]].map(([label, dir, col, row]) => (
-          <button key={dir as string} onClick={() => {
-            const s = stateRef.current
-            if (dir==='UP'&&s.dir!=='DOWN') s.nextDir='UP'
-            if (dir==='DOWN'&&s.dir!=='UP') s.nextDir='DOWN'
-            if (dir==='LEFT'&&s.dir!=='RIGHT') s.nextDir='LEFT'
-            if (dir==='RIGHT'&&s.dir!=='LEFT') s.nextDir='RIGHT'
-          }} style={{ gridColumn: Number(col)+1, gridRow: Number(row)+1, padding: '10px', background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--accent)', fontFamily: "'Orbitron',monospace", fontSize: 14, cursor: 'pointer' }}>
-            {label}
-          </button>
-        ))}
+      {/* Мобильные кнопки — крупнее */}
+      <div style={{ marginTop: isMobile ? 12 : 14 }}>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 4 }}>
+          <button style={btnStyle} onClick={() => move('UP')}>↑</button>
+        </div>
+        <div style={{ display: 'flex', gap: 4 }}>
+          <button style={btnStyle} onClick={() => move('LEFT')}>←</button>
+          <button style={btnStyle} onClick={() => move('DOWN')}>↓</button>
+          <button style={btnStyle} onClick={() => move('RIGHT')}>→</button>
+        </div>
       </div>
 
-      <button onClick={onClose} style={{ marginTop: 24, fontFamily: "'JetBrains Mono',monospace", fontSize: 11, color: 'var(--subtext)', background: 'none', border: 'none', cursor: 'pointer', letterSpacing: 2 }}>
+      <button onClick={onClose} style={{
+        marginTop: isMobile ? 14 : 20,
+        fontFamily: "'JetBrains Mono',monospace", fontSize: isMobile ? 12 : 11,
+        color: 'var(--subtext)', background: 'none', border: 'none',
+        cursor: 'pointer', letterSpacing: 2, padding: '8px 16px',
+      }}>
         ПРОПУСТИТЬ →
       </button>
     </div>
