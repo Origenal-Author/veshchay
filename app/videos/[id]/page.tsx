@@ -14,6 +14,22 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
 
   const { data: { user } } = await supabase.auth.getUser()
 
+  const { data: author } = await supabase
+    .from('profiles')
+    .select('id, username, avatar_url, xp, rank')
+    .eq('id', video.user_id)
+    .single()
+
+  const { count: authorVideoCount } = await supabase
+    .from('videos')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', video.user_id)
+
+  const { count: authorFollowers } = await supabase
+    .from('follows')
+    .select('*', { count: 'exact', head: true })
+    .eq('following_id', video.user_id)
+
   const CATEGORY_LABELS: Record<string, string> = {
     secret: '#СЕКРЕТНЫЙ_ФАЙЛ', sharp: '#ОСТРЫЙ_МАТЕРИАЛ',
     agent: '#ВЕЩАНИЕ_ИНОАГЕНТА', intercepted: '#ПЕРЕХВАЧЕННЫЙ_СИГНАЛ',
@@ -60,6 +76,53 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
           // {new Date(video.created_at).toLocaleDateString('ru-RU')}
           {video.views_count > 0 && <span> · {video.views_count} просмотров</span>}
         </div>
+
+        {/* Карточка канала */}
+        {author && (
+          <Link href={`/profile/${author.id}`} style={{ textDecoration: 'none', display: 'block', marginBottom: 24 }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 16,
+              padding: '14px 20px',
+              background: 'var(--surface)',
+              border: '1px solid var(--border)',
+              borderRadius: 12,
+              transition: 'border-color 0.2s',
+            }}>
+              {/* Аватар */}
+              <div style={{
+                width: 48, height: 48, borderRadius: 10, flexShrink: 0,
+                background: 'linear-gradient(135deg, var(--accent), var(--surface2))',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 16, fontWeight: 900, color: 'var(--bg)',
+                fontFamily: "'Orbitron',monospace", overflow: 'hidden',
+                border: '1.5px solid var(--accent)',
+              }}>
+                {author.avatar_url
+                  ? <img src={author.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  : (author.username || '??').slice(0, 2).toUpperCase()
+                }
+              </div>
+
+              {/* Инфо */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontFamily: "'Orbitron',monospace", fontSize: 13, fontWeight: 700, color: 'var(--text)', letterSpacing: 1 }}>
+                  @{author.username || 'аноним'}
+                </div>
+                <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 9, color: 'var(--accent)', letterSpacing: 2, marginTop: 3 }}>
+                  {author.rank || 'СТАТИЧЕСКИЙ ШУМ'}
+                </div>
+                <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 9, color: 'var(--subtext)', marginTop: 4, letterSpacing: 1 }}>
+                  {authorVideoCount ?? 0} видео · {authorFollowers ?? 0} наблюдают
+                </div>
+              </div>
+
+              {/* Стрелка */}
+              <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 11, color: 'var(--accent)', letterSpacing: 2, flexShrink: 0 }}>
+                КАНАЛ →
+              </div>
+            </div>
+          </Link>
+        )}
 
         {/* Реакции и плейлист */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 8 }}>
