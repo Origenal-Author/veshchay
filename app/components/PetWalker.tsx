@@ -326,7 +326,7 @@ export default function PetWalker({ pet, onReturn }: { pet: Pet; onReturn: () =>
           pointerEvents: 'none',
           filter: `drop-shadow(0 0 4px ${C})`,
         }}>
-          <PetCanvas type={pet.type} variant={pet.variant} stage={pet.stage} size={36} />
+          <PetCanvas type={pet.type} variant={pet.variant} stage={pet.stage} size={48} />
         </div>
       ))}
 
@@ -340,7 +340,7 @@ export default function PetWalker({ pet, onReturn }: { pet: Pet; onReturn: () =>
         pointerEvents: 'none',
         opacity: visible ? 1 : 0,
       }}>
-        <PetCanvas type={pet.type} variant={pet.variant} stage={pet.stage} size={64} />
+        <PetCanvas type={pet.type} variant={pet.variant} stage={pet.stage} size={96} />
       </div>
 
       {/* Информация способности */}

@@ -461,12 +461,21 @@ function PetHabitat({ pet, onUpdate }: { pet: Pet; onUpdate: (p: Pet) => void })
             filter: mood === 'happy' ? `drop-shadow(0 0 18px ${C})` :
                     mood === 'annoyed' ? 'drop-shadow(0 0 10px rgba(255,0,80,0.6))' : 'none',
           }}>
-            <PetCanvas
-              type={pet.type}
-              variant={pet.variant}
-              stage={pet.stage}
-              size={pet.stage === 'egg' ? 160 : pet.stage === 'baby' ? 220 : 290}
-            />
+            {walking ? (
+              <div style={{
+                width: 180, height: 180,
+                display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center', gap: 12,
+              }}>
+                <div style={{ fontSize: 36, opacity: 0.3 }}>🌐</div>
+                <div style={{
+                  fontFamily: 'JetBrains Mono,monospace', fontSize: 9,
+                  color: C, letterSpacing: 3, opacity: 0.5, textAlign: 'center',
+                }}>// ПАРАЗИТ ГУЛЯЕТ //</div>
+              </div>
+            ) : (
+              <PetCanvas type={pet.type} variant={pet.variant} stage={pet.stage} size={180} />
+            )}
           </div>
 
           {/* Частицы эмоций */}
