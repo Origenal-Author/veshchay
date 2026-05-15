@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from 'react'
 import PetCanvas from '@/app/components/PetCanvas'
 import { checkAchievements } from '@/app/components/AchievementToast'
-import PetWalker from '@/app/components/PetWalker'
 import {
   getPetDef, RARITY_COLOR, RARITY_GLOW,
   getStageProgress, getNextStage, STAGE_XP,
@@ -240,6 +239,12 @@ const KOD_PANIC = ['мне тесно...', 'страшно 😱', 'ТЕМНО!!!
 // ── СРЕДА ОБИТАНИЯ ─────────────────────────────────────────────────────────────
 function PetHabitat({ pet, onUpdate }: { pet: Pet; onUpdate: (p: Pet) => void }) {
   const [walking, setWalking] = useState(false)
+
+  useEffect(() => {
+    const handler = () => setWalking(false)
+    window.addEventListener('pet-walk-stop', handler)
+    return () => window.removeEventListener('pet-walk-stop', handler)
+  }, [])
   const [collapsed, setCollapsed] = useState(false)
   const [collapseCount, setCollapseCount] = useState(0)
   const [kodMsg, setKodMsg] = useState<string | null>(null)
@@ -558,18 +563,27 @@ function PetHabitat({ pet, onUpdate }: { pet: Pet; onUpdate: (p: Pet) => void })
             {/* Выгул — только для baby/adult */}
             {pet.stage !== 'egg' && (
               <button
-                onClick={() => setWalking(true)}
-                style={{ ...actionBtn, flex: 1, borderColor: '#00FF88', color: '#00FF88' }}
+                onClick={() => {
+                  if (walking) {
+                    window.dispatchEvent(new CustomEvent('pet-walk-stop'))
+                  } else {
+                    setWalking(true)
+                    window.dispatchEvent(new CustomEvent('pet-walk-start', { detail: { pet } }))
+                  }
+                }}
+                style={{
+                  ...actionBtn, flex: 1,
+                  borderColor: walking ? '#FF006E' : '#00FF88',
+                  color: walking ? '#FF006E' : '#00FF88',
+                }}
               >
-                🌐 ВЫГУЛ
+                {walking ? '↩ ВЕРНУТЬ' : '🌐 ВЫГУЛ'}
               </button>
             )}
           </div>
         )}
       </div>
 
-      {/* Выгул питомца */}
-      {walking && <PetWalker pet={pet} onReturn={() => setWalking(false)} />}
 
       {/* Инфо питомца */}
       {!collapsed && <PetInfo pet={pet} />}

@@ -6,6 +6,7 @@ import SnakeWrapper from '@/app/components/SnakeWrapper'
 import DailyXP from '@/app/components/DailyXP'
 import AchievementToast from '@/app/components/AchievementToast'
 import InventoryPanel from '@/app/components/InventoryPanel'
+import PetWalkerHost from '@/app/components/PetWalkerHost'
 
 export const metadata: Metadata = {
   title: 'ВЕЩАЙ',
@@ -23,6 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <DailyXP />
           <AchievementToast />
           <InventoryPanel />
+          <PetWalkerHost />
         </WeatherProvider>
       </body>
     </html>

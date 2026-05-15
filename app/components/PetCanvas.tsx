@@ -20,7 +20,7 @@ function ca(hex: string, a: number) {
 
 // ── ЯЙЦО ──────────────────────────────────────────────────────────────────────
 function drawEgg(ctx: CanvasRenderingContext2D, cx: number, cy: number, isVirus: boolean, C: string, t: number, size: number) {
-  const ew = size * 0.26, eh = size * 0.32
+  const ew = size * 0.19, eh = size * 0.24
   const pulse = 0.5 + 0.5 * Math.sin(t * 0.04)
 
   if (isVirus) {
@@ -663,8 +663,8 @@ export default function PetCanvas({ type, variant, stage, size = 120 }: Props) {
       } else {
         if (stage === 'baby') {
           ctx.save()
-          ctx.translate(w * 0.13, h * 0.13)
-          ctx.scale(0.74, 0.74)
+          ctx.translate(w * 0.1, h * 0.1)
+          ctx.scale(0.8, 0.8)
           DRAW_MAP[type](ctx, w, h, t, isVirus, C)
           ctx.restore()
         } else {

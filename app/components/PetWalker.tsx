@@ -161,7 +161,8 @@ export default function PetWalker({ pet, onReturn }: { pet: Pet; onReturn: () =>
   const isVirus = pet.variant === 'virus'
   const C = isVirus ? def.colorVirus : def.color
 
-  const [pos, setPos] = useState({ x: 0, y: 0 })
+  const [pos, setPos] = useState({ x: -300, y: -300 })
+  const [visible, setVisible] = useState(false)
   const [trail, setTrail] = useState<{ id: number; x: number; y: number }[]>([])
   const [abilityFlash, setAbilityFlash] = useState(false)
   const posRef = useRef({ x: 0, y: 0 })
@@ -177,12 +178,17 @@ export default function PetWalker({ pet, onReturn }: { pet: Pet; onReturn: () =>
 
     const W = window.innerWidth
     const H = window.innerHeight
-    posRef.current = { x: W / 2, y: H / 2 }
+    // Спавним в центре экрана (не в углу)
+    const startX = W * 0.35 + Math.random() * W * 0.3
+    const startY = H * 0.3 + Math.random() * H * 0.3
+    posRef.current = { x: startX, y: startY }
+    setPos({ x: startX, y: startY })
+    setTimeout(() => setVisible(true), 50)
 
     // Радар: requestAnimationFrame по кругу
     if (pet.type === 'radar') {
       const speed = PET_SPEED.radar
-      const cx = W / 2, cy = H / 2, r = Math.min(W, H) * 0.3
+      const cx = W / 2, cy = H * 0.45, r = Math.min(W, H) * 0.28
       function tick() {
         angleRef.current += speed * 0.008
         const x = cx + Math.cos(angleRef.current) * r
@@ -332,6 +338,7 @@ export default function PetWalker({ pet, onReturn }: { pet: Pet; onReturn: () =>
         filter: `drop-shadow(0 0 ${abilityFlash ? 20 : 8}px ${C})`,
         cursor: 'default',
         pointerEvents: 'none',
+        opacity: visible ? 1 : 0,
       }}>
         <PetCanvas type={pet.type} variant={pet.variant} stage={pet.stage} size={64} />
       </div>
