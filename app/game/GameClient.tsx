@@ -977,7 +977,7 @@ export default function GameClient({ userId, xp, initialPets }: Props) {
           <PetTabs pets={pets} active={activePet} onSelect={setActivePet} />
         )}
 
-        <PetHabitat pet={currentPet} onUpdate={updatePet} />
+        <PetHabitat key={currentPet.id} pet={currentPet} onUpdate={updatePet} />
 
         {/* Получить ещё питомца */}
         {canGetMore && (
