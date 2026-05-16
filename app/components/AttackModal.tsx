@@ -178,11 +178,17 @@ function PasswordGame({ bonus, onSuccess, onFail }: { bonus: string; onSuccess: 
     const effective = current.map((d, i) => i === revealedIdx ? String(secret[i]) : d)
     if (effective.some(d => d === '')) return
     const digits = effective.map(Number)
-    const result = digits.map((d, i) => {
-      if (d === secret[i]) return '[OK]'
-      if (secret.includes(d)) return '[~]'
-      return '[X]'
-    })
+    const result = Array(4).fill('[X]')
+    const secretLeft = [...secret]
+    const guessLeft = [...digits]
+    for (let i = 0; i < 4; i++) {
+      if (guessLeft[i] === secretLeft[i]) { result[i] = '[OK]'; secretLeft[i] = -1; guessLeft[i] = -2 }
+    }
+    for (let i = 0; i < 4; i++) {
+      if (guessLeft[i] === -2) continue
+      const idx = secretLeft.indexOf(guessLeft[i])
+      if (idx !== -1) { result[i] = '[~]'; secretLeft[idx] = -1 }
+    }
     const next = [...guesses, { digits, result }]
     setGuesses(next)
     setCurrent(['', '', '', ''])
