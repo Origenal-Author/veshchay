@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Погодные темы — СИГНАЛ</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=JetBrains+Mono:wght@300;400;500;700&family=Exo+2:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ═══════════════════════════════════
+   ПЕРЕМЕННЫЕ ПОГОДНЫХ ТЕМ
+═══════════════════════════════════ */
+
+body[data-weather="night"] {
+  --bg: #060612;
+  --surface: #0D0D1A;
+  --surface2: #111122;
+  --accent: #00FFF0;
+  --accent2: #FF006E;
+  --accent-glow: rgba(0,255,240,0.35);
+  --border: rgba(0,255,240,0.12);
+  --text: #FFFFFF;
+  --subtext: #8892B0;
+  --scanline: rgba(0,255,240,0.012);
+  --logo-text: #00FFF0;
+  --logo-shadow: 0 0 20px rgba(0,255,240,0.6), 0 0 40px rgba(0,255,240,0.2);
+}
+
+body[data-weather="clear"] {
+  --bg: #08050F;
+  --surface: #100818;
+  --surface2: #180E22;
+  --accent: #FFB300;
+  --accent2: #FF6500;
+  --accent-glow: rgba(255,179,0,0.35);
+  --border: rgba(255,179,0,0.15);
+  --text: #FFF8E0;
+  --subtext: #A09060;
+  --scanline: rgba(255,179,0,0.008);
+  --logo-text: #FFB300;
+  --logo-shadow: 0 0 20px rgba(255,179,0,0.6), 0 0 50px rgba(255,100,0,0.2);
+}
+
+body[data-weather="rain"] {
+  --bg: #040C16;
+  --surface: #071220;
+  --surface2: #0A1828;
+  --accent: #3A9EFF;
+  --accent2: #00C4FF;
+  --accent-glow: rgba(58,158,255,0.3);
+  --border: rgba(58,158,255,0.12);
+  --text: #C0D4E8;
+  --subtext: #507090;
+  --scanline: rgba(58,158,255,0.010);
+  --logo-text: #3A9EFF;
+  --logo-shadow: 0 0 20px rgba(58,158,255,0.5), 0 0 40px rgba(0,196,255,0.2);
+}
+
+body[data-weather="snow"] {
+  --bg: #05080F;
+  --surface: #090D18;
+  --surface2: #0D1220;
+  --accent: #90CCFF;
+  --accent2: #D8EEFF;
+  --accent-glow: rgba(144,204,255,0.3);
+  --border: rgba(144,204,255,0.12);
+  --text: #D8E8F4;
+  --subtext: #5878A0;
+  --scanline: rgba(144,204,255,0.010);
+  --logo-text: #90CCFF;
+  --logo-shadow: 0 0 20px rgba(144,204,255,0.5), 0 0 50px rgba(216,238,255,0.15);
+}
+
+body[data-weather="storm"] {
+  --bg: #030108;
+  --surface: #060310;
+  --surface2: #090518;
+  --accent: #9B10FF;
+  --accent2: #EEE800;
+  --accent-glow: rgba(155,16,255,0.4);
+  --border: rgba(155,16,255,0.15);
+  --text: #D0B8F8;
+  --subtext: #6848A8;
+  --scanline: rgba(155,16,255,0.012);
+  --logo-text: #9B10FF;
+  --logo-shadow: 0 0 20px rgba(155,16,255,0.7), 0 0 50px rgba(238,232,0,0.15);
+}
+
+body[data-weather="fog"] {
+  --bg: #070A0E;
+  --surface: #0C1018;
+  --surface2: #101620;
+  --accent: #80A8C8;
+  --accent2: #B8D0E0;
+  --accent-glow: rgba(128,168,200,0.25);
+  --border: rgba(128,168,200,0.10);
+  --text: #B8C8D4;
+  --subtext: #506070;
+  --scanline: rgba(128,168,200,0.008);
+  --logo-text: #80A8C8;
+  --logo-shadow: 0 0 15px rgba(128,168,200,0.4);
+}
+
+/* ═══════════════════════════════════
+   БАЗОВЫЕ СТИЛИ
+═══════════════════════════════════ */
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Exo 2', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  transition: background 1.5s ease, color 1.5s ease;
+}
+
+/* СКАНЛАЙНЫ */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 2px,
+    var(--scanline) 2px, var(--scanline) 4px
+  );
+  pointer-events: none;
+  z-index: 9990;
+}
+
+/* ═══════════════════════════════════
+   ПОГОДНЫЕ СЛОИ
+═══════════════════════════════════ */
+
+.weather-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  transition: opacity 1.5s ease;
+}
+
+/* --- НОЧЬ: ЗВЁЗДЫ --- */
+#layer-night { opacity: 0; }
+body[data-weather="night"] #layer-night { opacity: 1; }
+.star {
+  position: absolute;
+  border-radius: 50%;
+  background: #fff;
+  animation: starBlink ease-in-out infinite alternate;
+}
+@keyframes starBlink {
+  0% { opacity: 0.1; transform: scale(0.8); }
+  100% { opacity: 1; transform: scale(1.2); }
+}
+
+/* --- ЯСНО: СОЛНЦЕ --- */
+#layer-clear { opacity: 0; }
+body[data-weather="clear"] #layer-clear { opacity: 1; }
+.sun-container {
+  position: absolute;
+  top: -80px;
+  right: 100px;
+  width: 200px;
+  height: 200px;
+}
+.sun-core {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #FFE080, #FFB300 60%, transparent);
+  box-shadow: 0 0 60px 20px rgba(255,179,0,0.4), 0 0 120px 40px rgba(255,100,0,0.15);
+}
+.sun-rays {
+  position: absolute;
+  inset: 0;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg, rgba(255,179,0,0.12) 5deg, transparent 10deg,
+    transparent 20deg, rgba(255,179,0,0.10) 25deg, transparent 30deg,
+    transparent 40deg, rgba(255,179,0,0.08) 45deg, transparent 50deg,
+    transparent 60deg, rgba(255,179,0,0.12) 65deg, transparent 70deg,
+    transparent 80deg, rgba(255,179,0,0.09) 85deg, transparent 90deg,
+    transparent 100deg, rgba(255,179,0,0.11) 105deg, transparent 110deg,
+    transparent 120deg, rgba(255,179,0,0.08) 125deg, transparent 130deg,
+    transparent 140deg, rgba(255,179,0,0.12) 145deg, transparent 150deg,
+    transparent 160deg, rgba(255,179,0,0.09) 165deg, transparent 170deg,
+    transparent 180deg, rgba(255,179,0,0.11) 185deg, transparent 190deg,
+    transparent 200deg, rgba(255,179,0,0.08) 205deg, transparent 210deg,
+    transparent 220deg, rgba(255,179,0,0.12) 225deg, transparent 230deg,
+    transparent 240deg, rgba(255,179,0,0.10) 245deg, transparent 250deg,
+    transparent 260deg, rgba(255,179,0,0.09) 265deg, transparent 270deg,
+    transparent 280deg, rgba(255,179,0,0.11) 285deg, transparent 290deg,
+    transparent 300deg, rgba(255,179,0,0.08) 305deg, transparent 310deg,
+    transparent 320deg, rgba(255,179,0,0.12) 325deg, transparent 330deg,
+    transparent 340deg, rgba(255,179,0,0.10) 345deg, transparent 350deg,
+    transparent 360deg
+  );
+  border-radius: 50%;
+  animation: sunSpin 20s linear infinite;
+  filter: blur(1px);
+}
+@keyframes sunSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.sun-glow {
+  position: absolute;
+  inset: -50px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,150,0,0.06) 0%, transparent 70%);
+  animation: sunPulse 4s ease-in-out infinite alternate;
+}
+@keyframes sunPulse { 0% { transform: scale(1); } 100% { transform: scale(1.15); } }
+/* Тёплое зарево */
+.sun-horizon {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 40%;
+  background: linear-gradient(to top, rgba(255,100,0,0.06), transparent);
+}
+
+/* --- ДОЖДЬ: КАПЛИ --- */
+#layer-rain { opacity: 0; }
+body[data-weather="rain"] #layer-rain { opacity: 1; }
+.rain-drop {
+  position: absolute;
+  top: -40px;
+  width: 1.5px;
+  border-radius: 1px;
+  background: linear-gradient(to bottom, transparent, rgba(58,158,255,0.5));
+  animation: rainFall linear infinite;
+}
+@keyframes rainFall {
+  0% { transform: translateY(0) skewX(-8deg); opacity: 0; }
+  5% { opacity: 1; }
+  95% { opacity: 0.6; }
+  100% { transform: translateY(110vh) skewX(-8deg); opacity: 0; }
+}
+/* Лужи / брызги внизу */
+.rain-splash {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(to top, rgba(58,158,255,0.06), transparent);
+  animation: splashPulse 0.3s ease-in-out infinite alternate;
+}
+@keyframes splashPulse { 0% { opacity: 0.3; } 100% { opacity: 0.8; } }
+/* Туманная дымка снизу при дожде */
+.rain-mist {
+  position: absolute;
+  bottom: 0; left: -20%; right: -20%;
+  height: 20%;
+  background: radial-gradient(ellipse at 50% 100%, rgba(58,158,255,0.06), transparent);
+  animation: mistDrift 6s ease-in-out infinite alternate;
+}
+@keyframes mistDrift { 0% { transform: translateX(-5%); } 100% { transform: translateX(5%); } }
+
+/* --- СНЕГ: ХЛОПЬЯ --- */
+#layer-snow { opacity: 0; }
+body[data-weather="snow"] #layer-snow { opacity: 1; }
+.snow-flake {
+  position: absolute;
+  top: -15px;
+  border-radius: 50%;
+  background: rgba(216,238,255,0.8);
+  animation: snowFall linear infinite;
+  box-shadow: 0 0 3px rgba(144,204,255,0.6);
+}
+@keyframes snowFall {
+  0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0; }
+  10% { opacity: 0.9; }
+  90% { opacity: 0.4; }
+  100% { transform: translateY(105vh) translateX(var(--drift, 30px)) rotate(360deg); opacity: 0; }
+}
+/* Снег накапливается внизу */
+.snow-ground {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 8px;
+  background: linear-gradient(to top, rgba(144,204,255,0.15), transparent);
+  filter: blur(2px);
+}
+/* Холодный иней на экране */
+.snow-frost {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 0% 0%, rgba(144,204,255,0.04) 0%, transparent 30%),
+    radial-gradient(ellipse at 100% 100%, rgba(144,204,255,0.04) 0%, transparent 30%);
+}
+
+/* --- ГРОЗА: ДОЖДЬ + МОЛНИИ + ВЕТЕР --- */
+#layer-storm { opacity: 0; }
+body[data-weather="storm"] #layer-storm { opacity: 1; }
+
+/* Капли дождя с ветром (резкий угол) */
+.storm-drop {
+  position: absolute;
+  top: -60px;
+  width: 1.5px;
+  border-radius: 0;
+  background: linear-gradient(to bottom, transparent, rgba(155,16,255,0.45));
+  animation: stormFall linear infinite;
+}
+@keyframes stormFall {
+  0%   { transform: translateY(0)      skewX(-30deg); opacity: 0; }
+  4%   { opacity: 1; }
+  96%  { opacity: 0.6; }
+  100% { transform: translateY(115vh)  skewX(-30deg); opacity: 0; }
+}
+
+/* Вспышка всего экрана при ударе молнии */
+.storm-flash {
+  position: absolute; inset: 0;
+  background: rgba(155,16,255,0);
+  pointer-events: none;
+  transition: background 0.04s;
+  z-index: 5;
+}
+
+/* SVG-молнии */
+.bolt-svg {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0;
+  overflow: visible;
+}
+
+/* Ветер — горизонтальные полосы */
+.wind-streak {
+  position: absolute;
+  height: 1px;
+  border-radius: 1px;
+  background: linear-gradient(to right,
+    transparent,
+    rgba(155,16,255,0.22) 20%,
+    rgba(155,16,255,0.10) 70%,
+    transparent);
+  animation: windPass linear infinite;
+}
+@keyframes windPass {
+  0%   { transform: translateX(-200px); opacity: 0; }
+  12%  { opacity: 1; }
+  88%  { opacity: 0.5; }
+  100% { transform: translateX(calc(100vw + 200px)); opacity: 0; }
+}
+
+/* Тёмные грозовые облака */
+.storm-clouds {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 42%;
+  background:
+    radial-gradient(ellipse at 15% 0%, rgba(70,0,120,0.22), transparent 50%),
+    radial-gradient(ellipse at 55% 0%, rgba(90,0,140,0.18), transparent 55%),
+    radial-gradient(ellipse at 88% 0%, rgba(60,0,100,0.16), transparent 45%);
+  animation: cloudsDrift 8s ease-in-out infinite alternate;
+  filter: blur(2px);
+}
+@keyframes cloudsDrift { 0% { transform: translateX(-3%); } 100% { transform: translateX(3%); } }
+
+/* --- ТУМАН --- */
+#layer-fog { opacity: 0; }
+body[data-weather="fog"] #layer-fog { opacity: 1; }
+.fog-layer {
+  position: absolute;
+  inset: 0;
+}
+.fog-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  background: rgba(128,168,200,0.06);
+  animation: fogDrift ease-in-out infinite alternate;
+}
+@keyframes fogDrift {
+  0% { transform: translate(0, 0) scale(1); opacity: 0.4; }
+  100% { transform: translate(var(--fx, 5%), var(--fy, 3%)) scale(var(--fs, 1.1)); opacity: 0.7; }
+}
+/* Дополнительная дымка */
+.fog-haze {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, rgba(128,168,200,0.04), transparent 70%);
+  animation: hazeBreath 8s ease-in-out infinite alternate;
+}
+@keyframes hazeBreath { 0% { opacity: 0.5; } 100% { opacity: 1; } }
+
+/* ═══════════════════════════════════
+   ХЕДЕР
+═══════════════════════════════════ */
+
+header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(6,6,18,0.88);
+  backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: border-color 1.5s;
+}
+
+body[data-weather="clear"] header { background: rgba(8,5,15,0.88); }
+body[data-weather="rain"] header { background: rgba(4,12,22,0.92); }
+body[data-weather="snow"] header { background: rgba(5,8,15,0.90); }
+body[data-weather="storm"] header { background: rgba(3,1,8,0.95); }
+body[data-weather="fog"] header { background: rgba(7,10,14,0.90); }
+
+.logo {
+  font-family: 'Orbitron', monospace;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--logo-text);
+  text-shadow: var(--logo-shadow);
+  transition: color 1.5s, text-shadow 1.5s;
+  position: relative;
+  z-index: 1;
+}
+
+.search-wrap {
+  flex: 1; max-width: 480px; margin: 0 40px;
+}
+
+.search {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 9px 20px;
+  color: var(--accent);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  outline: none;
+  transition: all 1.5s;
+  clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+}
+
+.search::placeholder { color: rgba(128,200,200,0.3); transition: color 1.5s; }
+body[data-weather="clear"] .search::placeholder { color: rgba(255,179,0,0.3); }
+body[data-weather="rain"] .search::placeholder { color: rgba(58,158,255,0.3); }
+body[data-weather="snow"] .search::placeholder { color: rgba(144,204,255,0.3); }
+body[data-weather="storm"] .search::placeholder { color: rgba(155,16,255,0.3); }
+body[data-weather="fog"] .search::placeholder { color: rgba(128,168,200,0.25); }
+
+.search:focus { border-color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
+
+.header-right { display: flex; gap: 10px; align-items: center; }
+
+.btn {
+  padding: 7px 18px; font-size: 11px; font-weight: 700; cursor: pointer;
+  transition: all 0.2s; font-family: 'Orbitron', monospace; letter-spacing: 2px;
+  text-transform: uppercase; border: none;
+  clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
+}
+
+.btn-ghost { background: transparent; color: var(--subtext); border: 1px solid var(--border); }
+.btn-ghost:hover { color: var(--accent); border-color: var(--accent); }
+.btn-primary { background: var(--accent); color: var(--bg); box-shadow: 0 0 20px var(--accent-glow); transition: all 1.5s; }
+.btn-primary:hover { box-shadow: 0 0 40px var(--accent-glow); transform: translateY(-1px); }
+
+/* ═══════════════════════════════════
+   НАВИГАЦИЯ
+═══════════════════════════════════ */
+
+.nav {
+  display: flex; gap: 0; padding: 0 32px;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto; scrollbar-width: none;
+  background: rgba(0,0,0,0.3); position: relative; z-index: 2;
+  transition: border-color 1.5s;
+}
+.nav::-webkit-scrollbar { display: none; }
+.tab {
+  padding: 14px 16px; font-size: 11px; color: var(--subtext);
+  cursor: pointer; white-space: nowrap; font-family: 'Orbitron', monospace;
+  letter-spacing: 1px; text-transform: uppercase; position: relative;
+  border-bottom: 2px solid transparent; transition: color 0.2s;
+}
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tab:hover:not(.active) { color: var(--text); }
+
+/* ═══════════════════════════════════
+   СТАТУСНАЯ СТРОКА
+═══════════════════════════════════ */
+
+.statusbar {
+  background: rgba(0,0,0,0.2); padding: 6px 32px;
+  border-bottom: 1px solid var(--border); display: flex; gap: 24px;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: rgba(128,200,200,0.4); position: relative; z-index: 2;
+  transition: color 1.5s, border-color 1.5s;
+  align-items: center;
+}
+
+.status-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
+  box-shadow: 0 0 6px var(--accent); display: inline-block; margin-right: 6px;
+  animation: dotPulse 2s ease-in-out infinite; transition: background 1.5s, box-shadow 1.5s;
+}
+.status-dot.red { background: var(--accent2); box-shadow: 0 0 6px var(--accent2); }
+@keyframes dotPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+/* Погода в статусбаре */
+.weather-status {
+  margin-left: auto;
+  color: var(--accent);
+  font-weight: 700;
+  letter-spacing: 1px;
+  opacity: 0.8;
+  transition: color 1.5s;
+}
+
+/* ═══════════════════════════════════
+   ГЛАВНЫЙ БАННЕР
+═══════════════════════════════════ */
+
+.hero {
+  margin: 24px 32px; height: 320px;
+  border: 1px solid var(--border);
+  position: relative; overflow: hidden; cursor: pointer;
+  transition: border-color 1.5s; z-index: 2;
+}
+
+.hero-bg {
+  position: absolute; right: 0; top: 0; width: 60%; height: 100%;
+  background: var(--surface2);
+  display: flex; align-items: center; justify-content: center;
+  transition: background 1.5s;
+}
+
+.hero-grid {
+  position: absolute; inset: 0;
+  background-image: linear-gradient(var(--border) 1px, transparent 1px),
+                    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 40px 40px;
+  transition: background-image 1.5s;
+}
+
+.hero-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to right, var(--bg) 25%, transparent 70%);
+  transition: background 1.5s;
+}
+
+.hero-play {
+  width: 72px; height: 72px;
+  border: 2px solid var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  position: relative; z-index: 2;
+  box-shadow: 0 0 30px var(--accent-glow);
+  transition: all 1.5s;
+}
+.hero:hover .hero-play { box-shadow: 0 0 60px var(--accent-glow); background: rgba(0,0,0,0.3); }
+
+.hero-info { position: absolute; left: 32px; bottom: 32px; z-index: 2; }
+.hero-tag {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  color: var(--accent2); letter-spacing: 3px; text-transform: uppercase;
+  text-shadow: 0 0 10px var(--accent2); margin-bottom: 10px;
+  transition: color 1.5s;
+}
+.hero-title {
+  font-family: 'Orbitron', monospace; font-size: 22px; font-weight: 700;
+  line-height: 1.3; max-width: 380px; margin-bottom: 16px;
+  color: var(--text); transition: color 1.5s;
+}
+.hero-meta {
+  font-family: 'JetBrains Mono', monospace; font-size: 12px;
+  color: var(--subtext); display: flex; gap: 16px; transition: color 1.5s;
+}
+
+/* ═══════════════════════════════════
+   СЕТКА КАРТОЧЕК
+═══════════════════════════════════ */
+
+.section { padding: 20px 32px 100px; position: relative; z-index: 2; }
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border); transition: border-color 1.5s; }
+.section-title { font-family: 'Orbitron', monospace; font-size: 12px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--accent); text-shadow: 0 0 10px var(--accent-glow); transition: color 1.5s, text-shadow 1.5s; }
+.section-more { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--subtext); cursor: pointer; letter-spacing: 1px; transition: color 0.2s; }
+.section-more:hover { color: var(--accent); }
+
+.grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  cursor: pointer; position: relative; overflow: hidden;
+  transition: border-color 0.3s, transform 0.2s, box-shadow 0.3s, background 1.5s;
+}
+.card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  transform: scaleX(0); transition: transform 0.3s;
+}
+.card:hover { border-color: var(--accent); box-shadow: 0 0 24px var(--accent-glow), 0 8px 32px rgba(0,0,0,0.5); transform: translateY(-3px); }
+.card:hover::before { transform: scaleX(1); }
+.card:hover .thumb-inner { filter: brightness(1.1) saturate(1.2); }
+
+.thumb { width: 100%; aspect-ratio: 16/9; position: relative; overflow: hidden; }
+.thumb-inner { width: 100%; height: 100%; transition: filter 0.3s; }
+.thumb-hover { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.25); opacity: 0; transition: opacity 0.2s; }
+.card:hover .thumb-hover { opacity: 1; }
+.play-sq { width: 36px; height: 36px; border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px var(--accent-glow); background: rgba(0,0,0,0.4); transition: box-shadow 1.5s, border-color 1.5s; }
+.duration { position: absolute; bottom: 6px; right: 6px; background: rgba(0,0,0,0.85); color: var(--accent); font-size: 10px; font-family: 'JetBrains Mono', monospace; padding: 2px 6px; border: 1px solid var(--border); transition: color 1.5s, border-color 1.5s; }
+.live-badge { position: absolute; top: 8px; left: 8px; background: var(--accent2); color: #000; font-size: 9px; font-family: 'Orbitron', monospace; letter-spacing: 2px; padding: 2px 6px; font-weight: 900; animation: livePulse 1.5s infinite; transition: background 1.5s; }
+@keyframes livePulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+
+.card-body { padding: 12px 14px; }
+.card-title { font-size: 13px; font-weight: 500; line-height: 1.4; margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; color: var(--text); transition: color 1.5s; }
+.card-author { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.avatar { width: 22px; height: 22px; background: linear-gradient(135deg, var(--accent), var(--subtext)); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 900; color: var(--bg); font-family: 'Orbitron', monospace; transition: background 1.5s; }
+.author-name { font-size: 11px; color: var(--subtext); font-family: 'JetBrains Mono', monospace; transition: color 1.5s; }
+.card-meta { font-size: 11px; color: var(--subtext); font-family: 'JetBrains Mono', monospace; transition: color 1.5s; }
+.card-views { color: var(--accent); opacity: 0.8; transition: color 1.5s; }
+
+/* Цвета превью */
+.p1 { background: linear-gradient(135deg, #0d0630, #1a0630, #060630); }
+.p2 { background: linear-gradient(135deg, #060630, #300630, #060618); }
+.p3 { background: linear-gradient(135deg, #030618, #0a0a30, #030624); }
+.p4 { background: linear-gradient(135deg, #1a0618, #300618, #0d0618); }
+.p5 { background: linear-gradient(135deg, #060618, #18060d, #060618); }
+.p6 { background: linear-gradient(135deg, #0d1830, #061830, #0d0630); }
+.p7 { background: linear-gradient(135deg, #18300d, #0d1806, #061806); }
+.p8 { background: linear-gradient(135deg, #30180d, #180d06, #300d06); }
+
+/* ═══════════════════════════════════
+   ПЕРЕКЛЮЧАТЕЛЬ ПОГОДЫ (ФИКСИРОВАННЫЙ)
+═══════════════════════════════════ */
+
+.weather-switcher {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 9999;
+  background: rgba(4, 2, 12, 0.96);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  padding: 16px 32px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: border-color 1.5s;
+}
+
+.switcher-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--subtext);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: color 1.5s;
+  margin-right: 4px;
+}
+
+.weather-btn {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 16px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: transparent;
+  cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: rgba(255,255,255,0.4);
+  transition: all 0.2s;
+  white-space: nowrap;
+  clip-path: polygon(4px 0%, 100% 0%, calc(100% - 4px) 100%, 0% 100%);
+}
+
+.weather-btn:hover { color: rgba(255,255,255,0.8); border-color: rgba(255,255,255,0.2); }
+
+.weather-btn.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(0,0,0,0.4);
+  box-shadow: 0 0 15px var(--accent-glow);
+}
+
+.weather-icon { font-size: 18px; line-height: 1; }
+
+.concept-info {
+  margin-left: auto;
+  text-align: right;
+}
+.concept-num { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--subtext); letter-spacing: 2px; }
+.concept-name { font-family: 'Orbitron', monospace; font-size: 12px; font-weight: 700; color: var(--accent); letter-spacing: 2px; transition: color 1.5s; }
+
+/* ═══════════════════════════════════
+   АДАПТАЦИЯ ФОНА ПОД ПОГОДУ
+═══════════════════════════════════ */
+
+.weather-bg-gradient {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  transition: opacity 1.5s;
+}
+
+body[data-weather="night"] .weather-bg-gradient {
+  background:
+    radial-gradient(ellipse at 20% 20%, rgba(0,255,240,0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(255,0,110,0.03) 0%, transparent 50%);
+}
+body[data-weather="clear"] .weather-bg-gradient {
+  background:
+    radial-gradient(ellipse at 80% -10%, rgba(255,179,0,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 50%, rgba(255,100,0,0.04) 0%, transparent 40%);
+}
+body[data-weather="rain"] .weather-bg-gradient {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(20,60,120,0.15) 0%, transparent 60%),
+    radial-gradient(ellipse at 50% 100%, rgba(10,40,80,0.10) 0%, transparent 50%);
+}
+body[data-weather="snow"] .weather-bg-gradient {
+  background:
+    radial-gradient(ellipse at 30% 0%, rgba(80,140,220,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 100%, rgba(144,204,255,0.04) 0%, transparent 40%);
+}
+body[data-weather="storm"] .weather-bg-gradient {
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(80,0,120,0.12) 0%, transparent 60%),
+    radial-gradient(ellipse at 30% 80%, rgba(40,0,80,0.10) 0%, transparent 50%);
+}
+body[data-weather="fog"] .weather-bg-gradient {
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(100,140,170,0.06) 0%, transparent 70%);
+}
+
+/* Скроллбар */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); }
+</style>
+</head>
+<body data-weather="night">
+
+<!-- ФОНОВЫЙ ГРАДИЕНТ -->
+<div class="weather-bg-gradient"></div>
+
+<!-- ═══ ПОГОДНЫЕ СЛОИ ═══ -->
+
+<!-- Ночь: Звёзды -->
+<div class="weather-layer" id="layer-night"></div>
+
+<!-- Ясно: Солнце -->
+<div class="weather-layer" id="layer-clear">
+  <div class="sun-container">
+    <div class="sun-rays"></div>
+    <div class="sun-core"></div>
+    <div class="sun-glow"></div>
+  </div>
+  <div class="sun-horizon"></div>
+</div>
+
+<!-- Дождь -->
+<div class="weather-layer" id="layer-rain">
+  <div class="rain-mist"></div>
+  <div class="rain-splash"></div>
+</div>
+
+<!-- Снег -->
+<div class="weather-layer" id="layer-snow">
+  <div class="snow-frost"></div>
+  <div class="snow-ground"></div>
+</div>
+
+<!-- Гроза -->
+<div class="weather-layer" id="layer-storm">
+  <div class="storm-clouds"></div>
+  <div class="storm-flash" id="storm-flash"></div>
+  <div id="bolt-container" style="position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:4;"></div>
+</div>
+
+<!-- Туман -->
+<div class="weather-layer" id="layer-fog">
+  <div class="fog-layer"></div>
+  <div class="fog-haze"></div>
+</div>
+
+<!-- ═══ UI ═══ -->
+
+<header>
+  <div class="logo" id="logo-text">СИГНАЛ</div>
+  <div class="search-wrap">
+    <input class="search" type="text" id="search-input" placeholder="> ПОИСК_СИГНАЛА...">
+  </div>
+  <div class="header-right">
+    <button class="btn btn-ghost">ВОЙТИ</button>
+    <button class="btn btn-primary">ЗАГРУЗИТЬ</button>
+  </div>
+</header>
+
+<nav class="nav">
+  <div class="tab active">ВСЁ</div>
+  <div class="tab">КИНО</div>
+  <div class="tab">МУЗЫКА</div>
+  <div class="tab">ИГРЫ</div>
+  <div class="tab">СТРИМЫ</div>
+  <div class="tab">ПОДКАСТЫ</div>
+  <div class="tab">АНИМЕ</div>
+</nav>
+
+<div class="statusbar">
+  <span><span class="status-dot"></span>ОНЛАЙН: 42,183</span>
+  <span><span class="status-dot red"></span>СТРИМОВ: 1,247</span>
+  <span>ЗАГРУЖЕНО: 8,934 ВИДЕО</span>
+  <span class="weather-status" id="weather-status-text">🌙 НОЧЬ · МОСКВА · −3°C</span>
+</div>
+
+<!-- FEATURED -->
+<div class="hero">
+  <div class="hero-overlay"></div>
+  <div class="hero-bg">
+    <div class="hero-grid"></div>
+    <div class="hero-play">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M8 5.14v14l11-7-11-7z" fill="currentColor"/>
+      </svg>
+    </div>
+  </div>
+  <div class="hero-info">
+    <div class="hero-tag" id="hero-tag">// СИГНАЛ_ВЫБОР_РЕДАКЦИИ</div>
+    <div class="hero-title" id="hero-title">КИБЕР-ФИЛОСОФИЯ:<br>ЧТО ТАКОЕ РЕАЛЬНОСТЬ В 2030</div>
+    <div class="hero-meta">
+      <span>👁 3.7М</span><span>//</span><span>📅 12 ЧАСОВ</span><span>//</span><span>⏱ 58:23</span>
+    </div>
+  </div>
+</div>
+
+<!-- КАРТОЧКИ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-title" id="section-title-text">// АКТИВНЫЕ_СИГНАЛЫ</div>
+    <div class="section-more">СМОТРЕТЬ ВСЕ [→]</div>
+  </div>
+  <div class="grid">
+
+    <div class="card">
+      <div class="thumb"><div class="thumb-inner p1"></div>
+        <div class="thumb-hover"><div class="play-sq"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M8 5.14v14l11-7-11-7z" fill="currentColor"/></svg></div></div>
+        <div class="duration">24:15</div><div class="live-badge">LIVE</div>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Хакерская конференция: взлом реальности в прямом эфире</div>
+        <div class="card-author"><div class="avatar">ЦШ</div><span class="author-name">@cypher_show</span></div>
+        <div class="card-meta"><span class="card-views">8.3К</span> // СЕЙЧАС</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="thumb"><div class="thumb-inner p2"></div>
+        <div class="thumb-hover"><div class="play-sq"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M8 5.14v14l11-7-11-7z" fill="currentColor"/></svg></div></div>
+        <div class="duration">41:07</div>
+      </div>
+      <div class="card-body">
+        <div class="card-title">AI написал мой код: я потерял работу или нашёл суперсилу?</div>
+        <div class="card-author"><div class="avatar">КД</div><span class="author-name">@kodr_dev</span></div>
+        <div class="card-meta"><span class="card-views">2.1М</span> // 3 ДНЯ</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="thumb"><div class="thumb-inner p3"></div>
+        <div class="thumb-hover"><div class="play-sq"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M8 5.14v14l11-7-11-7z" fill="currentColor"/></svg></div></div>
+        <div class="duration">15:33</div>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Synthwave: как я сделал альбом за 72 часа без сна</div>
+        <div class="card-author"><div class="avatar">ВГ</div><span class="author-name">@void_groove</span></div>
+        <div class="card-meta"><span class="card-views">678К</span> // 5 ЧАСОВ</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="thumb"><div class="thumb-inner p4"></div>
+        <div class="thumb-hover"><div class="play-sq"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M8 5.14v14l11-7-11-7z" fill="currentColor"/></svg></div></div>
+        <div class="duration">2:07:18</div>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Cyberpunk 2077: полный разбор всех концовок — что они значат</div>
+        <div class="card-author"><div class="avatar">НК</div><span class="author-name">@neon_kreativ</span></div>
+        <div class="card-meta"><span class="card-views">4.5М</span> // 2 НЕДЕЛИ</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ПЕРЕКЛЮЧАТЕЛЬ ПОГОДЫ -->
+<div class="weather-switcher">
+  <span class="switcher-label">// ПОГОДА:</span>
+
+  <button class="weather-btn active" onclick="setWeather('night', this)">
+    <span class="weather-icon">🌙</span> НОЧЬ
+  </button>
+  <button class="weather-btn" onclick="setWeather('clear', this)">
+    <span class="weather-icon">☀️</span> ЯСНО
+  </button>
+  <button class="weather-btn" onclick="setWeather('rain', this)">
+    <span class="weather-icon">🌧️</span> ДОЖДЬ
+  </button>
+  <button class="weather-btn" onclick="setWeather('snow', this)">
+    <span class="weather-icon">❄️</span> СНЕГ
+  </button>
+  <button class="weather-btn" onclick="setWeather('storm', this)">
+    <span class="weather-icon">⛈️</span> ГРОЗА
+  </button>
+  <button class="weather-btn" onclick="setWeather('fog', this)">
+    <span class="weather-icon">🌫️</span> ТУМАН
+  </button>
+
+  <div class="concept-info">
+    <div class="concept-num">КОНЦЕПТ 02</div>
+    <div class="concept-name" id="weather-label">НОЧЬ</div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════
+// ДАННЫЕ ПОГОДНЫХ ТЕМ
+// ════════════════════════════════════
+const weatherData = {
+  night: {
+    label: 'НОЧЬ',
+    status: '🌙 НОЧЬ · МОСКВА · −3°C',
+    heroTag: '// СИГНАЛ_ВЫБОР_РЕДАКЦИИ',
+    heroTitle: 'КИБЕР-ФИЛОСОФИЯ:<br>ЧТО ТАКОЕ РЕАЛЬНОСТЬ В 2030',
+    sectionTitle: '// АКТИВНЫЕ_СИГНАЛЫ',
+    logoText: 'СИГНАЛ',
+    searchPlaceholder: '> ПОИСК_СИГНАЛА...',
+  },
+  clear: {
+    label: 'ЯСНО',
+    status: '☀️ ЯСНО · МОСКВА · +22°C',
+    heroTag: '// ДНЕВНОЙ_ЭФИР',
+    heroTitle: 'ТЕХНОЛОГИИ ЗАВТРА:<br>ОБЗОР БУДУЩЕГО',
+    sectionTitle: '// ДНЕВНАЯ_ВОЛНА',
+    logoText: 'СИГНАЛ',
+    searchPlaceholder: '> ПОИСК_В_ЭФИРЕ...',
+  },
+  rain: {
+    label: 'ДОЖДЬ',
+    status: '🌧️ ДОЖДЬ · МОСКВА · +8°C',
+    heroTag: '// ДОЖДЛИВЫЙ_ЭФИР',
+    heroTitle: 'ЗВУКИ ГОРОДА ПОД ДОЖДЁМ:<br>2 ЧАСА АТМОСФЕРЫ',
+    sectionTitle: '// ВОЛНА_В_ТУМАНЕ',
+    logoText: 'СИГНАЛ',
+    searchPlaceholder: '> ИСКАТЬ В ДОЖДЕ...',
+  },
+  snow: {
+    label: 'СНЕГ',
+    status: '❄️ СНЕГ · МОСКВА · −8°C',
+    heroTag: '// ЗИМНИЙ_СИГНАЛ',
+    heroTitle: 'ПОЛЯРНАЯ ЭКСПЕДИЦИЯ:<br>60 ДНЕЙ НА ЛЬДУ',
+    sectionTitle: '// СИГНАЛ_ВО_ЛЬДАХ',
+    logoText: 'СИГНАЛ',
+    searchPlaceholder: '> ПОИСК В СНЕГАХ...',
+  },
+  storm: {
+    label: 'ГРОЗА',
+    status: '⛈️ ГРОЗА · МОСКВА · +14°C',
+    heroTag: '// ЭКСТРЕННЫЙ_ЭФИР',
+    heroTitle: 'РАЗРЯД:<br>ЧТО ПРОИСХОДИТ ПРЯМО СЕЙЧАС',
+    sectionTitle: '// ШТОРМОВОЕ_ПРЕДУПРЕЖДЕНИЕ',
+    logoText: 'СИГНАЛ',
+    searchPlaceholder: '> ЭКСТРЕННЫЙ ПОИСК...',
+  },
+  fog: {
+    label: 'ТУМАН',
+    status: '🌫️ ТУМАН · МОСКВА · +5°C',
+    heroTag: '// ТУМАННЫЙ_ЭФИР',
+    heroTitle: 'ЧТО СКРЫВАЕТСЯ<br>В ТИШИНЕ',
+    sectionTitle: '// СИГНАЛ_В_ТУМАНЕ',
+    logoText: 'СИГНАЛ',
+    searchPlaceholder: '> ИСКАТЬ В ТУМАНЕ...',
+  },
+};
+
+// ════════════════════════════════════
+// ГЕНЕРАТОРЫ ЧАСТИЦ
+// ════════════════════════════════════
+
+function clearLayer(id) {
+  const layer = document.getElementById(id);
+  // Удаляем только сгенерированные частицы
+  layer.querySelectorAll('.star, .rain-drop, .snow-flake, .storm-drop, .fog-blob').forEach(el => el.remove());
+}
+
+function generateStars(count = 120) {
+  const layer = document.getElementById('layer-night');
+  clearLayer('layer-night');
+  for (let i = 0; i < count; i++) {
+    const star = document.createElement('div');
+    star.className = 'star';
+    const size = Math.random() * 2.5 + 0.5;
+    star.style.cssText = `
+      left: ${Math.random() * 100}%;
+      top: ${Math.random() * 85}%;
+      width: ${size}px;
+      height: ${size}px;
+      animation-delay: ${Math.random() * 4}s;
+      animation-duration: ${Math.random() * 3 + 2}s;
+      opacity: ${Math.random() * 0.7 + 0.1};
+    `;
+    layer.appendChild(star);
+  }
+}
+
+function generateRain(count = 100, layerId = 'layer-rain', cls = 'rain-drop') {
+  const layer = document.getElementById(layerId);
+  clearLayer(layerId);
+  for (let i = 0; i < count; i++) {
+    const drop = document.createElement('div');
+    drop.className = cls;
+    const height = Math.random() * 20 + 12;
+    const delay = Math.random() * 2;
+    const dur = Math.random() * 0.5 + 0.4;
+    const opacity = Math.random() * 0.5 + 0.2;
+    drop.style.cssText = `
+      left: ${Math.random() * 105}%;
+      height: ${height}px;
+      animation-delay: ${delay}s;
+      animation-duration: ${dur}s;
+      opacity: ${opacity};
+    `;
+    layer.appendChild(drop);
+  }
+}
+
+function generateSnow(count = 80) {
+  const layer = document.getElementById('layer-snow');
+  clearLayer('layer-snow');
+  for (let i = 0; i < count; i++) {
+    const flake = document.createElement('div');
+    flake.className = 'snow-flake';
+    const size = Math.random() * 4 + 2;
+    const drift = (Math.random() - 0.5) * 120;
+    const dur = Math.random() * 5 + 6;
+    flake.style.cssText = `
+      left: ${Math.random() * 100}%;
+      width: ${size}px;
+      height: ${size}px;
+      --drift: ${drift}px;
+      animation-delay: ${Math.random() * 8}s;
+      animation-duration: ${dur}s;
+      opacity: ${Math.random() * 0.6 + 0.3};
+    `;
+    layer.appendChild(flake);
+  }
+}
+
+function generateStorm() {
+  const layer = document.getElementById('layer-storm');
+
+  // Убираем старые капли и ветер
+  layer.querySelectorAll('.storm-drop, .wind-streak').forEach(el => el.remove());
+
+  // Густой косой дождь (200 капель)
+  for (let i = 0; i < 200; i++) {
+    const drop = document.createElement('div');
+    drop.className = 'storm-drop';
+    const height = Math.random() * 32 + 10;
+    drop.style.cssText = `
+      left: ${Math.random() * 130 - 20}%;
+      height: ${height}px;
+      width: ${Math.random() < 0.25 ? '2px' : '1px'};
+      animation-delay: ${Math.random() * 1.2}s;
+      animation-duration: ${(Math.random() * 0.15 + 0.16)}s;
+      opacity: ${Math.random() * 0.5 + 0.3};
+    `;
+    layer.appendChild(drop);
+  }
+
+  // Полосы ветра (15 штук)
+  for (let i = 0; i < 15; i++) {
+    const streak = document.createElement('div');
+    streak.className = 'wind-streak';
+    streak.style.cssText = `
+      top: ${Math.random() * 100}%;
+      width: ${Math.random() * 220 + 80}px;
+      animation-delay: ${Math.random() * 3}s;
+      animation-duration: ${(Math.random() * 1.2 + 0.7)}s;
+      opacity: ${Math.random() * 0.6 + 0.2};
+    `;
+    layer.appendChild(streak);
+  }
+}
+
+// ── SVG МОЛНИИ ──────────────────────────────────────
+let stormActive = false;
+
+function createBolt() {
+  if (!stormActive) return;
+
+  const container = document.getElementById('bolt-container');
+  const flashEl   = document.getElementById('storm-flash');
+  if (!container || !flashEl) return;
+
+  const ns = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(ns, 'svg');
+
+  // Случайное положение и размер
+  const centerX   = Math.random() * 92 + 4;           // центр молнии: 4–96% ширины экрана
+  const boltW     = Math.random() * 120 + 80;         // шире = зигзаг разнообразнее
+  const boltH_vh  = Math.random() * 40 + 25;          // vh высота
+
+  // Генерируем зигзаг
+  const segments = Math.floor(Math.random() * 5) + 5;
+  let cx = boltW / 2, cy = 0;
+  let d  = `M ${cx.toFixed(1)} 0`;
+  for (let i = 1; i <= segments; i++) {
+    cx = Math.max(4, Math.min(boltW - 4, cx + (Math.random() - 0.5) * 38));
+    cy = (i / segments) * 100;
+    d += ` L ${cx.toFixed(1)} ${cy.toFixed(1)}`;
+  }
+
+  // Ореол (толстый, полупрозрачный)
+  const glow = document.createElementNS(ns, 'path');
+  glow.setAttribute('d', d);
+  glow.setAttribute('stroke', 'rgba(200,100,255,0.35)');
+  glow.setAttribute('stroke-width', '8');
+  glow.setAttribute('fill', 'none');
+  glow.setAttribute('stroke-linecap', 'round');
+  glow.setAttribute('stroke-linejoin', 'round');
+
+  // Основная молния
+  const bolt = document.createElementNS(ns, 'path');
+  bolt.setAttribute('d', d);
+  bolt.setAttribute('stroke', '#E0A0FF');
+  bolt.setAttribute('stroke-width', '2');
+  bolt.setAttribute('fill', 'none');
+  bolt.setAttribute('stroke-linecap', 'round');
+  bolt.setAttribute('stroke-linejoin', 'round');
+
+  // Яркое ядро
+  const core = document.createElementNS(ns, 'path');
+  core.setAttribute('d', d);
+  core.setAttribute('stroke', '#FFFFFF');
+  core.setAttribute('stroke-width', '0.8');
+  core.setAttribute('fill', 'none');
+  core.setAttribute('stroke-linecap', 'round');
+  core.setAttribute('stroke-linejoin', 'round');
+
+  svg.appendChild(glow);
+  svg.appendChild(bolt);
+  svg.appendChild(core);
+
+  svg.setAttribute('viewBox', `0 0 ${boltW} 100`);
+  svg.setAttribute('preserveAspectRatio', 'none');
+  svg.className = 'bolt-svg';
+  svg.style.cssText = `
+    left: ${centerX}%;
+    transform: translateX(-50%);
+    top: 0;
+    width: ${boltW}px;
+    height: ${boltH_vh}vh;
+    filter: drop-shadow(0 0 5px #BF40FF) drop-shadow(0 0 18px rgba(155,16,255,0.7));
+    z-index: 6;
+  `;
+
+  container.appendChild(svg);
+
+  // Анимация: появление → мерцание → исчезновение
+  const seq = [
+    [0,   () => { svg.style.opacity = '1';   flashEl.style.background = 'rgba(155,16,255,0.13)'; }],
+    [55,  () => { svg.style.opacity = '0.15'; flashEl.style.background = 'rgba(155,16,255,0)'; }],
+    [90,  () => { svg.style.opacity = '0.85'; flashEl.style.background = 'rgba(155,16,255,0.07)'; }],
+    [160, () => { svg.style.opacity = '0.05'; flashEl.style.background = 'rgba(155,16,255,0)'; }],
+    [260, () => { svg.style.opacity = '0';   svg.remove(); }],
+  ];
+  seq.forEach(([delay, fn]) => setTimeout(fn, delay));
+
+  // Следующая молния через 25–55 секунд
+  setTimeout(createBolt, Math.random() * 30000 + 25000);
+}
+
+function generateFog() {
+  const layer = document.getElementById('layer-fog').querySelector('.fog-layer');
+  layer.innerHTML = '';
+  const positions = [
+    {x:'10%',y:'20%',w:'60%',h:'40%',fx:'8%',fy:'4%',fs:'1.15'},
+    {x:'50%',y:'40%',w:'70%',h:'50%',fx:'-6%',fy:'3%',fs:'1.08'},
+    {x:'20%',y:'60%',w:'55%',h:'35%',fx:'10%',fy:'-4%',fs:'1.12'},
+    {x:'70%',y:'10%',w:'50%',h:'45%',fx:'-8%',fy:'5%',fs:'1.20'},
+    {x:'0%', y:'70%',w:'65%',h:'40%',fx:'6%', fy:'-3%',fs:'1.10'},
+  ];
+  positions.forEach((p, i) => {
+    const blob = document.createElement('div');
+    blob.className = 'fog-blob';
+    blob.style.cssText = `
+      left: ${p.x}; top: ${p.y};
+      width: ${p.w}; height: ${p.h};
+      --fx: ${p.fx}; --fy: ${p.fy}; --fs: ${p.fs};
+      animation-delay: ${i * 1.5}s;
+      animation-duration: ${10 + i * 3}s;
+    `;
+    layer.appendChild(blob);
+  });
+}
+
+// ════════════════════════════════════
+// ПЕРЕКЛЮЧЕНИЕ ПОГОДЫ
+// ════════════════════════════════════
+
+function setWeather(weather, btn) {
+  document.body.setAttribute('data-weather', weather);
+
+  // Кнопки
+  document.querySelectorAll('.weather-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+
+  // Тексты
+  const d = weatherData[weather];
+  document.getElementById('weather-label').textContent = d.label;
+  document.getElementById('weather-status-text').textContent = d.status;
+  document.getElementById('hero-tag').textContent = d.heroTag;
+  document.getElementById('hero-title').innerHTML = d.heroTitle;
+  document.getElementById('section-title-text').textContent = d.sectionTitle;
+  document.getElementById('search-input').placeholder = d.searchPlaceholder;
+
+  // Останавливаем молнии если уходим с грозы
+  stormActive = (weather === 'storm');
+
+  // Генерируем эффекты
+  if (weather === 'night') generateStars();
+  if (weather === 'clear') { /* CSS анимация солнца */ }
+  if (weather === 'rain')  generateRain(100);
+  if (weather === 'snow')  generateSnow(80);
+  if (weather === 'fog')   generateFog();
+  if (weather === 'storm') {
+    generateStorm();
+    // Первая молния через 5–12 секунд после входа
+    setTimeout(createBolt, Math.random() * 7000 + 5000);
+  }
+}
+
+// ════════════════════════════════════
+// ИНИЦИАЛИЗАЦИЯ
+// ════════════════════════════════════
+
+window.addEventListener('DOMContentLoaded', () => {
+  generateStars();
+  generateFog(); // Предгенерируем туман
+
+  // Определяем время суток и ставим дефолтную тему
+  const hour = new Date().getHours();
+  let defaultWeather = 'night';
+  if (hour >= 6 && hour < 12) defaultWeather = 'clear';
+  else if (hour >= 12 && hour < 17) defaultWeather = 'clear';
+  else if (hour >= 17 && hour < 21) defaultWeather = 'rain'; // Вечер — немного пасмурно
+  else defaultWeather = 'night';
+
+  // Активируем нужную кнопку
+  const btns = document.querySelectorAll('.weather-btn');
+  const weatherNames = ['night','clear','rain','snow','storm','fog'];
+  const idx = weatherNames.indexOf(defaultWeather);
+  if (idx >= 0) setWeather(defaultWeather, btns[idx]);
+});
+</script>
+</body>
+</html>

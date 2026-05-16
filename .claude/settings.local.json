@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(npx create-next-app@latest veshchay --typescript --tailwind --eslint --app --no-src-dir --import-alias=\"@/*\" --no-turbopack --yes)",
+      "Bash(npm view *)",
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(git remote *)",
+      "Bash(git branch *)",
+      "Bash(git push *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "PowerShell(Get-ChildItem -Path \"c:\\\\Users\\\\Администратор\\\\Desktop\\\\соц. сеть\\\\veshchay\\\\\" -Recurse -Directory | Select-Object -First 50 | ForEach-Object { $_.FullName })",
+      "Bash(dir \"c:\\\\Users\\\\Администратор\\\\Desktop\\\\соц. сеть\\\\veshchay\\\\app\\\\api\" /s /b)",
+      "Bash(Get-ChildItem \"c:\\\\Users\\\\Администратор\\\\Desktop\\\\соц. сеть\\\\veshchay\\\\app\\\\api\" -Recurse -Name)",
+      "Bash(mkdir -p \"c:/Users/Администратор/Desktop/соц. сеть/veshchay/app/api/pets/interact\")",
+      "Bash(npx supabase *)",
+      "Bash(npx vercel *)",
+      "Bash(node -e ' *)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\Администратор\\Desktop\\соц. сеть\\veshchay\\app\\api\\pets"
+    ]
+  }
+}

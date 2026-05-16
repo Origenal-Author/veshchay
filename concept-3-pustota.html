@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Концепт 3 — «ПУСТОТА»</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Nunito+Sans:wght@300;400;500;600&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #FAFAF9;
+    --surface: #FFFFFF;
+    --surface2: #F5F5F3;
+    --text: #1C1C1E;
+    --subtext: #6B7280;
+    --gold: #D4A853;
+    --gold-light: #F0D080;
+    --border: #E5E7EB;
+    --border-dark: #D1D5DB;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Nunito Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ХЕДЕР */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(250, 250, 249, 0.92);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 48px;
+    height: 68px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo-wrap {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    color: var(--text);
+    font-style: italic;
+  }
+
+  .logo-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--gold);
+    border-radius: 50%;
+    margin-bottom: 2px;
+    box-shadow: 0 0 8px rgba(212, 168, 83, 0.4);
+  }
+
+  .search-wrap {
+    flex: 1;
+    max-width: 440px;
+    margin: 0 48px;
+    position: relative;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--subtext);
+    font-size: 16px;
+  }
+
+  .search {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 28px;
+    padding: 10px 20px 10px 42px;
+    color: var(--text);
+    font-family: 'Nunito Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.3s;
+  }
+
+  .search::placeholder { color: var(--subtext); font-weight: 300; }
+
+  .search:focus {
+    background: var(--surface);
+    border-color: var(--border-dark);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  }
+
+  .header-actions { display: flex; align-items: center; gap: 12px; }
+
+  .btn {
+    padding: 8px 20px;
+    border-radius: 22px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Nunito Sans', sans-serif;
+    border: none;
+    letter-spacing: 0.2px;
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--subtext);
+    border: 1px solid var(--border);
+  }
+
+  .btn-ghost:hover { color: var(--text); border-color: var(--border-dark); background: var(--surface2); }
+
+  .btn-primary {
+    background: var(--text);
+    color: #fff;
+  }
+
+  .btn-primary:hover {
+    background: #2d2d30;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  }
+
+  .upload-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* НАВИГАЦИЯ */
+  .nav-tabs {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 0 48px;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    scrollbar-width: none;
+    position: relative;
+    z-index: 1;
+    background: var(--surface);
+  }
+
+  .nav-tabs::-webkit-scrollbar { display: none; }
+
+  .tab {
+    padding: 16px 20px;
+    font-size: 13px;
+    color: var(--subtext);
+    cursor: pointer;
+    white-space: nowrap;
+    font-weight: 500;
+    transition: all 0.2s;
+    position: relative;
+    border-bottom: 2px solid transparent;
+  }
+
+  .tab::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 20px;
+    right: 20px;
+    height: 2px;
+    background: var(--text);
+    transform: scaleX(0);
+    transition: transform 0.2s;
+  }
+
+  .tab:hover { color: var(--text); }
+  .tab:hover::after { transform: scaleX(1); opacity: 0.3; }
+  .tab.active { color: var(--text); font-weight: 600; }
+  .tab.active::after { transform: scaleX(1); opacity: 1; }
+
+  /* HERO */
+  .hero-section {
+    padding: 48px 48px 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    align-items: center;
+  }
+
+  .hero-text {}
+
+  .hero-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 16px;
+  }
+
+  .hero-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 48px;
+    font-weight: 300;
+    line-height: 1.1;
+    letter-spacing: -1px;
+    color: var(--text);
+    margin-bottom: 16px;
+  }
+
+  .hero-title em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .hero-desc {
+    font-size: 15px;
+    color: var(--subtext);
+    font-weight: 300;
+    line-height: 1.6;
+    max-width: 360px;
+    margin-bottom: 24px;
+  }
+
+  .hero-actions { display: flex; align-items: center; gap: 12px; }
+
+  .hero-watch {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+  }
+
+  .watch-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1.5px solid var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+  }
+
+  .hero-watch:hover .watch-circle {
+    background: var(--text);
+    transform: scale(1.1);
+  }
+
+  .hero-watch:hover .watch-circle svg path { fill: #fff; }
+
+  .hero-video {
+    height: 280px;
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+    background: linear-gradient(135deg, #f0ece4, #e8e4dc, #f0ece4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.4s;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  }
+
+  .hero-video:hover {
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12);
+    transform: scale(1.01);
+  }
+
+  .hero-video::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.3) 100%);
+  }
+
+  .hero-video-play {
+    width: 56px;
+    height: 56px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(8px);
+    transition: all 0.3s;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    z-index: 1;
+  }
+
+  .hero-video:hover .hero-video-play {
+    transform: scale(1.1);
+    background: rgba(255, 255, 255, 1);
+  }
+
+  .hero-video-meta {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    right: 16px;
+    z-index: 1;
+  }
+
+  .hero-video-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    font-weight: 500;
+    color: #fff;
+    line-height: 1.3;
+    margin-bottom: 4px;
+  }
+
+  .hero-video-author {
+    font-size: 12px;
+    color: rgba(255,255,255,0.7);
+    font-weight: 300;
+  }
+
+  /* СЕКЦИЯ */
+  .section {
+    padding: 48px 48px;
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 0 48px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 28px;
+  }
+
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 24px;
+    font-weight: 400;
+    letter-spacing: -0.3px;
+  }
+
+  .section-more {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--subtext);
+    letter-spacing: 1px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .section-more:hover { color: var(--text); }
+
+  /* СЕТКА */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+
+  .card {
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: var(--surface);
+  }
+
+  .card:hover { transform: translateY(-4px); }
+
+  .thumb {
+    width: 100%;
+    aspect-ratio: 16/9;
+    border-radius: 3px;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 14px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: box-shadow 0.3s;
+  }
+
+  .card:hover .thumb {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  }
+
+  .thumb-img {
+    width: 100%;
+    height: 100%;
+    transition: transform 0.4s ease;
+  }
+
+  .card:hover .thumb-img { transform: scale(1.03); }
+
+  .thumb-play {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .card:hover .thumb-play { opacity: 1; }
+
+  .play-btn {
+    width: 44px;
+    height: 44px;
+    background: rgba(255, 255, 255, 0.92);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  }
+
+  .duration {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background: rgba(0, 0, 0, 0.72);
+    color: #fff;
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    padding: 2px 7px;
+    border-radius: 3px;
+  }
+
+  .card-body {}
+
+  .card-title {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.45;
+    margin-bottom: 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    color: var(--text);
+    letter-spacing: -0.1px;
+  }
+
+  .card-author {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .avatar {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--text);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .author-name {
+    font-size: 12px;
+    color: var(--subtext);
+    font-weight: 400;
+  }
+
+  .card-meta {
+    font-size: 12px;
+    color: var(--subtext);
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* ЦВЕТА ПРЕВЬЮ */
+  .t1 { background: linear-gradient(135deg, #e8d5c0, #d4c0a8, #ead0b8); }
+  .t2 { background: linear-gradient(135deg, #c8d8c0, #b8cca8, #c4d4b8); }
+  .t3 { background: linear-gradient(135deg, #c0c8e0, #a8b4d0, #bcc4dc); }
+  .t4 { background: linear-gradient(135deg, #e0c8c8, #d0b4b4, #dcc4c4); }
+  .t5 { background: linear-gradient(135deg, #d8d0c0, #c8bea8, #d4ccb8); }
+  .t6 { background: linear-gradient(135deg, #c8e0d0, #b4d0bc, #c4dcc8); }
+  .t7 { background: linear-gradient(135deg, #e0d8c0, #d0c8a8, #dcd4b8); }
+  .t8 { background: linear-gradient(135deg, #d0c8e0, #bcb4d0, #ccc4dc); }
+
+  /* НИЖНИЙ БЛОК */
+  .promo {
+    margin: 0 48px 60px;
+    padding: 40px 48px;
+    background: var(--text);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .promo::before {
+    content: '';
+    position: absolute;
+    right: -40px;
+    top: -40px;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(212, 168, 83, 0.15), transparent);
+    pointer-events: none;
+  }
+
+  .promo-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+
+  .promo-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 30px;
+    font-weight: 300;
+    color: #fff;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+
+  .promo-sub {
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+    font-weight: 300;
+  }
+
+  .btn-light {
+    background: #fff;
+    color: var(--text);
+    font-weight: 600;
+    padding: 12px 28px;
+    border-radius: 28px;
+    font-size: 13px;
+    cursor: pointer;
+    border: none;
+    font-family: 'Nunito Sans', sans-serif;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .btn-light:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+
+  /* МЕТКА */
+  .concept-badge {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 20px;
+    z-index: 999;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  }
+
+  .concept-badge .num {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--gold);
+    letter-spacing: 2px;
+    margin-bottom: 2px;
+  }
+
+  .concept-badge .name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    font-weight: 600;
+    font-style: italic;
+    color: var(--text);
+  }
+
+  .concept-badge .tagline {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--subtext);
+    margin-top: 2px;
+  }
+
+  /* ЗОЛОТАЯ ДЕТАЛЬ */
+  .gold-bar {
+    height: 2px;
+    background: linear-gradient(90deg, var(--gold), transparent);
+    margin: 0 48px 0;
+    opacity: 0.4;
+  }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border-dark); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--subtext); }
+</style>
+</head>
+<body>
+
+<!-- ХЕДЕР -->
+<header>
+  <div class="logo-wrap">
+    <div class="logo">Пустота</div>
+    <div class="logo-dot"></div>
+  </div>
+  <div class="search-wrap">
+    <span class="search-icon">○</span>
+    <input class="search" type="text" placeholder="Найти видео, авторов, темы...">
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-ghost">Войти</button>
+    <button class="btn btn-primary upload-btn">
+      <span>↑</span> Загрузить
+    </button>
+  </div>
+</header>
+
+<!-- НАВИГАЦИЯ -->
+<nav class="nav-tabs">
+  <div class="tab active">Всё</div>
+  <div class="tab">Кино</div>
+  <div class="tab">Музыка</div>
+  <div class="tab">Игры</div>
+  <div class="tab">Документальное</div>
+  <div class="tab">Стримы</div>
+  <div class="tab">Подкасты</div>
+  <div class="tab">Аниме</div>
+  <div class="tab">Образование</div>
+</nav>
+
+<!-- HERO -->
+<div class="hero-section">
+  <div class="hero-text">
+    <div class="hero-eyebrow">Редакция рекомендует</div>
+    <h1 class="hero-title">Смотри то,<br>что <em>важно</em></h1>
+    <p class="hero-desc">Видеоплатформа без шума. Только авторы, которые говорят что-то настоящее.</p>
+    <div class="hero-actions">
+      <div class="hero-watch">
+        <div class="watch-circle">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <path d="M8 5.14v14l11-7-11-7z" fill="#1C1C1E"/>
+          </svg>
+        </div>
+        Смотреть выбор дня
+      </div>
+    </div>
+  </div>
+  <div class="hero-video">
+    <div class="t1" style="position:absolute;inset:0"></div>
+    <div class="hero-video-play">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+        <path d="M8 5.14v14l11-7-11-7z" fill="#1C1C1E"/>
+      </svg>
+    </div>
+    <div class="hero-video-meta">
+      <div class="hero-video-title">Молчание как язык. Интервью с режиссёром</div>
+      <div class="hero-video-author">Елена Соколова · 48 мин</div>
+    </div>
+  </div>
+</div>
+
+<div style="padding: 32px 48px 0">
+  <div class="gold-bar"></div>
+</div>
+
+<!-- СЕТКА -->
+<div class="section">
+  <div class="section-header">
+    <h2 class="section-title">Популярное сейчас</h2>
+    <a class="section-more" href="#">смотреть все →</a>
+  </div>
+  <div class="grid">
+
+    <div class="card">
+      <div class="thumb">
+        <div class="thumb-img t2"></div>
+        <div class="thumb-play">
+          <div class="play-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M8 5.14v14l11-7-11-7z" fill="#1C1C1E"/></svg>
+          </div>
+        </div>
+        <div class="duration">32:07</div>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Медленная жизнь в Японии: год в деревне без смартфона</div>
+        <div class="card-author">
+          <div class="avatar">АК</div>
+          <span class="author-name">Андрей Кириллов</span>
+        </div>
+        <div class="card-meta">1.8М · 4 дня назад</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="thumb">
+        <div class="thumb-img t3"></div>
+        <div class="thumb-play">
+          <div class="play-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M8 5.14v14l11-7-11-7z" fill="#1C1C1E"/></svg>
+          </div>
+        </div>
+        <div class="duration">1:12:45</div>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Архитектура тишины: Tadao Ando и пустое пространство</div>
+        <div class="card-author">
+          <div class="avatar">МЗ</div>
+          <span class="author-name">Мария Захарова</span>
+        </div>
+        <div class="card-meta">623К · 2 дня назад</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="thumb">
+        <div class="thumb-img t4"></div>
+        <div class="thumb-play">
+          <div class="play-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M8 5.14v14l11-7-11-7z" fill="#1C1C1E"/></svg>
+          </div>
+        </div>
+        <div class="duration">19:22</div>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Как читать роман за 3 часа и ничего не пропустить</div>
+        <div class="card-author">
+          <div class="avatar">ОВ</div>
+          <span class="author-name">Ольга Воронова</span>
+        </div>
+        <div class="card-meta">2.4М · Вчера</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="thumb">
+        <div class="thumb-img t5"></div>
+        <div class="thumb-play">
+          <div class="play-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M8 5.14v14l11-7-11-7z" fill="#1C1C1E"/></svg>
+          </div>
+        </div>
+        <div class="duration">44:58</div>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Пианист записывает альбом в заброшенной библиотеке</div>
+        <div class="card-author">
+          <div class="avatar">ДМ</div>
+          <span class="author-name">Дмитрий Мелехов</span>
+        </div>
+        <div class="card-meta">398К · 6 дней назад</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="thumb">
+        <div class="thumb-img t6"></div>
+        <div class="thumb-play">
+          <div class="play-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M8 5.14v14l11-7-11-7z" fill="#1C1C1E"/></svg>
+          </div>
+        </div>
+        <div class="duration">27:14</div>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Выращиваю еду на 10 кв.м.: результаты через полгода</div>
+        <div class="card-author">
+          <div class="avatar">НС</div>
+          <span class="author-name">Надежда Сорокина</span>
+        </div>
+        <div class="card-meta">1.1М · 1 неделю</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="thumb">
+        <div class="thumb-img t7"></div>
+        <div class="thumb-play">
+          <div class="play-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M8 5.14v14l11-7-11-7z" fill="#1C1C1E"/></svg>
+          </div>
+        </div>
+        <div class="duration">56:01</div>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Документальный портрет: женщина-кузнец из Сибири</div>
+        <div class="card-author">
+          <div class="avatar">КП</div>
+          <span class="author-name">Кирилл Петров</span>
+        </div>
+        <div class="card-meta">887К · 3 дня назад</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="thumb">
+        <div class="thumb-img t8"></div>
+        <div class="thumb-play">
+          <div class="play-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M8 5.14v14l11-7-11-7z" fill="#1C1C1E"/></svg>
+          </div>
+        </div>
+        <div class="duration">13:38</div>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Дизайн без трендов: как делать красиво через 10 лет</div>
+        <div class="card-author">
+          <div class="avatar">ВЛ</div>
+          <span class="author-name">Вера Ларина</span>
+        </div>
+        <div class="card-meta">544К · 5 дней назад</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="thumb">
+        <div class="thumb-img t1"></div>
+        <div class="thumb-play">
+          <div class="play-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M8 5.14v14l11-7-11-7z" fill="#1C1C1E"/></svg>
+          </div>
+        </div>
+        <div class="duration">38:55</div>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Поэзия без слов: жест, пауза и смысл в современном театре</div>
+        <div class="card-author">
+          <div class="avatar">ЕГ</div>
+          <span class="author-name">Екатерина Громова</span>
+        </div>
+        <div class="card-meta">277К · 8 дней назад</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- НИЖНИЙ БЛОК -->
+<div class="promo">
+  <div>
+    <div class="promo-eyebrow">Для авторов</div>
+    <div class="promo-title">Твои слова заслуживают быть услышаны</div>
+    <div class="promo-sub">Загружай. Делись. Находи своих зрителей.</div>
+  </div>
+  <button class="btn-light">Начать загрузку</button>
+</div>
+
+<!-- МЕТКА -->
+<div class="concept-badge">
+  <div class="num">КОНЦЕПТ 03</div>
+  <div class="name">«Пустота»</div>
+  <div class="tagline">минимализм · дзен</div>
+</div>
+
+</body>
+</html>

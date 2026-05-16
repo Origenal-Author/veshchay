@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ПАРАЗИТЫ — ещё варианты</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #060612; --surface: #0D0D1A; --surface2: #111122;
+    --cyan: #00FFF0; --magenta: #FF006E; --subtext: #8892B0; --border: #1a1a3a;
+  }
+  body { background: var(--bg); color: white; font-family: 'Orbitron', monospace; min-height: 100vh; padding: 40px 24px; }
+  body::after {
+    content: ''; position: fixed; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,240,0.015) 2px, rgba(0,255,240,0.015) 4px);
+    pointer-events: none; z-index: 9999;
+  }
+
+  h1 { color: var(--cyan); text-align: center; font-size: 24px; letter-spacing: 6px; margin-bottom: 6px; }
+  .sub { color: var(--subtext); text-align: center; font-size: 10px; letter-spacing: 3px; margin-bottom: 48px; font-family: 'JetBrains Mono'; }
+  .link-prev { display: block; text-align: center; color: var(--subtext); font-family: 'JetBrains Mono'; font-size: 10px; letter-spacing: 2px; margin-bottom: 20px; text-decoration: none; }
+  .link-prev:hover { color: var(--cyan); }
+
+  .legend { display: flex; justify-content: center; gap: 32px; margin-bottom: 48px; }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 11px; letter-spacing: 2px; font-family: 'JetBrains Mono'; }
+  .ld { width: 10px; height: 10px; border-radius: 50%; }
+  .ld.c { background: var(--cyan); box-shadow: 0 0 6px var(--cyan); }
+  .ld.v { background: var(--magenta); box-shadow: 0 0 6px var(--magenta); }
+
+  .variants { display: flex; flex-direction: column; gap: 48px; max-width: 860px; margin: 0 auto; }
+
+  .vcard { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 36px 40px; position: relative; overflow: hidden; }
+  .vcard::before { content: ''; position: absolute; top: 0; left: 10%; right: 10%; height: 1px; background: linear-gradient(90deg, transparent, var(--cyan), transparent); }
+  .vcard.featured { border-color: rgba(0,255,240,0.3); }
+  .vcard.featured::before { background: linear-gradient(90deg, transparent, var(--cyan), transparent); box-shadow: 0 0 10px rgba(0,255,240,0.3); }
+
+  .badge { display: inline-block; background: rgba(0,255,240,0.1); border: 1px solid rgba(0,255,240,0.4); color: var(--cyan); font-size: 9px; letter-spacing: 3px; padding: 2px 8px; border-radius: 4px; margin-left: 12px; font-family: 'JetBrains Mono'; vertical-align: middle; }
+
+  .vhead { display: flex; align-items: center; gap: 16px; font-size: 11px; letter-spacing: 4px; color: var(--subtext); margin-bottom: 36px; }
+  .vhead::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .vnum { font-size: 26px; font-weight: 900; color: var(--surface2); -webkit-text-stroke: 1px var(--border); }
+
+  .showcase { display: flex; justify-content: space-around; align-items: flex-start; gap: 16px; }
+  .pblock { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .ptlabel { font-size: 11px; letter-spacing: 4px; font-family: 'JetBrains Mono'; padding: 3px 10px; border-radius: 4px; }
+  .ptlabel.k { color: var(--cyan); border: 1px solid rgba(0,255,240,0.3); background: rgba(0,255,240,0.05); }
+  .ptlabel.v { color: var(--magenta); border: 1px solid rgba(255,0,110,0.3); background: rgba(255,0,110,0.05); }
+
+  .stages { display: flex; gap: 20px; align-items: flex-end; }
+  .si { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .sname { font-size: 9px; color: var(--subtext); font-family: 'JetBrains Mono'; letter-spacing: 1px; }
+
+  .abilities { font-size: 9px; color: var(--subtext); font-family: 'JetBrains Mono'; text-align: center; line-height: 1.9; max-width: 170px; border-top: 1px solid var(--border); padding-top: 12px; margin-top: 4px; }
+  .abilities span { display: block; }
+  .abilities span::before { content: '· '; }
+  .abilities.vt { color: rgba(255,0,110,0.7); }
+
+  .divider { width: 1px; background: var(--border); align-self: stretch; margin: 0 8px; }
+
+  canvas { display: block; }
+
+  @keyframes egg-pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+  .egg { animation: egg-pulse 2s ease-in-out infinite; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; width: 22px; height: 27px; }
+  .egg.ek { background: rgba(0,255,240,0.12); border: 1px solid rgba(0,255,240,0.4); box-shadow: 0 0 8px rgba(0,255,240,0.2); }
+  .egg.ev { background: rgba(255,0,110,0.12); border: 1px solid rgba(255,0,110,0.4); box-shadow: 0 0 8px rgba(255,0,110,0.2); transform: rotate(12deg); }
+
+  .cbtn { width: 100%; margin-top: 28px; padding: 12px; border: 1px solid var(--border); background: transparent; color: var(--subtext); font-family: 'Orbitron'; font-size: 10px; letter-spacing: 4px; cursor: pointer; border-radius: 8px; transition: all 0.3s; }
+  .cbtn:hover { border-color: var(--cyan); color: var(--cyan); background: rgba(0,255,240,0.05); box-shadow: 0 0 12px rgba(0,255,240,0.1); }
+
+  #toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--surface); border: 1px solid var(--cyan); color: var(--cyan); font-family: 'JetBrains Mono'; font-size: 12px; letter-spacing: 3px; padding: 14px 32px; border-radius: 8px; box-shadow: 0 0 20px rgba(0,255,240,0.3); transition: transform 0.3s ease; z-index: 10000; white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<a class="link-prev" href="parasites-design.html">← ВАРИАНТЫ А, Б, В</a>
+<h1>ПАРАЗИТЫ</h1>
+<p class="sub">// ещё концепты — Г, Д, Е //</p>
+
+<div class="legend">
+  <div class="legend-item"><div class="ld c"></div> КОД — безобидный</div>
+  <div class="legend-item"><div class="ld v"></div> ВИРУС — проказник</div>
+</div>
+
+<div class="variants">
+
+  <!-- ===== Г: ГЛИТЧ-СУЩЕСТВО ===== -->
+  <div class="vcard">
+    <div class="vhead"><span class="vnum">Г</span> ГЛИТЧ-СУЩЕСТВО</div>
+    <div class="showcase">
+      <div class="pblock">
+        <div class="ptlabel k">КОД</div>
+        <div class="stages">
+          <div class="si"><div class="egg ek"></div><div class="sname">ЯЙЦО</div></div>
+          <div class="si"><canvas id="gk-baby" width="50" height="60"></canvas><div class="sname">ДЕТЁНЫШ</div></div>
+          <div class="si"><canvas id="gk-adult" width="80" height="95"></canvas><div class="sname">ВЗРОСЛЫЙ</div></div>
+        </div>
+        <div class="abilities">
+          <span>лазит по карточкам</span><span>свисает с курсора</span>
+          <span>меняет заголовки</span><span>мерцает при наведении</span>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="pblock">
+        <div class="ptlabel v">ВИРУС</div>
+        <div class="stages">
+          <div class="si"><div class="egg ev"></div><div class="sname">ЯЙЦО</div></div>
+          <div class="si"><canvas id="gv-baby" width="50" height="60"></canvas><div class="sname">ДЕТЁНЫШ</div></div>
+          <div class="si"><canvas id="gv-adult" width="80" height="95"></canvas><div class="sname">ВЗРОСЛЫЙ</div></div>
+        </div>
+        <div class="abilities vt">
+          <span>глитч-разрывы на экране</span><span>искажает ники</span>
+          <span>меняет заголовки</span><span>трясёт и ломает фон</span>
+        </div>
+      </div>
+    </div>
+    <button class="cbtn" onclick="choose('Г — ГЛИТЧ-СУЩЕСТВО')">ВЫБРАТЬ ВАРИАНТ Г</button>
+  </div>
+
+  <!-- ===== Д: СИГНАЛ ===== -->
+  <div class="vcard featured">
+    <div class="vhead">
+      <span class="vnum">Д</span>
+      СИГНАЛ
+      <span class="badge">★ ТЕМА САЙТА</span>
+    </div>
+    <div class="showcase">
+      <div class="pblock">
+        <div class="ptlabel k">КОД</div>
+        <div class="stages">
+          <div class="si"><div class="egg ek"></div><div class="sname">ЯЙЦО</div></div>
+          <div class="si"><canvas id="sk-baby" width="70" height="65"></canvas><div class="sname">ДЕТЁНЫШ</div></div>
+          <div class="si"><canvas id="sk-adult" width="110" height="100"></canvas><div class="sname">ВЗРОСЛЫЙ</div></div>
+        </div>
+        <div class="abilities">
+          <span>плывёт по экрану как волна</span><span>свисает с курсора</span>
+          <span>меняет заголовки</span><span>пульсирует рядом с плеером</span>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="pblock">
+        <div class="ptlabel v">ВИРУС</div>
+        <div class="stages">
+          <div class="si"><div class="egg ev"></div><div class="sname">ЯЙЦО</div></div>
+          <div class="si"><canvas id="sv-baby" width="70" height="65"></canvas><div class="sname">ДЕТЁНЫШ</div></div>
+          <div class="si"><canvas id="sv-adult" width="110" height="100"></canvas><div class="sname">ВЗРОСЛЫЙ</div></div>
+        </div>
+        <div class="abilities vt">
+          <span>хаотичный шум на экране</span><span>искажает ники</span>
+          <span>меняет заголовки</span><span>ломает звуковую волну плеера</span>
+        </div>
+      </div>
+    </div>
+    <button class="cbtn" onclick="choose('Д — СИГНАЛ')">ВЫБРАТЬ ВАРИАНТ Д</button>
+  </div>
+
+  <!-- ===== Е: НЕЙРОН ===== -->
+  <div class="vcard">
+    <div class="vhead"><span class="vnum">Е</span> НЕЙРОН</div>
+    <div class="showcase">
+      <div class="pblock">
+        <div class="ptlabel k">КОД</div>
+        <div class="stages">
+          <div class="si"><div class="egg ek"></div><div class="sname">ЯЙЦО</div></div>
+          <div class="si"><canvas id="nk-baby" width="70" height="70"></canvas><div class="sname">ДЕТЁНЫШ</div></div>
+          <div class="si"><canvas id="nk-adult" width="110" height="110"></canvas><div class="sname">ВЗРОСЛЫЙ</div></div>
+        </div>
+        <div class="abilities">
+          <span>лазит по карточкам</span><span>соединяется с курсором</span>
+          <span>меняет заголовки</span><span>рисует сеть на фоне</span>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="pblock">
+        <div class="ptlabel v">ВИРУС</div>
+        <div class="stages">
+          <div class="si"><div class="egg ev"></div><div class="sname">ЯЙЦО</div></div>
+          <div class="si"><canvas id="nv-baby" width="70" height="70"></canvas><div class="sname">ДЕТЁНЫШ</div></div>
+          <div class="si"><canvas id="nv-adult" width="110" height="110"></canvas><div class="sname">ВЗРОСЛЫЙ</div></div>
+        </div>
+        <div class="abilities vt">
+          <span>рвёт связи на экране</span><span>искажает ники</span>
+          <span>меняет заголовки</span><span>взламывает сетку страницы</span>
+        </div>
+      </div>
+    </div>
+    <button class="cbtn" onclick="choose('Е — НЕЙРОН')">ВЫБРАТЬ ВАРИАНТ Е</button>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ===================== УТИЛИТЫ =====================
+function setupCanvas(canvas) {
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = parseInt(canvas.getAttribute('width')) * dpr;
+  canvas.height = parseInt(canvas.getAttribute('height')) * dpr;
+  canvas.style.width = canvas.getAttribute('width') + 'px';
+  canvas.style.height = canvas.getAttribute('height') + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  return ctx;
+}
+
+const logW = c => parseInt(c.style.width);
+const logH = c => parseInt(c.style.height);
+
+// ===================== ГЛИТЧ =====================
+function drawGlitch(canvas, isVirus) {
+  const ctx = setupCanvas(canvas);
+  const w = logW(canvas), h = logH(canvas);
+  const C = isVirus ? '#FF006E' : '#00FFF0';
+  const Calpha = isVirus ? 'rgba(255,0,110,' : 'rgba(0,255,240,';
+  let t = 0, glitchCooldown = 0;
+
+  function frame() {
+    ctx.clearRect(0, 0, w, h);
+    const cx = w / 2, cy = h * 0.52;
+    const rx = w * 0.32, ry = h * 0.38;
+
+    // Глитч-триггер
+    const doGlitch = isVirus
+      ? (t % 40 < 8)
+      : (t % 180 < 6);
+
+    // Хроматическая аберрация при глитче
+    if (doGlitch) {
+      const offsets = isVirus ? [-5, 5] : [-2, 2];
+      ['#00FFF0', '#FF006E'].forEach((col, i) => {
+        ctx.save();
+        ctx.globalAlpha = 0.25;
+        ctx.beginPath();
+        ctx.ellipse(cx + offsets[i], cy, rx, ry, 0, 0, Math.PI * 2);
+        ctx.strokeStyle = col;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.restore();
+      });
+    }
+
+    // Основное тело
+    ctx.save();
+    ctx.shadowColor = C; ctx.shadowBlur = 12;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+    ctx.fillStyle = Calpha + '0.07)';
+    ctx.fill();
+    ctx.strokeStyle = Calpha + '0.7)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.restore();
+
+    // Скан-линии внутри тела
+    ctx.save();
+    ctx.globalAlpha = 0.12;
+    ctx.beginPath(); ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2); ctx.clip();
+    for (let y = 0; y < h; y += 4) {
+      ctx.fillStyle = '#000';
+      ctx.fillRect(cx - rx, y, rx * 2, 2);
+    }
+    ctx.restore();
+
+    // Горизонтальные разрывы при глитче
+    if (doGlitch) {
+      const slices = isVirus ? 4 : 2;
+      for (let i = 0; i < slices; i++) {
+        const sy = Math.random() * h;
+        const sh = Math.random() * 6 + 2;
+        const offset = (Math.random() - 0.5) * (isVirus ? 14 : 6);
+        ctx.save();
+        ctx.globalAlpha = 0.6;
+        ctx.fillStyle = isVirus ? 'rgba(255,0,110,0.15)' : 'rgba(0,255,240,0.1)';
+        ctx.fillRect(cx - rx + offset, sy, rx * 2, sh);
+        ctx.restore();
+      }
+    }
+
+    // Антенны
+    ctx.save();
+    ctx.shadowColor = C; ctx.shadowBlur = 6;
+    ctx.strokeStyle = Calpha + '0.5)';
+    ctx.lineWidth = 1.5;
+    [[-rx * 0.4, -ry * 1.1, -rx * 0.6, -ry * 1.5],
+     [rx * 0.4, -ry * 1.1, rx * 0.6, -ry * 1.5]].forEach(([x1,y1,x2,y2]) => {
+      if (doGlitch && isVirus) {
+        x2 += (Math.random()-0.5)*8; y2 += (Math.random()-0.5)*6;
+      }
+      ctx.beginPath(); ctx.moveTo(cx+x1, cy+y1); ctx.lineTo(cx+x2, cy+y2); ctx.stroke();
+      ctx.fillStyle = C; ctx.beginPath(); ctx.arc(cx+x2, cy+y2, 2.5, 0, Math.PI*2); ctx.fill();
+    });
+    ctx.restore();
+
+    // Глаза
+    ctx.save();
+    ctx.shadowColor = C; ctx.shadowBlur = 8;
+    const eyeY = cy - ry * 0.15;
+    const eyeOff = isVirus ? doGlitch ? (Math.random()-0.5)*4 : 0 : 0;
+    if (isVirus) {
+      // X-глаза
+      [[cx-rx*0.35+eyeOff, eyeY], [cx+rx*0.35+eyeOff, eyeY]].forEach(([ex, ey]) => {
+        ctx.strokeStyle = C; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(ex-4, ey-4); ctx.lineTo(ex+4, ey+4); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(ex+4, ey-4); ctx.lineTo(ex-4, ey+4); ctx.stroke();
+      });
+    } else {
+      // Обычные глаза, иногда мигают
+      ctx.fillStyle = C;
+      const blink = (t % 200 < 6);
+      const ey2 = blink ? eyeY + 2 : eyeY;
+      const er = blink ? 0.5 : 3;
+      ctx.beginPath(); ctx.arc(cx - rx*0.35, ey2, er, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(cx + rx*0.35, ey2, er, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.restore();
+
+    // Рот
+    ctx.save();
+    ctx.shadowColor = C; ctx.shadowBlur = 4;
+    ctx.strokeStyle = Calpha + '0.5)';
+    ctx.lineWidth = 1.2;
+    const mouthY = cy + ry * 0.25;
+    if (doGlitch && isVirus) {
+      // Зигзаг
+      ctx.beginPath();
+      for (let i = 0; i <= 6; i++) {
+        const mx = cx - rx * 0.4 + i * (rx * 0.8 / 6);
+        const my = mouthY + (i % 2 === 0 ? -3 : 3);
+        i === 0 ? ctx.moveTo(mx, my) : ctx.lineTo(mx, my);
+      }
+      ctx.stroke();
+    } else {
+      ctx.beginPath();
+      ctx.arc(cx, mouthY - 4, rx * 0.3, 0, isVirus ? -Math.PI : Math.PI);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    t++;
+    requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+// ===================== СИГНАЛ =====================
+function drawSignal(canvas, isVirus) {
+  const ctx = setupCanvas(canvas);
+  const w = logW(canvas), h = logH(canvas);
+  const C = isVirus ? '#FF006E' : '#00FFF0';
+  const Calpha = isVirus ? 'rgba(255,0,110,' : 'rgba(0,255,240,';
+  let t = 0;
+  const small = w < 90;
+  const headR = small ? 12 : 18;
+
+  function wave(x, total, phase) {
+    if (isVirus) {
+      return Math.sin(x/total * Math.PI*4 + phase) * 0.5
+           + Math.sin(x/total * Math.PI*9.3 - phase*1.7) * 0.3
+           + Math.sin(x/total * Math.PI*17 + phase*0.6) * 0.2;
+    }
+    return Math.sin(x/total * Math.PI*3 + phase);
+  }
+
+  function frame() {
+    ctx.clearRect(0, 0, w, h);
+    const cx = w / 2;
+    const headY = headR + (small ? 12 : 18);
+    const waveStartY = headY + headR + (small ? 6 : 10);
+    const waveH = h - waveStartY - (small ? 6 : 12);
+    const amp = small ? 7 : 11;
+    const margin = small ? 8 : 12;
+
+    // Антенны
+    ctx.save();
+    ctx.shadowColor = C; ctx.shadowBlur = 6;
+    ctx.strokeStyle = Calpha + '0.5)';
+    ctx.lineWidth = 1.5;
+    const antOff = headR * 0.45;
+    const antLen = small ? 10 : 14;
+    [-antOff, antOff].forEach(off => {
+      ctx.beginPath();
+      ctx.moveTo(cx + off, headY - headR);
+      ctx.lineTo(cx + off * 1.4, headY - headR - antLen);
+      ctx.stroke();
+      ctx.fillStyle = C;
+      ctx.beginPath();
+      ctx.arc(cx + off * 1.4, headY - headR - antLen - 2, small ? 2 : 3, 0, Math.PI*2);
+      ctx.fill();
+    });
+    ctx.restore();
+
+    // Голова
+    ctx.save();
+    ctx.shadowColor = C; ctx.shadowBlur = 12;
+    ctx.beginPath(); ctx.arc(cx, headY, headR, 0, Math.PI*2);
+    ctx.fillStyle = Calpha + '0.08)';
+    ctx.fill();
+    ctx.strokeStyle = Calpha + '0.7)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.restore();
+
+    // Глаза
+    ctx.save();
+    ctx.shadowColor = C; ctx.shadowBlur = 8;
+    ctx.fillStyle = C;
+    const eyeR = small ? 2 : 2.8;
+    const eyeOff = headR * 0.38;
+    const eyeY = headY - headR * 0.05;
+    const blink = t % 220 < 8;
+    if (isVirus) {
+      [[cx - eyeOff, eyeY], [cx + eyeOff, eyeY]].forEach(([ex, ey]) => {
+        ctx.strokeStyle = C; ctx.lineWidth = 1.5;
+        const s = small ? 3 : 4;
+        ctx.beginPath(); ctx.moveTo(ex-s, ey-s); ctx.lineTo(ex+s, ey+s); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(ex+s, ey-s); ctx.lineTo(ex-s, ey+s); ctx.stroke();
+      });
+    } else {
+      ctx.beginPath(); ctx.arc(cx - eyeOff, blink ? eyeY + eyeR*0.8 : eyeY, blink ? eyeR*0.2 : eyeR, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(cx + eyeOff, blink ? eyeY + eyeR*0.8 : eyeY, blink ? eyeR*0.2 : eyeR, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.restore();
+
+    // Рот
+    ctx.save();
+    ctx.strokeStyle = Calpha + '0.45)'; ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.arc(cx, headY + headR * 0.28, headR * 0.38, 0, Math.PI); ctx.stroke();
+    ctx.restore();
+
+    // Волна-тело
+    ctx.save();
+    ctx.shadowColor = C; ctx.shadowBlur = isVirus ? 4 : 8;
+    ctx.strokeStyle = C;
+    ctx.lineWidth = isVirus ? 1.5 : 2;
+
+    // Основная волна
+    ctx.beginPath();
+    for (let x = 0; x <= w - margin*2; x++) {
+      const progress = x / (w - margin*2);
+      const y = waveStartY + waveH/2 + wave(x, w - margin*2, t * 0.06) * amp;
+      x === 0 ? ctx.moveTo(margin + x, y) : ctx.lineTo(margin + x, y);
+    }
+    ctx.stroke();
+
+    // Вторая волна (тень/эхо)
+    ctx.globalAlpha = 0.25;
+    ctx.beginPath();
+    for (let x = 0; x <= w - margin*2; x++) {
+      const y = waveStartY + waveH/2 + wave(x, w - margin*2, t * 0.06 + 1.2) * amp * 0.7;
+      x === 0 ? ctx.moveTo(margin + x, y) : ctx.lineTo(margin + x, y);
+    }
+    ctx.stroke();
+    ctx.restore();
+
+    // Бегущая точка по волне
+    if (!isVirus) {
+      const dotX = ((t * 1.5) % (w - margin*2));
+      const dotY = waveStartY + waveH/2 + wave(dotX, w - margin*2, t * 0.06) * amp;
+      ctx.save();
+      ctx.fillStyle = C; ctx.shadowColor = C; ctx.shadowBlur = 10;
+      ctx.beginPath(); ctx.arc(margin + dotX, dotY, small ? 2.5 : 3.5, 0, Math.PI*2); ctx.fill();
+      ctx.restore();
+    }
+
+    t++;
+    requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+// ===================== НЕЙРОН =====================
+function drawNeuron(canvas, isVirus) {
+  const ctx = setupCanvas(canvas);
+  const w = logW(canvas), h = logH(canvas);
+  const C = isVirus ? '#FF006E' : '#00FFF0';
+  const Calpha = isVirus ? 'rgba(255,0,110,' : 'rgba(0,255,240,';
+  const small = w < 90;
+  let t = 0;
+
+  const cx = w / 2, cy = h / 2;
+  const coreR = small ? 14 : 20;
+  const orbitR = small ? 22 : 36;
+  const nodeCount = small ? 4 : 7;
+  const nodes = Array.from({length: nodeCount}, (_, i) => {
+    const angle = (i / nodeCount) * Math.PI * 2 - Math.PI/2;
+    const jitter = isVirus ? (Math.random() - 0.5) * 0.3 : 0;
+    return {
+      x: cx + Math.cos(angle + jitter) * orbitR,
+      y: cy + Math.sin(angle + jitter) * orbitR,
+      r: small ? 4 : 6,
+      broken: isVirus && Math.random() < 0.4,
+      pulseOffset: Math.random(),
+    };
+  });
+
+  const pulses = Array.from({length: small ? 2 : 4}, (_, i) => ({
+    nodeIndex: Math.floor(Math.random() * nodeCount),
+    progress: Math.random(),
+    speed: 0.006 + Math.random() * 0.006,
+  }));
+
+  function frame() {
+    ctx.clearRect(0, 0, w, h);
+
+    // Связи
+    nodes.forEach((node, i) => {
+      if (isVirus && node.broken) return;
+      ctx.save();
+      ctx.shadowColor = C; ctx.shadowBlur = 4;
+      ctx.strokeStyle = Calpha + '0.3)';
+      ctx.lineWidth = isVirus ? 0.8 : 1;
+      if (isVirus) ctx.setLineDash([3, 4]);
+      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(node.x, node.y); ctx.stroke();
+      ctx.restore();
+    });
+
+    // Пульсирующие частицы по связям
+    pulses.forEach(pulse => {
+      const node = nodes[pulse.nodeIndex];
+      if (isVirus && node.broken) return;
+      const px = cx + (node.x - cx) * pulse.progress;
+      const py = cy + (node.y - cy) * pulse.progress;
+      ctx.save();
+      ctx.fillStyle = C; ctx.shadowColor = C; ctx.shadowBlur = 10;
+      ctx.beginPath(); ctx.arc(px, py, small ? 2 : 2.5, 0, Math.PI*2); ctx.fill();
+      ctx.restore();
+      pulse.progress += pulse.speed;
+      if (pulse.progress > 1) {
+        pulse.progress = 0;
+        pulse.nodeIndex = Math.floor(Math.random() * nodeCount);
+      }
+    });
+
+    // Узлы-спутники
+    nodes.forEach(node => {
+      if (isVirus && node.broken) {
+        // Сломанный узел — искра
+        if (t % 15 < 4) {
+          ctx.save();
+          ctx.fillStyle = C; ctx.shadowColor = C; ctx.shadowBlur = 12;
+          ctx.globalAlpha = 0.7;
+          ctx.beginPath(); ctx.arc(node.x + (Math.random()-0.5)*6, node.y + (Math.random()-0.5)*6, 2, 0, Math.PI*2); ctx.fill();
+          ctx.restore();
+        }
+        return;
+      }
+      const glow = 0.5 + 0.5 * Math.sin(t * 0.05 + node.pulseOffset * Math.PI * 2);
+      ctx.save();
+      ctx.shadowColor = C; ctx.shadowBlur = 6 + glow * 6;
+      ctx.beginPath(); ctx.arc(node.x, node.y, node.r, 0, Math.PI*2);
+      ctx.fillStyle = Calpha + (0.08 + glow * 0.08) + ')';
+      ctx.fill();
+      ctx.strokeStyle = Calpha + '0.6)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.restore();
+    });
+
+    // Ядро (голова)
+    const coreGlow = 0.5 + 0.5 * Math.sin(t * 0.04);
+    ctx.save();
+    ctx.shadowColor = C; ctx.shadowBlur = 10 + coreGlow * 10;
+    ctx.beginPath(); ctx.arc(cx, cy, coreR, 0, Math.PI*2);
+    ctx.fillStyle = Calpha + '0.1)';
+    ctx.fill();
+    ctx.strokeStyle = Calpha + '0.8)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.restore();
+
+    // Глаза в ядре
+    ctx.save();
+    ctx.shadowColor = C; ctx.shadowBlur = 8;
+    ctx.fillStyle = C;
+    const eyeOff = coreR * 0.32;
+    const eyeY = cy - coreR * 0.08;
+    const eyeR = small ? 2 : 3;
+    const blink = t % 200 < 6;
+    if (isVirus) {
+      [[cx - eyeOff, eyeY], [cx + eyeOff, eyeY]].forEach(([ex, ey]) => {
+        ctx.strokeStyle = C; ctx.lineWidth = 1.5;
+        const s = small ? 3 : 4;
+        ctx.beginPath(); ctx.moveTo(ex-s, ey-s); ctx.lineTo(ex+s, ey+s); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(ex+s, ey-s); ctx.lineTo(ex-s, ey+s); ctx.stroke();
+      });
+    } else {
+      ctx.beginPath(); ctx.arc(cx - eyeOff, eyeY, blink ? 0.4 : eyeR, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(cx + eyeOff, eyeY, blink ? 0.4 : eyeR, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.restore();
+
+    t++;
+    requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+// ===================== ЗАПУСК =====================
+drawGlitch(document.getElementById('gk-baby'), false);
+drawGlitch(document.getElementById('gk-adult'), false);
+drawGlitch(document.getElementById('gv-baby'), true);
+drawGlitch(document.getElementById('gv-adult'), true);
+
+drawSignal(document.getElementById('sk-baby'), false);
+drawSignal(document.getElementById('sk-adult'), false);
+drawSignal(document.getElementById('sv-baby'), true);
+drawSignal(document.getElementById('sv-adult'), true);
+
+drawNeuron(document.getElementById('nk-baby'), false);
+drawNeuron(document.getElementById('nk-adult'), false);
+drawNeuron(document.getElementById('nv-baby'), true);
+drawNeuron(document.getElementById('nv-adult'), true);
+
+// ===================== ВЫБОР =====================
+function choose(v) {
+  const t = document.getElementById('toast');
+  t.textContent = `ВАРИАНТ ${v} — ПРИНЯТО ✓`;
+  t.style.transform = 'translateX(-50%) translateY(0)';
+  setTimeout(() => { t.style.transform = 'translateX(-50%) translateY(80px)'; }, 3000);
+}
+</script>
+</body>
+</html>

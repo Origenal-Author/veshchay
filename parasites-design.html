@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ПАРАЗИТЫ — концепты дизайна</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #060612; --surface: #0D0D1A; --surface2: #111122;
+    --cyan: #00FFF0; --magenta: #FF006E; --subtext: #8892B0; --border: #1a1a3a;
+  }
+  body {
+    background: var(--bg); color: white;
+    font-family: 'Orbitron', monospace;
+    min-height: 100vh; padding: 40px 24px;
+  }
+  body::after {
+    content: ''; position: fixed; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,240,0.015) 2px, rgba(0,255,240,0.015) 4px);
+    pointer-events: none; z-index: 9999;
+  }
+
+  h1 { color: var(--cyan); text-align: center; font-size: 24px; letter-spacing: 6px; margin-bottom: 6px; }
+  .sub { color: var(--subtext); text-align: center; font-size: 10px; letter-spacing: 3px; margin-bottom: 48px; font-family: 'JetBrains Mono'; }
+
+  .legend { display: flex; justify-content: center; gap: 32px; margin-bottom: 48px; }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 11px; letter-spacing: 2px; font-family: 'JetBrains Mono'; }
+  .ld { width: 10px; height: 10px; border-radius: 50%; }
+  .ld.c { background: var(--cyan); box-shadow: 0 0 6px var(--cyan); }
+  .ld.v { background: var(--magenta); box-shadow: 0 0 6px var(--magenta); }
+
+  .variants { display: flex; flex-direction: column; gap: 48px; max-width: 860px; margin: 0 auto; }
+
+  .vcard {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 20px; padding: 36px 40px; position: relative; overflow: hidden;
+  }
+  .vcard::before {
+    content: ''; position: absolute; top: 0; left: 10%; right: 10%;
+    height: 1px; background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  }
+  .vhead {
+    display: flex; align-items: center; gap: 16px;
+    font-size: 11px; letter-spacing: 4px; color: var(--subtext); margin-bottom: 36px;
+  }
+  .vhead::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .vnum { font-size: 26px; font-weight: 900; color: var(--surface2); -webkit-text-stroke: 1px var(--border); }
+
+  .showcase { display: flex; justify-content: space-around; align-items: flex-start; gap: 16px; }
+  .pblock { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .ptlabel { font-size: 11px; letter-spacing: 4px; font-family: 'JetBrains Mono'; padding: 3px 10px; border-radius: 4px; }
+  .ptlabel.k { color: var(--cyan); border: 1px solid rgba(0,255,240,0.3); background: rgba(0,255,240,0.05); }
+  .ptlabel.v { color: var(--magenta); border: 1px solid rgba(255,0,110,0.3); background: rgba(255,0,110,0.05); }
+
+  .stages { display: flex; gap: 20px; align-items: flex-end; }
+  .si { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .sname { font-size: 9px; color: var(--subtext); font-family: 'JetBrains Mono'; letter-spacing: 1px; }
+
+  .abilities {
+    font-size: 9px; color: var(--subtext); font-family: 'JetBrains Mono';
+    text-align: center; line-height: 1.9; max-width: 170px;
+    border-top: 1px solid var(--border); padding-top: 12px; margin-top: 4px;
+  }
+  .abilities span { display: block; }
+  .abilities span::before { content: '· '; }
+  .abilities.vt { color: rgba(255,0,110,0.7); }
+
+  .divider { width: 1px; background: var(--border); align-self: stretch; margin: 0 8px; }
+
+  /* ====== ANIMATIONS ====== */
+  @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+  @keyframes float-s { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+  @keyframes blink { 0%,85%,100% { transform: scaleY(1); } 90%,95% { transform: scaleY(0.1); } }
+  @keyframes glitch {
+    0%,88%,100% { transform: translateY(0) skewX(0); filter: none; }
+    89% { transform: translateY(-4px) skewX(-3deg); filter: hue-rotate(90deg) brightness(1.5); }
+    91% { transform: translateY(2px) skewX(2deg); filter: hue-rotate(-90deg); }
+    94% { transform: translateY(-1px) skewX(1deg); filter: brightness(1.3); }
+  }
+  @keyframes glow-c {
+    0%,100% { filter: drop-shadow(0 0 4px var(--cyan)) drop-shadow(0 0 8px rgba(0,255,240,0.3)); }
+    50% { filter: drop-shadow(0 0 8px var(--cyan)) drop-shadow(0 0 18px rgba(0,255,240,0.5)); }
+  }
+  @keyframes glow-v {
+    0%,100% { filter: drop-shadow(0 0 4px var(--magenta)) drop-shadow(0 0 8px rgba(255,0,110,0.3)); }
+    50% { filter: drop-shadow(0 0 8px var(--magenta)) drop-shadow(0 0 18px rgba(255,0,110,0.5)); }
+  }
+  @keyframes wave { 0%,100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg); } }
+  @keyframes code-rain { 0% { transform: translateY(-60%); } 100% { transform: translateY(60%); } }
+  @keyframes egg-pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+
+  /* ====== EGGS ====== */
+  .egg { animation: egg-pulse 2s ease-in-out infinite; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; width: 22px; height: 27px; }
+  .egg.ek { background: rgba(0,255,240,0.12); border: 1px solid rgba(0,255,240,0.4); box-shadow: 0 0 8px rgba(0,255,240,0.2); }
+  .egg.ev { background: rgba(255,0,110,0.12); border: 1px solid rgba(255,0,110,0.4); box-shadow: 0 0 8px rgba(255,0,110,0.2); transform: rotate(12deg); }
+
+  /* ====== PIXEL SPRITES ====== */
+  .px-k { animation: float 2.5s ease-in-out infinite, glow-c 2s ease-in-out infinite; }
+  .px-v { animation: glitch 3s ease-in-out infinite, glow-v 2s ease-in-out infinite; }
+
+  /* ====== HOLOGRAM ====== */
+  .hc { position: relative; display: inline-block; }
+  .hbody {
+    position: relative; overflow: hidden;
+    display: flex; align-items: flex-start; justify-content: center;
+  }
+  .hk {
+    width: 56px; height: 64px; border-radius: 50% 50% 40% 40%;
+    background: radial-gradient(ellipse at 50% 30%, rgba(0,255,240,0.12), rgba(0,255,240,0.04));
+    border: 1.5px solid rgba(0,255,240,0.5);
+    box-shadow: 0 0 12px rgba(0,255,240,0.25), inset 0 0 10px rgba(0,255,240,0.05);
+    animation: float 3s ease-in-out infinite, glow-c 3s ease-in-out infinite;
+  }
+  .hv {
+    width: 56px; height: 60px; border-radius: 42% 58% 38% 55%;
+    background: radial-gradient(ellipse at 50% 30%, rgba(255,0,110,0.12), rgba(255,0,110,0.04));
+    border: 1.5px solid rgba(255,0,110,0.5);
+    box-shadow: 0 0 12px rgba(255,0,110,0.25), inset 0 0 10px rgba(255,0,110,0.05);
+    animation: glitch 3.5s ease-in-out infinite, glow-v 3s ease-in-out infinite;
+  }
+  .hk-sm { width: 32px; height: 36px; border-radius: 50% 50% 40% 40%; background: rgba(0,255,240,0.08); border: 1px solid rgba(0,255,240,0.4); box-shadow: 0 0 6px rgba(0,255,240,0.2); animation: float 2.5s ease-in-out infinite; }
+  .hv-sm { width: 32px; height: 34px; border-radius: 42% 58% 38% 55%; background: rgba(255,0,110,0.08); border: 1px solid rgba(255,0,110,0.4); box-shadow: 0 0 6px rgba(255,0,110,0.2); animation: glitch 4s ease-in-out infinite; }
+
+  .codeinner {
+    font-family: 'JetBrains Mono'; font-size: 6px; line-height: 1.5;
+    position: absolute; top: 0; left: 0; right: 0; opacity: 0.35;
+    animation: code-rain 4s linear infinite; white-space: pre; padding: 3px;
+    pointer-events: none;
+  }
+  .codeinner.ck { color: var(--cyan); }
+  .codeinner.cv { color: var(--magenta); animation-duration: 2s; }
+
+  .heyes { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 14px; }
+  .he-c { width: 7px; height: 7px; background: var(--cyan); border-radius: 50%; box-shadow: 0 0 5px var(--cyan); animation: blink 4s ease-in-out infinite; transform-origin: center; }
+  .he-v { width: 7px; height: 7px; background: var(--magenta); box-shadow: 0 0 5px var(--magenta); clip-path: polygon(50% 0%,100% 100%,0% 100%); }
+
+  .hants { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); display: flex; gap: 22px; }
+  .hant { width: 2px; height: 16px; position: relative; }
+  .hant.ck { background: linear-gradient(to top, rgba(0,255,240,0.5), transparent); }
+  .hant.cv { background: linear-gradient(to top, rgba(255,0,110,0.5), transparent); }
+  .hant::after { content: ''; position: absolute; top: -4px; left: 50%; transform: translateX(-50%); width: 6px; height: 6px; border-radius: 50%; }
+  .hant.ck::after { background: var(--cyan); box-shadow: 0 0 5px var(--cyan); }
+  .hant.cv::after { background: var(--magenta); box-shadow: 0 0 5px var(--magenta); border-radius: 0; transform: translateX(-50%) rotate(45deg); }
+
+  /* ====== MEDUSA ====== */
+  .mwrap { display: flex; flex-direction: column; align-items: center; }
+  .mbell { position: relative; overflow: hidden; }
+  .mk {
+    width: 60px; height: 44px;
+    background: radial-gradient(ellipse at 50% 25%, rgba(0,255,240,0.18), rgba(0,255,240,0.05));
+    border: 1.5px solid rgba(0,255,240,0.45); border-bottom: none;
+    border-radius: 50% 50% 35% 35% / 80% 80% 35% 35%;
+    box-shadow: 0 0 14px rgba(0,255,240,0.2);
+    animation: float-s 3.5s ease-in-out infinite, glow-c 3s ease-in-out infinite;
+  }
+  .mv {
+    width: 60px; height: 44px;
+    background: radial-gradient(ellipse at 50% 25%, rgba(255,0,110,0.18), rgba(255,0,110,0.05));
+    border: 1.5px solid rgba(255,0,110,0.45); border-bottom: none;
+    border-radius: 45% 55% 30% 40% / 80% 80% 30% 30%;
+    box-shadow: 0 0 14px rgba(255,0,110,0.2);
+    animation: glitch 4s ease-in-out infinite, glow-v 3s ease-in-out infinite;
+  }
+  .mk-sm { width: 36px; height: 26px; border-radius: 50% 50% 35% 35% / 80% 80% 35% 35%; background: rgba(0,255,240,0.1); border: 1px solid rgba(0,255,240,0.4); border-bottom: none; box-shadow: 0 0 8px rgba(0,255,240,0.15); animation: float-s 3s ease-in-out infinite; }
+  .mv-sm { width: 36px; height: 26px; border-radius: 45% 55% 30% 40% / 80% 80% 30% 30%; background: rgba(255,0,110,0.1); border: 1px solid rgba(255,0,110,0.4); border-bottom: none; box-shadow: 0 0 8px rgba(255,0,110,0.15); animation: glitch 4s ease-in-out infinite; }
+
+  .meyes { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); display: flex; gap: 14px; }
+  .meyes-sm { top: 8px; gap: 10px; }
+  .me-c { width: 8px; height: 8px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 6px var(--cyan); animation: blink 5s ease-in-out infinite; transform-origin: center; }
+  .me-v { width: 8px; height: 8px; background: var(--magenta); box-shadow: 0 0 6px var(--magenta); clip-path: polygon(50% 0%,0% 100%,100% 100%); }
+  .me-sm { width: 5px !important; height: 5px !important; }
+
+  .tents { display: flex; gap: 4px; padding: 0 4px; }
+  .t { border-radius: 0 0 4px 4px; transform-origin: top center; }
+  .t.kt { background: linear-gradient(to bottom, rgba(0,255,240,0.55), transparent); width: 4px; }
+  .t.vt { background: linear-gradient(to bottom, rgba(255,0,110,0.55), transparent); width: 3px; clip-path: polygon(20% 0, 80% 0, 100% 100%, 0% 100%); }
+  .t:nth-child(1) { animation: wave 1.8s ease-in-out infinite; }
+  .t:nth-child(2) { animation: wave 2.1s ease-in-out infinite reverse; }
+  .t:nth-child(3) { animation: wave 1.5s ease-in-out infinite 0.3s; }
+  .t:nth-child(4) { animation: wave 2.3s ease-in-out infinite reverse 0.5s; }
+  .t:nth-child(5) { animation: wave 1.9s ease-in-out infinite 0.1s; }
+  .t:nth-child(6) { animation: wave 2.0s ease-in-out infinite reverse 0.7s; }
+  .t:nth-child(7) { animation: wave 2.2s ease-in-out infinite 0.2s; }
+
+  /* ====== BUTTON ====== */
+  .cbtn {
+    width: 100%; margin-top: 28px; padding: 12px;
+    border: 1px solid var(--border); background: transparent;
+    color: var(--subtext); font-family: 'Orbitron'; font-size: 10px;
+    letter-spacing: 4px; cursor: pointer; border-radius: 8px; transition: all 0.3s;
+  }
+  .cbtn:hover { border-color: var(--cyan); color: var(--cyan); background: rgba(0,255,240,0.05); box-shadow: 0 0 12px rgba(0,255,240,0.1); }
+
+  #toast {
+    position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: var(--surface); border: 1px solid var(--cyan); color: var(--cyan);
+    font-family: 'JetBrains Mono'; font-size: 12px; letter-spacing: 3px;
+    padding: 14px 32px; border-radius: 8px; box-shadow: 0 0 20px rgba(0,255,240,0.3);
+    transition: transform 0.3s ease; z-index: 10000; white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+
+<h1>ПАРАЗИТЫ</h1>
+<p class="sub">// концепты дизайна питомцев — выбери стиль //</p>
+
+<div class="legend">
+  <div class="legend-item"><div class="ld c"></div> КОД — безобидный</div>
+  <div class="legend-item"><div class="ld v"></div> ВИРУС — проказник</div>
+</div>
+
+<div class="variants">
+
+  <!-- ===== ВАРИАНТ А: ПИКСЕЛЬ ===== -->
+  <div class="vcard">
+    <div class="vhead"><span class="vnum">А</span> ПИКСЕЛЬНЫЙ ПАРАЗИТ</div>
+    <div class="showcase">
+
+      <div class="pblock">
+        <div class="ptlabel k">КОД</div>
+        <div class="stages">
+          <div class="si"><div class="egg ek"></div><div class="sname">ЯЙЦО</div></div>
+          <div class="si">
+            <svg class="px-k" width="40" height="40" viewBox="0 0 16 16" style="image-rendering:pixelated">
+              <rect x="3" y="2" width="10" height="8" rx="1" fill="#00FFF0"/>
+              <rect x="5" y="0" width="1" height="3" fill="#00FFF0"/><rect x="10" y="0" width="1" height="3" fill="#00FFF0"/>
+              <rect x="4" y="5" width="2" height="2" fill="#060612"/><rect x="10" y="5" width="2" height="2" fill="#060612"/>
+              <rect x="5" y="5" width="1" height="1" fill="white" opacity=".6"/><rect x="11" y="5" width="1" height="1" fill="white" opacity=".6"/>
+              <rect x="5" y="9" width="6" height="1" fill="#060612" opacity=".5"/>
+              <rect x="4" y="10" width="8" height="3" rx="1" fill="#00B3AD"/>
+              <rect x="2" y="11" width="2" height="1" fill="#00FFF0"/><rect x="1" y="12" width="2" height="1" fill="#00FFF0"/>
+              <rect x="12" y="11" width="2" height="1" fill="#00FFF0"/><rect x="13" y="12" width="2" height="1" fill="#00FFF0"/>
+              <rect x="5" y="13" width="2" height="2" fill="#00FFF0"/><rect x="9" y="13" width="2" height="2" fill="#00FFF0"/>
+            </svg>
+            <div class="sname">ДЕТЁНЫШ</div>
+          </div>
+          <div class="si">
+            <svg class="px-k" width="64" height="64" viewBox="0 0 16 16" style="image-rendering:pixelated">
+              <rect x="3" y="2" width="10" height="8" rx="1" fill="#00FFF0"/>
+              <rect x="5" y="0" width="1" height="3" fill="#00FFF0"/><rect x="10" y="0" width="1" height="3" fill="#00FFF0"/>
+              <rect x="4" y="0" width="3" height="1" fill="#00FFF0"/><rect x="9" y="0" width="3" height="1" fill="#00FFF0"/>
+              <rect x="4" y="5" width="2" height="2" fill="#060612"/><rect x="10" y="5" width="2" height="2" fill="#060612"/>
+              <rect x="5" y="5" width="1" height="1" fill="white" opacity=".6"/><rect x="11" y="5" width="1" height="1" fill="white" opacity=".6"/>
+              <rect x="5" y="9" width="6" height="1" fill="#060612" opacity=".5"/>
+              <rect x="4" y="10" width="8" height="3" rx="1" fill="#00B3AD"/>
+              <rect x="2" y="11" width="2" height="1" fill="#00FFF0"/><rect x="1" y="12" width="2" height="1" fill="#00FFF0"/>
+              <rect x="12" y="11" width="2" height="1" fill="#00FFF0"/><rect x="13" y="12" width="2" height="1" fill="#00FFF0"/>
+              <rect x="5" y="13" width="2" height="2" fill="#00FFF0"/><rect x="9" y="13" width="2" height="2" fill="#00FFF0"/>
+            </svg>
+            <div class="sname">ВЗРОСЛЫЙ</div>
+          </div>
+        </div>
+        <div class="abilities">
+          <span>лазит по карточкам</span><span>свисает с курсора</span>
+          <span>меняет заголовки</span><span>машет лапкой</span>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="pblock">
+        <div class="ptlabel v">ВИРУС</div>
+        <div class="stages">
+          <div class="si"><div class="egg ev"></div><div class="sname">ЯЙЦО</div></div>
+          <div class="si">
+            <svg class="px-v" width="40" height="40" viewBox="0 0 20 20" style="image-rendering:pixelated">
+              <rect x="4" y="4" width="12" height="12" fill="#FF006E"/>
+              <rect x="8" y="1" width="4" height="3" fill="#FF006E"/><rect x="8" y="16" width="4" height="3" fill="#FF006E"/>
+              <rect x="1" y="8" width="3" height="4" fill="#FF006E"/><rect x="16" y="8" width="3" height="4" fill="#FF006E"/>
+              <rect x="5" y="6" width="1" height="1" fill="#060612"/><rect x="6" y="7" width="1" height="1" fill="#060612"/>
+              <rect x="6" y="6" width="1" height="1" fill="#060612"/><rect x="5" y="7" width="1" height="1" fill="#060612"/>
+              <rect x="13" y="6" width="1" height="1" fill="#060612"/><rect x="14" y="7" width="1" height="1" fill="#060612"/>
+              <rect x="14" y="6" width="1" height="1" fill="#060612"/><rect x="13" y="7" width="1" height="1" fill="#060612"/>
+              <rect x="6" y="13" width="1" height="1" fill="#060612"/><rect x="7" y="12" width="1" height="1" fill="#060612"/>
+              <rect x="8" y="13" width="1" height="1" fill="#060612"/><rect x="9" y="12" width="1" height="1" fill="#060612"/>
+              <rect x="10" y="13" width="1" height="1" fill="#060612"/><rect x="11" y="12" width="1" height="1" fill="#060612"/>
+            </svg>
+            <div class="sname">ДЕТЁНЫШ</div>
+          </div>
+          <div class="si">
+            <svg class="px-v" width="64" height="64" viewBox="0 0 20 20" style="image-rendering:pixelated">
+              <rect x="4" y="4" width="12" height="12" fill="#FF006E"/>
+              <rect x="8" y="1" width="4" height="3" fill="#FF006E"/><rect x="8" y="16" width="4" height="3" fill="#FF006E"/>
+              <rect x="1" y="8" width="3" height="4" fill="#FF006E"/><rect x="16" y="8" width="3" height="4" fill="#FF006E"/>
+              <rect x="2" y="2" width="3" height="3" fill="#FF006E"/><rect x="15" y="2" width="3" height="3" fill="#FF006E"/>
+              <rect x="2" y="15" width="3" height="3" fill="#FF006E"/><rect x="15" y="15" width="3" height="3" fill="#FF006E"/>
+              <rect x="5" y="6" width="1" height="1" fill="#060612"/><rect x="6" y="7" width="1" height="1" fill="#060612"/>
+              <rect x="6" y="6" width="1" height="1" fill="#060612"/><rect x="5" y="7" width="1" height="1" fill="#060612"/>
+              <rect x="13" y="6" width="1" height="1" fill="#060612"/><rect x="14" y="7" width="1" height="1" fill="#060612"/>
+              <rect x="14" y="6" width="1" height="1" fill="#060612"/><rect x="13" y="7" width="1" height="1" fill="#060612"/>
+              <rect x="6" y="13" width="1" height="1" fill="#060612"/><rect x="7" y="12" width="1" height="1" fill="#060612"/>
+              <rect x="8" y="13" width="1" height="1" fill="#060612"/><rect x="9" y="12" width="1" height="1" fill="#060612"/>
+              <rect x="10" y="13" width="1" height="1" fill="#060612"/><rect x="11" y="12" width="1" height="1" fill="#060612"/>
+              <rect x="12" y="13" width="1" height="1" fill="#060612"/>
+            </svg>
+            <div class="sname">ВЗРОСЛЫЙ</div>
+          </div>
+        </div>
+        <div class="abilities vt">
+          <span>глитч-комки на экран</span><span>искажает ники</span>
+          <span>меняет заголовки</span><span>трясёт фон страницы</span>
+        </div>
+      </div>
+    </div>
+    <button class="cbtn" onclick="choose('А — ПИКСЕЛЬНЫЙ ПАРАЗИТ')">ВЫБРАТЬ ВАРИАНТ А</button>
+  </div>
+
+  <!-- ===== ВАРИАНТ Б: ГОЛОГРАММА ===== -->
+  <div class="vcard">
+    <div class="vhead"><span class="vnum">Б</span> ГОЛОГРАММА</div>
+    <div class="showcase">
+
+      <div class="pblock">
+        <div class="ptlabel k">КОД</div>
+        <div class="stages">
+          <div class="si"><div class="egg ek"></div><div class="sname">ЯЙЦО</div></div>
+          <div class="si" style="margin-top:4px"><div class="hk-sm"></div><div class="sname">ДЕТЁНЫШ</div></div>
+          <div class="si" style="padding-top:20px">
+            <div class="hc" style="padding-top:20px; position:relative">
+              <div class="hants" style="position:absolute;top:0"><div class="hant ck"></div><div class="hant ck"></div></div>
+              <div class="hbody hk">
+                <div class="codeinner ck">01 10&#10;{} []&#10;&lt;&gt; //&#10;01 10&#10;{} []&#10;&lt;&gt; //</div>
+                <div class="heyes"><div class="he-c"></div><div class="he-c"></div></div>
+              </div>
+            </div>
+            <div class="sname">ВЗРОСЛЫЙ</div>
+          </div>
+        </div>
+        <div class="abilities">
+          <span>лазит по карточкам</span><span>свисает с курсора</span>
+          <span>меняет заголовки</span><span>машет лапкой</span>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="pblock">
+        <div class="ptlabel v">ВИРУС</div>
+        <div class="stages">
+          <div class="si"><div class="egg ev"></div><div class="sname">ЯЙЦО</div></div>
+          <div class="si" style="margin-top:4px"><div class="hv-sm"></div><div class="sname">ДЕТЁНЫШ</div></div>
+          <div class="si" style="padding-top:20px">
+            <div class="hc" style="padding-top:20px; position:relative">
+              <div class="hants" style="position:absolute;top:0"><div class="hant cv"></div><div class="hant cv"></div></div>
+              <div class="hbody hv">
+                <div class="codeinner cv">ER !!&#10;X0X 1&#10;ERR X&#10;!! 0X&#10;X ERR&#10;!! X0</div>
+                <div class="heyes"><div class="he-v"></div><div class="he-v"></div></div>
+              </div>
+            </div>
+            <div class="sname">ВЗРОСЛЫЙ</div>
+          </div>
+        </div>
+        <div class="abilities vt">
+          <span>глитч-комки на экран</span><span>искажает ники</span>
+          <span>меняет заголовки</span><span>трясёт фон страницы</span>
+        </div>
+      </div>
+    </div>
+    <button class="cbtn" onclick="choose('Б — ГОЛОГРАММА')">ВЫБРАТЬ ВАРИАНТ Б</button>
+  </div>
+
+  <!-- ===== ВАРИАНТ В: МЕДУЗА ===== -->
+  <div class="vcard">
+    <div class="vhead"><span class="vnum">В</span> МЕДУЗА СЕТИ</div>
+    <div class="showcase">
+
+      <div class="pblock">
+        <div class="ptlabel k">КОД</div>
+        <div class="stages">
+          <div class="si"><div class="egg ek"></div><div class="sname">ЯЙЦО</div></div>
+          <div class="si">
+            <div class="mwrap">
+              <div class="mbell mk-sm">
+                <div class="meyes meyes-sm"><div class="me-c me-sm"></div><div class="me-c me-sm"></div></div>
+              </div>
+              <div class="tents">
+                <div class="t kt" style="height:13px"></div><div class="t kt" style="height:17px"></div>
+                <div class="t kt" style="height:11px"></div><div class="t kt" style="height:15px"></div>
+                <div class="t kt" style="height:13px"></div>
+              </div>
+            </div>
+            <div class="sname">ДЕТЁНЫШ</div>
+          </div>
+          <div class="si">
+            <div class="mwrap">
+              <div class="mbell mk">
+                <div class="meyes"><div class="me-c"></div><div class="me-c"></div></div>
+              </div>
+              <div class="tents">
+                <div class="t kt" style="height:22px"></div><div class="t kt" style="height:28px"></div>
+                <div class="t kt" style="height:18px"></div><div class="t kt" style="height:26px"></div>
+                <div class="t kt" style="height:20px"></div><div class="t kt" style="height:24px"></div>
+                <div class="t kt" style="height:18px"></div>
+              </div>
+            </div>
+            <div class="sname">ВЗРОСЛЫЙ</div>
+          </div>
+        </div>
+        <div class="abilities">
+          <span>лазит по карточкам</span><span>свисает с курсора</span>
+          <span>меняет заголовки</span><span>машет щупальцем</span>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="pblock">
+        <div class="ptlabel v">ВИРУС</div>
+        <div class="stages">
+          <div class="si"><div class="egg ev"></div><div class="sname">ЯЙЦО</div></div>
+          <div class="si">
+            <div class="mwrap">
+              <div class="mbell mv-sm">
+                <div class="meyes meyes-sm"><div class="me-v me-sm"></div><div class="me-v me-sm"></div></div>
+              </div>
+              <div class="tents">
+                <div class="t vt" style="height:16px"></div><div class="t vt" style="height:10px"></div>
+                <div class="t vt" style="height:20px"></div><div class="t vt" style="height:13px"></div>
+                <div class="t vt" style="height:17px"></div>
+              </div>
+            </div>
+            <div class="sname">ДЕТЁНЫШ</div>
+          </div>
+          <div class="si">
+            <div class="mwrap">
+              <div class="mbell mv">
+                <div class="meyes"><div class="me-v"></div><div class="me-v"></div></div>
+              </div>
+              <div class="tents">
+                <div class="t vt" style="height:30px"></div><div class="t vt" style="height:18px"></div>
+                <div class="t vt" style="height:34px"></div><div class="t vt" style="height:20px"></div>
+                <div class="t vt" style="height:28px"></div><div class="t vt" style="height:16px"></div>
+                <div class="t vt" style="height:26px"></div>
+              </div>
+            </div>
+            <div class="sname">ВЗРОСЛЫЙ</div>
+          </div>
+        </div>
+        <div class="abilities vt">
+          <span>глитч-комки на экран</span><span>искажает ники</span>
+          <span>меняет заголовки</span><span>трясёт фон страницы</span>
+        </div>
+      </div>
+    </div>
+    <button class="cbtn" onclick="choose('В — МЕДУЗА СЕТИ')">ВЫБРАТЬ ВАРИАНТ В</button>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+function choose(v) {
+  const t = document.getElementById('toast');
+  t.textContent = `ВАРИАНТ ${v} — ПРИНЯТО ✓`;
+  t.style.transform = 'translateX(-50%) translateY(0)';
+  setTimeout(() => { t.style.transform = 'translateX(-50%) translateY(80px)'; }, 3000);
+}
+</script>
+</body>
+</html>
