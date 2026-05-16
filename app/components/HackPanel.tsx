@@ -1,6 +1,8 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
+import GraffitiCanvas from './GraffitiCanvas'
+import { PRESET_AVATARS } from '@/lib/presetAvatars'
 
 const KICKOUT_MSGS = [
   'АНТИВИРУС ГОВОРИТ АСИСЯЙ — СОЕДИНЕНИЕ РАЗОРВАНО',
@@ -21,7 +23,9 @@ const FUNNY_NICKS = [
   'ХАКНУТЫЙ_ЮЗЕР',
 ]
 
-const HACK_TIME = 150 // 2.5 минуты
+const HACK_TIME = 150
+
+type ActiveTab = 'menu' | 'nick' | 'ad' | 'graffiti' | 'avatar'
 
 interface Props {
   victimId: string
@@ -33,7 +37,7 @@ export default function HackPanel({ victimId, victimName, onClose }: Props) {
   const [timeLeft, setTimeLeft] = useState(HACK_TIME)
   const [kicked, setKicked] = useState(false)
   const [kickMsg, setKickMsg] = useState('')
-  const [activeTab, setActiveTab] = useState<'menu' | 'nick' | 'ad' | 'pet'>('menu')
+  const [activeTab, setActiveTab] = useState<ActiveTab>('menu')
   const [adText, setAdText] = useState('')
   const [appliedEffects, setAppliedEffects] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
@@ -115,21 +119,25 @@ export default function HackPanel({ victimId, victimName, onClose }: Props) {
       {activeTab === 'menu' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {[
-            { type: 'pet', icon: '🐾', label: 'ВЫПУСТИТЬ ПИТОМЦА', desc: 'Питомец нагадит тараканов — жертве убирать' },
-            { type: 'nick', icon: '📛', label: 'СМЕНИТЬ НИК', desc: 'Переименовать аккаунт жертвы' },
-            { type: 'ad',  icon: '📢', label: 'ФЕЙКОВАЯ РЕКЛАМА', desc: 'Всплывающий баннер у жертвы' },
+            { type: 'pet',     icon: '🐾', label: 'ВЫПУСТИТЬ ПИТОМЦА',  desc: 'Питомец нагадит тараканов — жертве убирать' },
+            { type: 'nick',    icon: '📛', label: 'СМЕНИТЬ НИК',        desc: 'Переименовать аккаунт жертвы' },
+            { type: 'ad',      icon: '📢', label: 'ФЕЙКОВАЯ РЕКЛАМА',   desc: 'Всплывающий баннер у жертвы' },
+            { type: 'graffiti',icon: '🎨', label: 'ГРАФФИТИ',           desc: 'Оставь рисунок на стене профиля жертвы' },
+            { type: 'avatar',  icon: '🖼', label: 'СМЕНИТЬ АВАТАР',     desc: 'Замени аватар на мем-пресет' },
           ].map(({ type, icon, label, desc }) => (
             <button
               key={type}
-              onClick={() => type === 'pet' ? applyEffect('pet', {}) : setActiveTab(type as 'nick' | 'ad')}
+              onClick={() => {
+                if (type === 'pet') applyEffect('pet', {})
+                else setActiveTab(type as ActiveTab)
+              }}
               disabled={applied(type) || loading}
               style={{
                 display: 'flex', alignItems: 'center', gap: 12,
                 padding: '12px 14px', borderRadius: 8, cursor: applied(type) ? 'default' : 'pointer',
                 border: `1px solid ${applied(type) ? 'rgba(0,255,136,0.3)' : 'rgba(255,0,110,0.2)'}`,
                 background: applied(type) ? 'rgba(0,255,136,0.05)' : 'rgba(255,0,110,0.04)',
-                opacity: applied(type) ? 0.7 : 1,
-                textAlign: 'left',
+                opacity: applied(type) ? 0.7 : 1, textAlign: 'left',
               }}
             >
               <span style={{ fontSize: 22 }}>{icon}</span>
@@ -175,6 +183,48 @@ export default function HackPanel({ victimId, victimName, onClose }: Props) {
             <button onClick={() => adText.trim() && applyEffect('ad', { text: adText })} disabled={!adText.trim() || loading} style={{ ...btnS('#FF006E'), flex: 1 }}>ЗАПУСТИТЬ</button>
             <button onClick={() => setActiveTab('menu')} style={btnS('#3A4A5A')}>←</button>
           </div>
+        </div>
+      )}
+
+      {/* ГРАФФИТИ */}
+      {activeTab === 'graffiti' && (
+        <GraffitiCanvas
+          loading={loading}
+          onBack={() => setActiveTab('menu')}
+          onSubmit={dataUrl => applyEffect('graffiti', { imageData: dataUrl })}
+        />
+      )}
+
+      {/* СМЕНА АВАТАРА */}
+      {activeTab === 'avatar' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 9, color: '#506080', letterSpacing: 3 }}>// ВЫБЕРИ МЕМ-АВАТАР ДЛЯ ЖЕРТВЫ</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+            {PRESET_AVATARS.map(p => (
+              <button
+                key={p.key}
+                onClick={() => applyEffect('avatar_override', { preset: p.key })}
+                disabled={loading}
+                style={{
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+                  padding: '10px 8px', borderRadius: 8, cursor: 'pointer',
+                  border: '1px solid rgba(255,0,110,0.2)',
+                  background: 'rgba(255,0,110,0.04)',
+                }}
+              >
+                <div style={{
+                  width: 48, height: 48, borderRadius: 8,
+                  background: p.bg, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontFamily: 'Orbitron,monospace', fontSize: 14, fontWeight: 700, color: p.fg,
+                  border: `1px solid ${p.fg}30`,
+                }}>
+                  {p.text}
+                </div>
+                <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 8, color: '#506080', letterSpacing: 1 }}>{p.label}</span>
+              </button>
+            ))}
+          </div>
+          <button onClick={() => setActiveTab('menu')} style={{ ...btnS('#3A4A5A'), marginTop: 4 }}>← НАЗАД</button>
         </div>
       )}
     </div>

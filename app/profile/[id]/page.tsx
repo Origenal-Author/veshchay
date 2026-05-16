@@ -5,6 +5,8 @@ import ProfileClient from './ProfileClient'
 import FollowButton from '@/app/components/FollowButton'
 import AchievementsGrid from '@/app/components/AchievementsGrid'
 import AttackButton from '@/app/components/AttackButton'
+import ProfileGraffiti from '@/app/components/ProfileGraffiti'
+import { getPreset } from '@/lib/presetAvatars'
 
 const RANKS = [
   { xp: 0,     rank: 'СТАТИЧЕСКИЙ ШУМ',  color: '#8892B0' },
@@ -58,6 +60,17 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
   const { count: followersCount } = await supabase
     .from('follows').select('*', { count: 'exact', head: true }).eq('following_id', id)
 
+  const { data: hackEffects } = await supabase
+    .from('hack_effects')
+    .select('*')
+    .eq('victim_id', id)
+    .is('cleaned_at', null)
+    .gt('expires_at', new Date().toISOString())
+    .in('effect_type', ['graffiti', 'avatar_override'])
+
+  const graffitiEffects = (hackEffects ?? []).filter(e => e.effect_type === 'graffiti')
+  const avatarOverride = (hackEffects ?? []).find(e => e.effect_type === 'avatar_override') ?? null
+
   const isFollowing = user && !isOwner
     ? !!(await supabase.from('follows').select('id')
         .eq('follower_id', user.id).eq('following_id', id).maybeSingle()).data
@@ -87,8 +100,11 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${rankInfo.color}, transparent)` }} />
 
           {/* Аватар */}
-          <div style={{ width: 80, height: 80, background: `linear-gradient(135deg, ${displayColor}, var(--surface2))`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, fontWeight: 900, color: 'var(--bg)', fontFamily: "'Orbitron',monospace", border: `2px solid ${displayColor}`, boxShadow: `0 0 20px ${displayColor}40`, overflow: 'hidden', position: 'relative' }}>
-            {profile.avatar_url
+          <div style={{ width: 80, height: 80, background: `linear-gradient(135deg, ${displayColor}, var(--surface2))`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, fontWeight: 900, color: 'var(--bg)', fontFamily: "'Orbitron',monospace", border: `2px solid ${avatarOverride ? '#FF006E' : displayColor}`, boxShadow: `0 0 20px ${avatarOverride ? 'rgba(255,0,110,0.5)' : displayColor + '40'}`, overflow: 'hidden', position: 'relative' }}>
+            {avatarOverride ? (() => {
+              const p = getPreset(avatarOverride.effect_data?.preset ?? '')
+              return <div style={{ width: '100%', height: '100%', background: p.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Orbitron,monospace', fontSize: 18, fontWeight: 700, color: p.fg }}>{p.text}</div>
+            })() : profile.avatar_url
               ? <img src={profile.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               : (profile.username || '??').slice(0, 2).toUpperCase()
             }
@@ -162,6 +178,13 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
             {!nextRank && <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: rankInfo.color }}>MAX RANK ✦</div>}
           </div>
         </div>
+
+        {/* Граффити и взломанный аватар */}
+        <ProfileGraffiti
+          graffitiEffects={graffitiEffects}
+          avatarOverride={avatarOverride}
+          isOwner={isOwner}
+        />
 
         {/* Видео пользователя */}
         {videos && videos.length > 0 && (

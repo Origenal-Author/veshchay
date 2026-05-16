@@ -22,11 +22,19 @@ export async function POST(req: Request) {
 
   if (!attack) return NextResponse.json({ error: 'Нет активной сессии взлома' }, { status: 403 })
 
+  const { data: attackerProfile } = await supabase
+    .from('profiles')
+    .select('username')
+    .eq('id', user.id)
+    .single()
+
   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 часа
+
+  const enrichedData = { ...(effectData ?? {}), attackerName: attackerProfile?.username || 'аноним' }
 
   const { data, error } = await supabase
     .from('hack_effects')
-    .insert({ attacker_id: user.id, victim_id: victimId, effect_type: effectType, effect_data: effectData ?? {}, expires_at: expiresAt })
+    .insert({ attacker_id: user.id, victim_id: victimId, effect_type: effectType, effect_data: enrichedData, expires_at: expiresAt })
     .select().single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
