@@ -17,7 +17,7 @@ export async function POST(req: Request) {
     .eq('attacker_id', user.id)
     .eq('target_id', victimId)
     .eq('success', true)
-    .gte('created_at', new Date(Date.now() - 5 * 60 * 1000).toISOString()) // последние 5 минут
+    .gte('created_at', new Date(Date.now() - 30 * 60 * 1000).toISOString()) // последние 30 минут
     .maybeSingle()
 
   if (!attack) return NextResponse.json({ error: 'Нет активной сессии взлома' }, { status: 403 })

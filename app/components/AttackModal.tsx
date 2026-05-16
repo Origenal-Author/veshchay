@@ -171,7 +171,7 @@ function PasswordGame({ bonus, onSuccess, onFail }: { bonus: string; onSuccess: 
   const [secret] = useState(() => Array.from({ length: 4 }, () => Math.floor(Math.random() * 10)))
   const [guesses, setGuesses] = useState<{ digits: number[]; result: string[] }[]>([])
   const [current, setCurrent] = useState(['', '', '', ''])
-  const MAX = bonus === 'extra_attempt' ? 8 : 6
+  const MAX = bonus === 'extra_attempt' ? 14 : 12
   const revealedIdx = bonus === 'reveal_digit' ? 0 : -1
 
   function check() {
