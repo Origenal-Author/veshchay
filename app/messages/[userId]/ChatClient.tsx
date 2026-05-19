@@ -53,7 +53,18 @@ export default function ChatClient({ currentUserId, otherId, otherProfile, initi
   }
 
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 2, maxWidth: 720, margin: '0 auto', width: '100%' }}>
+    <div style={{ height: '100vh', display: 'flex', position: 'relative', zIndex: 2 }}>
+
+      {/* Левая декоративная панель */}
+      <div style={{ flex: 1, borderRight: '1px solid rgba(0,255,240,0.06)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-end', paddingRight: 20, gap: 16, overflow: 'hidden' }}>
+        <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 8, color: 'rgba(0,255,240,0.15)', letterSpacing: 3, writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>// ЗАШИФРОВАННЫЙ КАНАЛ //</div>
+        {[...Array(6)].map((_, i) => (
+          <div key={i} style={{ width: 1 + (i % 3), height: 24 + i * 8, background: `rgba(0,255,240,${0.03 + i * 0.01})`, borderRadius: 1 }} />
+        ))}
+      </div>
+
+      {/* Основной чат */}
+      <div style={{ width: 720, display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
       {/* Шапка */}
       <header style={{
         display: 'flex', alignItems: 'center', gap: 12, padding: '0 20px',
@@ -149,6 +160,16 @@ export default function ChatClient({ currentUserId, otherId, otherProfile, initi
           {sending ? '...' : '▶'}
         </button>
       </div>
+      </div>{/* конец основного чата */}
+
+      {/* Правая декоративная панель */}
+      <div style={{ flex: 1, borderLeft: '1px solid rgba(0,255,240,0.06)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-start', paddingLeft: 20, gap: 16, overflow: 'hidden' }}>
+        {[...Array(6)].map((_, i) => (
+          <div key={i} style={{ width: 1 + (i % 3), height: 24 + i * 8, background: `rgba(0,255,240,${0.03 + i * 0.01})`, borderRadius: 1 }} />
+        ))}
+        <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 8, color: 'rgba(0,255,240,0.15)', letterSpacing: 3, writingMode: 'vertical-rl' }}>// ПЕРЕДАЧА АКТИВНА //</div>
+      </div>
+
     </div>
   )
 }
