@@ -30,6 +30,8 @@ function notifText(n: Notification, actorName: string) {
   if (n.type === 'attack') return `⚡ ${actorName} атаковал твой канал!`
   if (n.type === 'friend_request') return `${actorName} хочет законнектиться с тобой`
   if (n.type === 'friend_accept') return `${actorName} принял твой запрос на коннект`
+  if (n.type === 'pet_borrow_request') return `${actorName} хочет занять твоего питомца`
+  if (n.type === 'pet_borrow_accept') return `${actorName} разрешил занять питомца`
   return 'Новое уведомление'
 }
 
@@ -39,6 +41,8 @@ function notifIcon(type: string) {
   if (type === 'attack') return '💀'
   if (type === 'friend_request') return '⬡'
   if (type === 'friend_accept') return '⬡'
+  if (type === 'pet_borrow_request') return '☄'
+  if (type === 'pet_borrow_accept') return '☄'
   return '📡'
 }
 
@@ -205,6 +209,32 @@ export default function NotificationBell() {
                   }}>
                     {notifText(n, actors[n.actor_id] || '...')}
                   </div>
+                  {n.type === 'pet_borrow_request' && n.entity_id && (
+                    <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+                      <button
+                        onClick={async () => {
+                          setResponding(n.id)
+                          await fetch('/api/pets/borrow', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ borrowId: n.entity_id, action: 'accept' }) })
+                          setNotifications(prev => prev.map(x => x.id === n.id ? { ...x, type: 'pet_borrow_done' } : x))
+                          setResponding(null)
+                        }}
+                        disabled={responding === n.id}
+                        style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 8, letterSpacing: 1, padding: '3px 10px', borderRadius: 4, border: '1px solid rgba(255,179,0,0.4)', background: 'rgba(255,179,0,0.08)', color: '#FFB300', cursor: 'pointer' }}
+                      >
+                        {responding === n.id ? '...' : 'РАЗРЕШИТЬ'}
+                      </button>
+                      <button
+                        onClick={async () => {
+                          setResponding(n.id)
+                          await fetch('/api/pets/borrow', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ borrowId: n.entity_id, action: 'decline' }) })
+                          setNotifications(prev => prev.map(x => x.id === n.id ? { ...x, type: 'pet_borrow_done' } : x))
+                          setResponding(null)
+                        }}
+                        disabled={responding === n.id}
+                        style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 8, letterSpacing: 1, padding: '3px 10px', borderRadius: 4, border: '1px solid rgba(255,0,110,0.3)', background: 'rgba(255,0,110,0.06)', color: '#FF006E', cursor: 'pointer' }}
+                      >✕</button>
+                    </div>
+                  )}
                   {n.type === 'friend_request' && n.entity_id && (
                     <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
                       <button

@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase-server'
 import ProfileClient from './ProfileClient'
 import FollowButton from '@/app/components/FollowButton'
 import FriendButton from '@/app/components/FriendButton'
+import BorrowPetButton from '@/app/components/BorrowPetButton'
 import AchievementsGrid from '@/app/components/AchievementsGrid'
 import AttackButton from '@/app/components/AttackButton'
 import ProfileGraffiti from '@/app/components/ProfileGraffiti'
@@ -74,6 +75,12 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
   const { data: friendProfiles } = friendIds.length > 0
     ? await supabase.from('profiles').select('id, username, avatar_url, rank, xp').in('id', friendIds)
     : { data: [] }
+
+  const onlineSince = new Date(Date.now() - 2 * 60 * 1000).toISOString()
+  const { data: onlineRows } = friendIds.length > 0
+    ? await supabase.from('presence').select('user_id').in('user_id', friendIds).gte('last_seen', onlineSince)
+    : { data: [] }
+  const onlineSet = new Set((onlineRows ?? []).map(r => r.user_id))
 
   const { data: hackEffects } = await supabase
     .from('hack_effects')
@@ -182,6 +189,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                   currentUserId={user?.id ?? null}
                 />
                 {user && <AttackButton targetId={id} targetUsername={profile.username || 'аноним'} />}
+                <BorrowPetButton ownerId={id} ownerName={profile.username || 'аноним'} isFriend={friendStatus === 'friends'} />
               </div>
             )}
             {/* Значок ВЗЛОМАН */}
@@ -239,17 +247,26 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                     background: 'var(--surface)', border: '1px solid var(--border)',
                     transition: 'border-color 0.2s',
                   }}>
-                    <div style={{
-                      width: 36, height: 36, borderRadius: 8, flexShrink: 0, overflow: 'hidden',
-                      background: 'linear-gradient(135deg, var(--accent), var(--surface2))',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontFamily: "'Orbitron',monospace", fontSize: 12, fontWeight: 900, color: 'var(--bg)',
-                      border: '1px solid var(--accent)',
-                    }}>
-                      {f.avatar_url
-                        ? <img src={f.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        : (f.username || '??').slice(0, 2).toUpperCase()
-                      }
+                    <div style={{ position: 'relative', flexShrink: 0 }}>
+                      <div style={{
+                        width: 36, height: 36, borderRadius: 8, overflow: 'hidden',
+                        background: 'linear-gradient(135deg, var(--accent), var(--surface2))',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontFamily: "'Orbitron',monospace", fontSize: 12, fontWeight: 900, color: 'var(--bg)',
+                        border: '1px solid var(--accent)',
+                      }}>
+                        {f.avatar_url
+                          ? <img src={f.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          : (f.username || '??').slice(0, 2).toUpperCase()
+                        }
+                      </div>
+                      <div style={{
+                        position: 'absolute', bottom: -2, right: -2,
+                        width: 10, height: 10, borderRadius: '50%',
+                        background: onlineSet.has(f.id) ? '#00FF88' : '#2A3240',
+                        border: '2px solid var(--bg)',
+                        boxShadow: onlineSet.has(f.id) ? '0 0 6px rgba(0,255,136,0.6)' : 'none',
+                      }} />
                     </div>
                     <div>
                       <div style={{ fontFamily: "'Orbitron',monospace", fontSize: 11, fontWeight: 700, color: 'var(--text)', letterSpacing: 1 }}>
