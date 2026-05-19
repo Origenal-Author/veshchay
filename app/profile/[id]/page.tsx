@@ -91,6 +91,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
       <header className="site-header">
         <Link href="/" className="site-logo">ВЕЩАЙ</Link>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 10 }}>
+          {isOwner && <Link href="/history" className="btn-ghost-ui">ИСТОРИЯ</Link>}
           {isOwner && <Link href="/profile/edit" className="btn-primary-ui">РЕДАКТИРОВАТЬ</Link>}
           <Link href="/" className="btn-ghost-ui">← ГЛАВНАЯ</Link>
         </div>
