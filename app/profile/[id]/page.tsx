@@ -64,6 +64,11 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
   const { count: followersCount } = await supabase
     .from('follows').select('*', { count: 'exact', head: true }).eq('following_id', id)
 
+  // Кланы профиля
+  const { data: clanMemberships } = await supabase.from('clan_members')
+    .select('role, clan:clans(id, name, tag, emblem_symbols, emblem_color)')
+    .eq('user_id', id)
+
   // Друзья профиля
   const { data: friendRows } = await supabase
     .from('friend_requests')
@@ -238,6 +243,39 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
           avatarOverride={avatarOverride}
           isOwner={isOwner}
         />
+
+        {/* Кланы */}
+        {(clanMemberships ?? []).length > 0 && (
+          <div style={{ marginBottom: 40 }}>
+            <div style={{ fontFamily: "'Orbitron',monospace", fontSize: 12, fontWeight: 700, letterSpacing: 3, color: 'var(--accent)', marginBottom: 16, paddingBottom: 12, borderBottom: '1px solid var(--border)' }}>
+              // ОРГАНИЗАЦИИ
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+              {(clanMemberships ?? []).map((m: any) => {
+                const c = m.clan
+                const color = c.emblem_color || '#00FFF0'
+                return (
+                  <Link key={c.id} href={`/clans/${c.id}`} style={{ textDecoration: 'none' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 10, background: 'var(--surface)', border: `1px solid rgba(${parseInt(color.slice(1,3),16)},${parseInt(color.slice(3,5),16)},${parseInt(color.slice(5,7),16)},0.25)` }}>
+                      <div style={{ width: 36, height: 36, borderRadius: 8, border: `1px solid ${color}`, background: `rgba(0,0,0,0.2)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color }}>{(c.emblem_symbols ?? []).join('')}</div>
+                      <div>
+                        <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 9, color, letterSpacing: 2 }}>[{c.tag}]</div>
+                        <div style={{ fontFamily: "'Orbitron',monospace", fontSize: 11, fontWeight: 700, color: 'var(--text)', letterSpacing: 1 }}>{c.name}</div>
+                      </div>
+                    </div>
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
+        )}
+        {isOwner && (
+          <div style={{ marginBottom: 40, display: 'flex', gap: 10 }}>
+            <Link href="/clans/create" style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 10, letterSpacing: 2, padding: '8px 16px', borderRadius: 6, border: '1px solid rgba(0,255,240,0.25)', background: 'rgba(0,255,240,0.06)', color: 'var(--accent)', textDecoration: 'none' }}>
+              ⬡ СОЗДАТЬ ОРГАНИЗАЦИЮ
+            </Link>
+          </div>
+        )}
 
         {/* Список друзей */}
         {(friendProfiles ?? []).length > 0 && (

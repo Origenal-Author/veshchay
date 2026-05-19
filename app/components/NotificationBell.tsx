@@ -32,6 +32,7 @@ function notifText(n: Notification, actorName: string) {
   if (n.type === 'friend_accept') return `${actorName} принял твой запрос на коннект`
   if (n.type === 'pet_borrow_request') return `${actorName} хочет занять твоего питомца`
   if (n.type === 'pet_borrow_accept') return `${actorName} разрешил занять питомца`
+  if (n.type === 'clan_invite') return `${actorName} приглашает тебя в организацию «${n.entity_title ?? ''}»`
   return 'Новое уведомление'
 }
 
@@ -43,6 +44,7 @@ function notifIcon(type: string) {
   if (type === 'friend_accept') return '⬡'
   if (type === 'pet_borrow_request') return '☄'
   if (type === 'pet_borrow_accept') return '☄'
+  if (type === 'clan_invite') return '⬡'
   return '📡'
 }
 
@@ -209,6 +211,25 @@ export default function NotificationBell() {
                   }}>
                     {notifText(n, actors[n.actor_id] || '...')}
                   </div>
+                  {n.type === 'clan_invite' && n.entity_id && (
+                    <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+                      <a href={`/clans/${n.entity_id}`} style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 8, letterSpacing: 1, padding: '3px 10px', borderRadius: 4, border: '1px solid rgba(0,255,240,0.4)', background: 'rgba(0,255,240,0.08)', color: '#00FFF0', textDecoration: 'none' }}>
+                        ПОСМОТРЕТЬ
+                      </a>
+                      <button
+                        onClick={async () => {
+                          setResponding(n.id)
+                          await fetch(`/api/clans/${n.entity_id}/join`, { method: 'POST' })
+                          setNotifications(prev => prev.map(x => x.id === n.id ? { ...x, type: 'clan_joined' } : x))
+                          setResponding(null)
+                        }}
+                        disabled={responding === n.id}
+                        style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 8, letterSpacing: 1, padding: '3px 10px', borderRadius: 4, border: '1px solid rgba(0,255,136,0.4)', background: 'rgba(0,255,136,0.08)', color: '#00FF88', cursor: 'pointer' }}
+                      >
+                        {responding === n.id ? '...' : 'ВСТУПИТЬ'}
+                      </button>
+                    </div>
+                  )}
                   {n.type === 'pet_borrow_request' && n.entity_id && (
                     <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
                       <button
