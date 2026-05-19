@@ -37,7 +37,7 @@ export default async function ClanPage({ params }: { params: Promise<{ id: strin
   return (
     <ClanClient
       clan={clan}
-      members={members ?? []}
+      members={(members ?? []).map((m: any) => ({ ...m, user: Array.isArray(m.user) ? m.user[0] : m.user })) as any}
       currentUserId={user?.id ?? null}
       myRole={myMembership?.role ?? null}
       invitableFriends={friends}
