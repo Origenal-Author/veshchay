@@ -53,10 +53,10 @@ export default function ChatClient({ currentUserId, otherId, otherProfile, initi
   }
 
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 2 }}>
+    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 2, maxWidth: 720, margin: '0 auto', width: '100%' }}>
       {/* Шапка */}
       <header style={{
-        display: 'flex', alignItems: 'center', gap: 12, padding: '0 24px',
+        display: 'flex', alignItems: 'center', gap: 12, padding: '0 20px',
         height: 60, borderBottom: '1px solid var(--border)',
         background: 'rgba(6,6,18,0.95)', backdropFilter: 'blur(8px)',
         flexShrink: 0,
@@ -87,7 +87,7 @@ export default function ChatClient({ currentUserId, otherId, otherProfile, initi
       </header>
 
       {/* Сообщения */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 4 }}>
         {messages.length === 0 && (
           <div style={{ textAlign: 'center', fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: 'var(--subtext)', padding: '40px 0', letterSpacing: 2 }}>
             // КАНАЛ ОТКРЫТ · НАЧНИ ПЕРЕДАЧУ //
@@ -98,15 +98,15 @@ export default function ChatClient({ currentUserId, otherId, otherProfile, initi
           return (
             <div key={m.id} style={{ display: 'flex', justifyContent: isMine ? 'flex-end' : 'flex-start' }}>
               <div style={{
-                maxWidth: '70%', padding: '10px 14px', borderRadius: isMine ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
-                background: isMine ? 'rgba(0,255,240,0.1)' : 'var(--surface)',
-                border: `1px solid ${isMine ? 'rgba(0,255,240,0.25)' : 'var(--border)'}`,
+                maxWidth: '60%', padding: '8px 12px', borderRadius: isMine ? '14px 14px 2px 14px' : '14px 14px 14px 2px',
+                background: isMine ? 'rgba(0,255,240,0.12)' : 'rgba(255,255,255,0.05)',
+                border: `1px solid ${isMine ? 'rgba(0,255,240,0.2)' : 'rgba(255,255,255,0.07)'}`,
               }}>
                 <div style={{ fontFamily: "'Exo 2',sans-serif", fontSize: 13, color: 'var(--text)', lineHeight: 1.5, wordBreak: 'break-word' }}>
                   {m.content}
                 </div>
-                <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 8, color: 'var(--subtext)', marginTop: 4, textAlign: 'right', letterSpacing: 1 }}>
-                  {timeLabel(m.created_at)}{isMine && (m.read ? ' ·· прочитано' : ' · отправлено')}
+                <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 7, color: 'var(--subtext)', marginTop: 2, textAlign: 'right', letterSpacing: 1, opacity: 0.6 }}>
+                  {timeLabel(m.created_at)}{isMine && (m.read ? ' ·· прочитано' : '')}
                 </div>
               </div>
             </div>
@@ -117,7 +117,7 @@ export default function ChatClient({ currentUserId, otherId, otherProfile, initi
 
       {/* Ввод */}
       <div style={{
-        padding: '12px 24px', borderTop: '1px solid var(--border)',
+        padding: '12px 20px', borderTop: '1px solid var(--border)',
         background: 'rgba(6,6,18,0.95)', backdropFilter: 'blur(8px)',
         display: 'flex', gap: 10, flexShrink: 0,
       }}>
