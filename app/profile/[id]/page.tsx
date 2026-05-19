@@ -190,6 +190,13 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                 />
                 {user && <AttackButton targetId={id} targetUsername={profile.username || 'аноним'} />}
                 <BorrowPetButton ownerId={id} ownerName={profile.username || 'аноним'} isFriend={friendStatus === 'friends'} />
+                {friendStatus === 'friends' && user && (
+                  <a href={`/messages/${id}`} style={{
+                    fontFamily: "'JetBrains Mono',monospace", fontSize: 10, letterSpacing: 2,
+                    padding: '8px 14px', borderRadius: 6, border: '1px solid rgba(0,255,240,0.25)',
+                    background: 'rgba(0,255,240,0.06)', color: 'var(--accent)', textDecoration: 'none',
+                  }}>✉ НАПИСАТЬ</a>
+                )}
               </div>
             )}
             {/* Значок ВЗЛОМАН */}

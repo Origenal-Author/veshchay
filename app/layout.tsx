@@ -9,6 +9,7 @@ import InventoryPanel from '@/app/components/InventoryPanel'
 import PetWalkerHost from '@/app/components/PetWalkerHost'
 import HackEffectsDisplay from '@/app/components/HackEffectsDisplay'
 import NotificationBell from '@/app/components/NotificationBell'
+import MessagesIcon from '@/app/components/MessagesIcon'
 
 export const metadata: Metadata = {
   title: 'ВЕЩАЙ',
@@ -31,6 +32,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {/* Колокольчик — над инвентарём (снизу-слева) */}
           <div style={{ position: 'fixed', bottom: 76, left: 24, zIndex: 8000 }}>
             <NotificationBell />
+          </div>
+          {/* Сообщения — над колокольчиком */}
+          <div style={{ position: 'fixed', bottom: 120, left: 24, zIndex: 8000 }}>
+            <MessagesIcon />
           </div>
         </WeatherProvider>
       </body>
