@@ -6,7 +6,13 @@ import PetCanvas from './PetCanvas'
 import { getPetDef, RARITY_COLOR, RARITY_GLOW, getStageProgress, getNextStage, STAGE_XP, type Pet } from '@/lib/pets'
 import { ACHIEVEMENTS } from '@/lib/achievements'
 
-type Tab = 'pets' | 'achievements'
+type Tab = 'pets' | 'achievements' | 'quests'
+
+type QuestItem = {
+  key: string; title: string; desc: string
+  target: number; xp: number; icon: string
+  progress: number; completed: boolean; claimed: boolean
+}
 
 function hexToRgb(hex: string) {
   return `${parseInt(hex.slice(1, 3), 16)},${parseInt(hex.slice(3, 5), 16)},${parseInt(hex.slice(5, 7), 16)}`
@@ -191,6 +197,120 @@ function AchievementsTab({ unlockedKeys }: { unlockedKeys: string[] }) {
   )
 }
 
+// ── ТАБ КВЕСТОВ ──────────────────────────────────────────────────────────────
+function QuestsTab({ userId }: { userId: string }) {
+  const [quests, setQuests] = useState<QuestItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [claiming, setClaiming] = useState<string | null>(null)
+  const [toast, setToast] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch('/api/quests/today')
+      .then(r => r.json())
+      .then(d => { setQuests(d.quests ?? []); setLoading(false) })
+      .catch(() => setLoading(false))
+  }, [userId])
+
+  async function claim(key: string) {
+    setClaiming(key)
+    const res = await fetch('/api/quests/claim', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ questKey: key }),
+    })
+    const data = await res.json()
+    if (data.ok) {
+      setQuests(qs => qs.map(q => q.key === key ? { ...q, claimed: true } : q))
+      setToast(`+${data.xpGained} XP`)
+      setTimeout(() => setToast(null), 2000)
+    }
+    setClaiming(null)
+  }
+
+  if (loading) return (
+    <div style={{ textAlign: 'center', padding: '32px 0', fontFamily: 'JetBrains Mono,monospace', fontSize: 10, color: '#3A4A5A', letterSpacing: 2 }}>
+      // ЗАГРУЗКА...
+    </div>
+  )
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, position: 'relative' }}>
+      {toast && (
+        <div style={{
+          position: 'absolute', top: -8, right: 0, zIndex: 10,
+          fontFamily: 'Orbitron,monospace', fontSize: 11, letterSpacing: 2,
+          color: '#00FF88', background: 'rgba(0,255,136,0.1)',
+          border: '1px solid rgba(0,255,136,0.3)',
+          padding: '4px 12px', borderRadius: 6,
+          animation: 'slideInUp 0.3s ease',
+        }}>
+          {toast}
+        </div>
+      )}
+      <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 8, color: '#3A4A5A', letterSpacing: 2, marginBottom: 4 }}>
+        Обновляются в полночь · {quests.filter(q => q.claimed).length}/3 выполнено
+      </div>
+      {quests.map(q => {
+        const pct = Math.round((q.progress / q.target) * 100)
+        return (
+          <div key={q.key} style={{
+            padding: '10px 12px', borderRadius: 8,
+            border: `1px solid ${q.claimed ? 'rgba(0,255,136,0.2)' : q.completed ? 'rgba(0,255,240,0.25)' : 'rgba(255,255,255,0.05)'}`,
+            background: q.claimed ? 'rgba(0,255,136,0.03)' : q.completed ? 'rgba(0,255,240,0.04)' : 'rgba(255,255,255,0.02)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 14 }}>{q.icon}</span>
+                <div>
+                  <div style={{ fontFamily: 'Orbitron,monospace', fontSize: 8, letterSpacing: 2, color: q.claimed ? '#00FF88' : q.completed ? '#00FFF0' : '#8892B0' }}>
+                    {q.title}
+                  </div>
+                  <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 7, color: '#3A4A5A', marginTop: 2 }}>
+                    {q.desc}
+                  </div>
+                </div>
+              </div>
+              <div style={{ fontFamily: 'Orbitron,monospace', fontSize: 9, color: '#00FF88', letterSpacing: 1, whiteSpace: 'nowrap', marginLeft: 8 }}>
+                +{q.xp} XP
+              </div>
+            </div>
+            {/* Прогрессбар */}
+            <div style={{ width: '100%', height: 3, background: 'rgba(255,255,255,0.05)', borderRadius: 2, marginBottom: q.completed && !q.claimed ? 8 : 0 }}>
+              <div style={{ width: `${pct}%`, height: '100%', borderRadius: 2, background: q.claimed ? '#00FF88' : '#00FFF0', transition: 'width 0.4s', boxShadow: q.completed ? `0 0 6px ${q.claimed ? '#00FF88' : '#00FFF0'}` : 'none' }} />
+            </div>
+            {!q.claimed && !q.completed && (
+              <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 7, color: '#3A4A5A', marginTop: 4 }}>
+                {q.progress}/{q.target}
+              </div>
+            )}
+            {q.completed && !q.claimed && (
+              <button
+                onClick={() => claim(q.key)}
+                disabled={claiming === q.key}
+                style={{
+                  width: '100%', padding: '5px 0',
+                  fontFamily: 'Orbitron,monospace', fontSize: 7, letterSpacing: 2,
+                  color: '#000', background: '#00FFF0',
+                  border: 'none', borderRadius: 4, cursor: 'pointer',
+                  opacity: claiming === q.key ? 0.6 : 1,
+                  boxShadow: '0 0 10px rgba(0,255,240,0.3)',
+                  transition: 'opacity 0.2s',
+                }}
+              >
+                {claiming === q.key ? '...' : `ПОЛУЧИТЬ +${q.xp} XP`}
+              </button>
+            )}
+            {q.claimed && (
+              <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 7, color: '#00FF88', letterSpacing: 2, marginTop: 4 }}>
+                ✓ ПОЛУЧЕНО
+              </div>
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 // ── ГЛАВНЫЙ КОМПОНЕНТ ─────────────────────────────────────────────────────────
 export default function InventoryPanel() {
   const [open, setOpen] = useState(false)
@@ -270,7 +390,7 @@ export default function InventoryPanel() {
 
           {/* Табы */}
           <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-            {(['pets', 'achievements'] as Tab[]).map(t => (
+            {(['pets', 'achievements', 'quests'] as Tab[]).map(t => (
               <button key={t} onClick={() => setTab(t)} style={{
                 flex: 1, padding: '8px 4px',
                 fontFamily: 'Orbitron,monospace', fontSize: 7, letterSpacing: 2,
@@ -279,7 +399,7 @@ export default function InventoryPanel() {
                 borderBottom: `2px solid ${tab === t ? '#00FFF0' : 'transparent'}`,
                 transition: 'all 0.2s',
               }}>
-                {t === 'pets' ? `ПАРАЗИТЫ ${pets.length}/3` : `АЧИВКИ ${unlockedKeys.length}/19`}
+                {t === 'pets' ? `ПАРАЗИТЫ ${pets.length}/3` : t === 'achievements' ? `АЧИВКИ ${unlockedKeys.length}/19` : 'КВЕСТЫ'}
               </button>
             ))}
           </div>
@@ -288,6 +408,7 @@ export default function InventoryPanel() {
           <div style={{ overflowY: 'auto', flex: 1, padding: 12 }}>
             {tab === 'pets' && <PetsTab pets={pets} />}
             {tab === 'achievements' && <AchievementsTab unlockedKeys={unlockedKeys} />}
+            {tab === 'quests' && <QuestsTab userId={userId} />}
           </div>
         </div>
       )}
