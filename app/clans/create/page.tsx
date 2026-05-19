@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { CLAN_SYMBOLS, CLAN_COLORS } from '@/lib/clans'
+import ClanEmblem from '@/app/components/ClanEmblem'
 
 export default function CreateClanPage() {
   const router = useRouter()
@@ -55,17 +56,7 @@ export default function CreateClanPage() {
 
         {/* Превью эмблемы */}
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 32 }}>
-          <div style={{
-            width: 100, height: 100, borderRadius: 20,
-            border: `2px solid ${color}`,
-            background: `rgba(${hexToRgb(color)},0.08)`,
-            boxShadow: `0 0 30px rgba(${hexToRgb(color)},0.2)`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: 'monospace', fontSize: selectedSymbols.length > 1 ? 28 : 40,
-            color, transition: 'all 0.3s',
-          }}>
-            {emblemPreview || '?'}
-          </div>
+          <ClanEmblem symbols={selectedSymbols} color={color} size={100} />
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>

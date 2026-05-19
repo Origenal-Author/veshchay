@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase-server'
 import ProfileClient from './ProfileClient'
 import FollowButton from '@/app/components/FollowButton'
 import FriendButton from '@/app/components/FriendButton'
+import ClanEmblem from '@/app/components/ClanEmblem'
 import BorrowPetButton from '@/app/components/BorrowPetButton'
 import AchievementsGrid from '@/app/components/AchievementsGrid'
 import AttackButton from '@/app/components/AttackButton'
@@ -258,7 +259,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                 return (
                   <Link key={c.id} href={`/clans/${c.id}`} style={{ textDecoration: 'none' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 10, background: 'var(--surface)', border: `1px solid rgba(${parseInt(color.slice(1,3),16)},${parseInt(color.slice(3,5),16)},${parseInt(color.slice(5,7),16)},0.25)` }}>
-                      <div style={{ width: 36, height: 36, borderRadius: 8, border: `1px solid ${color}`, background: `rgba(0,0,0,0.2)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color }}>{(c.emblem_symbols ?? []).join('')}</div>
+                      <ClanEmblem symbols={c.emblem_symbols ?? []} color={color} size={36} />
                       <div>
                         <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 9, color, letterSpacing: 2 }}>[{c.tag}]</div>
                         <div style={{ fontFamily: "'Orbitron',monospace", fontSize: 11, fontWeight: 700, color: 'var(--text)', letterSpacing: 1 }}>{c.name}</div>

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { CLAN_ROLES, type ClanRole } from '@/lib/clans'
+import ClanEmblem from '@/app/components/ClanEmblem'
 
 type Member = { role: string; joined_at: string; user: { id: string; username: string | null; avatar_url: string | null; rank: string | null; xp: number } }
 
@@ -80,16 +81,7 @@ export default function ClanClient({ clan, members, currentUserId, myRole, invit
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${C}, transparent)` }} />
 
           {/* Эмблема */}
-          <div style={{
-            width: 90, height: 90, borderRadius: 18, flexShrink: 0,
-            border: `2px solid ${C}`,
-            background: `rgba(${hexToRgb(C)},0.08)`,
-            boxShadow: `0 0 30px rgba(${hexToRgb(C)},0.2)`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: clan.emblem_symbols?.length > 1 ? 28 : 40, color: C,
-          }}>
-            {(clan.emblem_symbols ?? []).join('')}
-          </div>
+          <ClanEmblem symbols={clan.emblem_symbols ?? []} color={C} size={90} />
 
           {/* Инфо */}
           <div style={{ flex: 1 }}>
