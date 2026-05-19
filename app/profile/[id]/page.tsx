@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase-server'
 import ProfileClient from './ProfileClient'
 import FollowButton from '@/app/components/FollowButton'
+import FriendButton from '@/app/components/FriendButton'
 import AchievementsGrid from '@/app/components/AchievementsGrid'
 import AttackButton from '@/app/components/AttackButton'
 import ProfileGraffiti from '@/app/components/ProfileGraffiti'
@@ -78,6 +79,22 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
         .eq('follower_id', user.id).eq('following_id', id).maybeSingle()).data
     : false
 
+  let friendStatus: 'none' | 'pending_sent' | 'pending_received' | 'friends' = 'none'
+  let friendRequestId: string | null = null
+  if (user && !isOwner) {
+    const { data: fr } = await supabase
+      .from('friend_requests').select('id, status, sender_id')
+      .or(`and(sender_id.eq.${user.id},receiver_id.eq.${id}),and(sender_id.eq.${id},receiver_id.eq.${user.id})`)
+      .maybeSingle()
+    if (fr) {
+      friendRequestId = fr.id
+      if (fr.status === 'accepted') friendStatus = 'friends'
+      else if (fr.status === 'pending') {
+        friendStatus = fr.sender_id === user.id ? 'pending_sent' : 'pending_received'
+      }
+    }
+  }
+
   const xp = profile.xp || 0
   const rankInfo = getRankInfo(xp)
   const nextRank = getNextRank(xp)
@@ -144,6 +161,12 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                   targetId={id}
                   initialFollowing={isFollowing}
                   initialCount={followersCount ?? 0}
+                  currentUserId={user?.id ?? null}
+                />
+                <FriendButton
+                  targetId={id}
+                  initialStatus={friendStatus}
+                  initialRequestId={friendRequestId}
                   currentUserId={user?.id ?? null}
                 />
                 {user && <AttackButton targetId={id} targetUsername={profile.username || 'аноним'} />}

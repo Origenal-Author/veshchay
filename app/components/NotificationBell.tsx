@@ -28,6 +28,8 @@ function notifText(n: Notification, actorName: string) {
   if (n.type === 'follow') return `${actorName} начал мониторить тебя`
   if (n.type === 'echo') return `${actorName} оставил отклик на «${n.entity_title ?? 'видео'}»`
   if (n.type === 'attack') return `⚡ ${actorName} атаковал твой канал!`
+  if (n.type === 'friend_request') return `${actorName} хочет законнектиться с тобой`
+  if (n.type === 'friend_accept') return `${actorName} принял твой запрос на коннект`
   return 'Новое уведомление'
 }
 
@@ -35,6 +37,8 @@ function notifIcon(type: string) {
   if (type === 'follow') return '👁'
   if (type === 'echo') return '💬'
   if (type === 'attack') return '💀'
+  if (type === 'friend_request') return '⬡'
+  if (type === 'friend_accept') return '⬡'
   return '📡'
 }
 
@@ -43,7 +47,21 @@ export default function NotificationBell() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [actors, setActors] = useState<Record<string, string>>({})
   const [userId, setUserId] = useState<string | null>(null)
+  const [responding, setResponding] = useState<string | null>(null)
   const panelRef = useRef<HTMLDivElement>(null)
+
+  async function respondFriend(requestId: string, action: 'accept' | 'decline', notifId: string) {
+    setResponding(notifId)
+    await fetch('/api/friends/respond', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ requestId, action }),
+    })
+    setNotifications(prev => prev.map(n => n.id === notifId
+      ? { ...n, type: action === 'accept' ? 'friend_accept_done' : 'friend_decline_done' }
+      : n
+    ))
+    setResponding(null)
+  }
 
   const unread = notifications.filter(n => !n.read).length
 
@@ -187,6 +205,24 @@ export default function NotificationBell() {
                   }}>
                     {notifText(n, actors[n.actor_id] || '...')}
                   </div>
+                  {n.type === 'friend_request' && n.entity_id && (
+                    <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+                      <button
+                        onClick={() => respondFriend(n.entity_id!, 'accept', n.id)}
+                        disabled={responding === n.id}
+                        style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 8, letterSpacing: 1, padding: '3px 10px', borderRadius: 4, border: '1px solid rgba(0,255,136,0.4)', background: 'rgba(0,255,136,0.08)', color: '#00FF88', cursor: 'pointer' }}
+                      >
+                        {responding === n.id ? '...' : 'ПРИНЯТЬ'}
+                      </button>
+                      <button
+                        onClick={() => respondFriend(n.entity_id!, 'decline', n.id)}
+                        disabled={responding === n.id}
+                        style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 8, letterSpacing: 1, padding: '3px 10px', borderRadius: 4, border: '1px solid rgba(255,0,110,0.3)', background: 'rgba(255,0,110,0.06)', color: '#FF006E', cursor: 'pointer' }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
                   <div style={{
                     fontFamily: 'JetBrains Mono,monospace', fontSize: 8,
                     color: '#3A4A5A', marginTop: 3, letterSpacing: 1,
