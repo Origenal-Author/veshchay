@@ -133,6 +133,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
         <Link href="/" className="site-logo">ВЕЩАЙ</Link>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 10 }}>
           {isOwner && <Link href="/history" className="btn-ghost-ui">ИСТОРИЯ</Link>}
+          {isOwner && <Link href="/clans/create" className="btn-ghost-ui">⬡ КЛАН</Link>}
           {isOwner && <Link href="/profile/edit" className="btn-primary-ui">РЕДАКТИРОВАТЬ</Link>}
           <Link href="/" className="btn-ghost-ui">← ГЛАВНАЯ</Link>
         </div>
@@ -269,14 +270,6 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
             </div>
           </div>
         )}
-        {isOwner && (
-          <div style={{ marginBottom: 40, display: 'flex', gap: 10 }}>
-            <Link href="/clans/create" style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 10, letterSpacing: 2, padding: '8px 16px', borderRadius: 6, border: '1px solid rgba(0,255,240,0.25)', background: 'rgba(0,255,240,0.06)', color: 'var(--accent)', textDecoration: 'none' }}>
-              ⬡ СОЗДАТЬ ОРГАНИЗАЦИЮ
-            </Link>
-          </div>
-        )}
-
         {/* Список друзей */}
         {(friendProfiles ?? []).length > 0 && (
           <div style={{ marginBottom: 40 }}>
