@@ -63,6 +63,18 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
   const { count: followersCount } = await supabase
     .from('follows').select('*', { count: 'exact', head: true }).eq('following_id', id)
 
+  // Друзья профиля
+  const { data: friendRows } = await supabase
+    .from('friend_requests')
+    .select('sender_id, receiver_id')
+    .or(`sender_id.eq.${id},receiver_id.eq.${id}`)
+    .eq('status', 'accepted')
+
+  const friendIds = (friendRows ?? []).map(r => r.sender_id === id ? r.receiver_id : r.sender_id)
+  const { data: friendProfiles } = friendIds.length > 0
+    ? await supabase.from('profiles').select('id, username, avatar_url, rank, xp').in('id', friendIds)
+    : { data: [] }
+
   const { data: hackEffects } = await supabase
     .from('hack_effects')
     .select('*')
@@ -211,6 +223,48 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
           avatarOverride={avatarOverride}
           isOwner={isOwner}
         />
+
+        {/* Список друзей */}
+        {(friendProfiles ?? []).length > 0 && (
+          <div style={{ marginBottom: 40 }}>
+            <div style={{ fontFamily: "'Orbitron',monospace", fontSize: 12, fontWeight: 700, letterSpacing: 3, color: 'var(--accent)', marginBottom: 16, paddingBottom: 12, borderBottom: '1px solid var(--border)' }}>
+              // СЕТЬ КОНТАКТОВ ({friendProfiles!.length})
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+              {friendProfiles!.map(f => (
+                <Link key={f.id} href={`/profile/${f.id}`} style={{ textDecoration: 'none' }}>
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: 10,
+                    padding: '10px 14px', borderRadius: 10,
+                    background: 'var(--surface)', border: '1px solid var(--border)',
+                    transition: 'border-color 0.2s',
+                  }}>
+                    <div style={{
+                      width: 36, height: 36, borderRadius: 8, flexShrink: 0, overflow: 'hidden',
+                      background: 'linear-gradient(135deg, var(--accent), var(--surface2))',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontFamily: "'Orbitron',monospace", fontSize: 12, fontWeight: 900, color: 'var(--bg)',
+                      border: '1px solid var(--accent)',
+                    }}>
+                      {f.avatar_url
+                        ? <img src={f.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        : (f.username || '??').slice(0, 2).toUpperCase()
+                      }
+                    </div>
+                    <div>
+                      <div style={{ fontFamily: "'Orbitron',monospace", fontSize: 11, fontWeight: 700, color: 'var(--text)', letterSpacing: 1 }}>
+                        @{f.username || 'аноним'}
+                      </div>
+                      <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 8, color: 'var(--accent)', letterSpacing: 2, marginTop: 2 }}>
+                        {f.rank || 'СТАТИЧЕСКИЙ ШУМ'}
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Видео пользователя */}
         {videos && videos.length > 0 && (
