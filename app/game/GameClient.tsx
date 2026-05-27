@@ -259,14 +259,15 @@ function formatCooldown(ms: number): string {
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
 }
 
-// Лица питомцев — kaomoji в зависимости от настроения
-function moodFace(mood: string, isVirus: boolean): string {
+// Лица питомцев — kaomoji в зависимости от настроения.
+// Для покоя (idle) возвращаем undefined → показываются стандартные SVG-глаза.
+function moodFace(mood: string, isVirus: boolean): string | undefined {
   if (mood === 'sleeping') return isVirus ? '−ρ−' : '−ω−'
   if (mood === 'happy')    return isVirus ? '◕‿◕' : '─‿‿─'
   if (mood === 'annoyed')  return isVirus ? '눈_눈' : '￣ヘ￣'
   if (mood === 'eating')   return isVirus ? '◔ᴥ◔' : '￣﹃￣'
   if (mood === 'hungry')   return isVirus ? 'ಠ╭╮ಠ' : '￣﹃￣'
-  return isVirus ? '·_·' : '°▽°'  // idle
+  return undefined  // idle → обычные нарисованные глаза питомца
 }
 
 function PetHabitat({ pet, onUpdate, onDelete, onDesktopOpen }: {
