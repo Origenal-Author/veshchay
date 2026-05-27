@@ -544,6 +544,12 @@ body[data-weather="fog"] .site-header { background: rgba(7,10,14,0.90); }
   100% { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes sleepZ {
+  0%   { transform: translateY(0)    rotate(0deg);  opacity: 0; }
+  20%  { opacity: 0.9; }
+  100% { transform: translateY(-26px) rotate(12deg); opacity: 0; }
+}
+
 @keyframes shake {
   0%,100% { transform: translateX(0) rotate(0); }
   15%      { transform: translateX(-10px) rotate(-1deg); }

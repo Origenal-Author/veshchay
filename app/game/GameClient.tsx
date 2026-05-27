@@ -251,6 +251,16 @@ const KIN_WORDS: Record<string, string[]> = {
 }
 const BAD_FOOD = ['яд', 'poison', 'мусор', 'null', 'error', 'delete', 'удали', 'токсин']
 
+// Лица питомцев — kaomoji в зависимости от настроения
+function moodFace(mood: string, isVirus: boolean): string {
+  if (mood === 'sleeping') return isVirus ? '(￣ρ￣)..zZ' : '(＿ ＿*)Zzz'
+  if (mood === 'happy')    return isVirus ? '◕‿◕'      : '─‿‿─'
+  if (mood === 'annoyed')  return isVirus ? '눈_눈'     : '￣ヘ￣'
+  if (mood === 'eating')   return isVirus ? '◔ᴥ◔'      : '￣﹃￣'
+  if (mood === 'hungry')   return isVirus ? 'ಠ╭╮ಠ'    : '￣﹃￣'
+  return isVirus ? '·_·' : '°▽°'  // idle
+}
+
 function PetHabitat({ pet, onUpdate }: { pet: Pet; onUpdate: (p: Pet) => void }) {
   const [walking, setWalking] = useState(false)
   const [sessionFeeds, setSessionFeeds] = useState(0)
@@ -286,11 +296,16 @@ function PetHabitat({ pet, onUpdate }: { pet: Pet; onUpdate: (p: Pet) => void })
   const isVirus = pet.variant === 'virus'
   const C = isVirus ? def.colorVirus : def.color
 
-  type Mood = 'idle' | 'happy' | 'annoyed' | 'eating'
+  type Mood = 'idle' | 'happy' | 'annoyed' | 'eating' | 'hungry' | 'sleeping'
   const [mood, setMood] = useState<Mood>('idle')
   const [particles, setParticles] = useState<{ id: number; x: number; y: number; text: string }[]>([])
   const [feedMode, setFeedMode] = useState(false)
   const [feedInput, setFeedInput] = useState('')
+  const [talkMode, setTalkMode] = useState(false)
+  const [talkInput, setTalkInput] = useState('')
+  const [wakeClicks, setWakeClicks] = useState(0)
+  const lastActivityRef = useRef(Date.now())
+  const SLEEP_AFTER_MS = 90_000  // 90 секунд без активности → засыпает
   const [poop, setPoop] = useState(false)
   const [poopPos, setPoopPos] = useState({ right: '22%', bottom: 14 })
   const [bugs, setBugs] = useState<number[]>([])
@@ -353,6 +368,7 @@ function PetHabitat({ pet, onUpdate }: { pet: Pet; onUpdate: (p: Pet) => void })
 
   function submitFeed(e: React.FormEvent) {
     e.preventDefault()
+    bumpActivity()
     const raw = feedInput.trim()
     if (!raw) return
     const tag = raw.startsWith('#') ? raw : '#' + raw
@@ -443,6 +459,7 @@ function PetHabitat({ pet, onUpdate }: { pet: Pet; onUpdate: (p: Pet) => void })
   }
 
   function handlePet() {
+    bumpActivity()
     if (isVirus) {
       setMood('annoyed')
       playSound('annoyed')
@@ -483,6 +500,73 @@ function PetHabitat({ pet, onUpdate }: { pet: Pet; onUpdate: (p: Pet) => void })
     setPoop(false)
     addParticle('убрано ✓', -60)
   }
+
+  // ── Разговор: мяу/гав и общие реакции ────────────────────────────────────────
+  function handleTalk(e: React.FormEvent) {
+    e.preventDefault()
+    const raw = talkInput.trim().toLowerCase()
+    if (!raw) return
+    setTalkInput('')
+    setTalkMode(false)
+    bumpActivity()
+
+    // Мяу / гав
+    const isMew = /^м[яиа][ауво]+|^мя|^meow|^mew/.test(raw)
+    const isWoof = /^[гr]а[вы]|^гав|^woof|^bark|^аф+/.test(raw)
+    if (isMew) {
+      if (!isVirus) { setMood('happy'); addParticle('Мияу ˵◕ω◕˵', -20); addParticle('ня~ ня~', 30) }
+      else          { setMood('annoyed'); addParticle('гав? ◕ｪ◕'); addParticle('я не кот!') }
+      setTimeout(() => setMood('idle'), 1800)
+      return
+    }
+    if (isWoof) {
+      if (!isVirus) { setMood('annoyed'); addParticle('э... мяу? ˵-ω-˵'); addParticle('я не пёс...') }
+      else          { setMood('happy'); addParticle('АВАФ! ◕ｪ◕', -20); addParticle('гр-гр-р!', 30) }
+      setTimeout(() => setMood('idle'), 1800)
+      return
+    }
+    // Общая реакция
+    const kodMsgs = ['что-что?', 'хм... ─‿‿─', 'не понимаю...', '*склоняет голову*', 'расскажи ещё']
+    const virusMsgs = ['отстань 눈_눈', 'и чо?', 'мне всё равно', 'скучно...', 'ты мне надоел']
+    setMood(isVirus ? 'annoyed' : 'happy')
+    addParticle((isVirus ? virusMsgs : kodMsgs)[Math.floor(Math.random() * 5)])
+    setTimeout(() => setMood('idle'), 1500)
+  }
+
+  // ── Сон / пробуждение ────────────────────────────────────────────────────────
+  function bumpActivity() {
+    lastActivityRef.current = Date.now()
+    if (mood === 'sleeping') {
+      // Любая активность будит
+      setMood('idle')
+      setWakeClicks(0)
+    }
+  }
+
+  function handlePetClick() {
+    if (mood !== 'sleeping') return
+    const next = wakeClicks + 1
+    setWakeClicks(next)
+    if (next >= 3) {
+      setMood('idle')
+      setWakeClicks(0)
+      addParticle(isVirus ? 'А?! Чё надо?! 눈_눈' : 'Ах... привет ─‿‿─')
+      lastActivityRef.current = Date.now()
+    } else {
+      addParticle(isVirus ? 'мх...' : 'zzz...', (next - 2) * 20)
+    }
+  }
+
+  // Таймер: если давно не было активности → сон
+  useEffect(() => {
+    const iv = setInterval(() => {
+      if (mood !== 'idle') return
+      if (Date.now() - lastActivityRef.current >= SLEEP_AFTER_MS && pet.stage !== 'egg') {
+        setMood('sleeping')
+      }
+    }, 5000)
+    return () => clearInterval(iv)
+  }, [mood, pet.stage])
 
   // Отталкивание питомца от курсора когда вирус в раздражении
   function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
@@ -574,12 +658,32 @@ function PetHabitat({ pet, onUpdate }: { pet: Pet; onUpdate: (p: Pet) => void })
 
         {/* Питомец */}
         <div style={{ position: 'relative', zIndex: 2, padding: '32px 0 16px', display: 'flex', justifyContent: 'center' }}>
-          <div style={{
-            transition: 'transform 0.35s cubic-bezier(0.34,1.56,0.64,1)',
-            transform: petTransform,
-            filter: mood === 'happy' ? `drop-shadow(0 0 18px ${C})` :
-                    mood === 'annoyed' ? 'drop-shadow(0 0 10px rgba(255,0,80,0.6))' : 'none',
-          }}>
+          {/* Плавающие Z для спящего */}
+          {mood === 'sleeping' && !walking && (
+            <>
+              {[0, 1, 2].map(i => (
+                <div key={i} style={{
+                  position: 'absolute', left: `calc(50% + ${30 + i * 14}px)`, top: 20 + i * -8,
+                  fontFamily: 'VT323, monospace', fontSize: 28 - i * 4,
+                  color: C, opacity: 0.7,
+                  animation: `sleepZ 2.2s ease-in-out ${i * 0.4}s infinite`,
+                  textShadow: `0 0 6px ${C}`,
+                  pointerEvents: 'none', zIndex: 6,
+                }}>z</div>
+              ))}
+            </>
+          )}
+          <div
+            onClick={mood === 'sleeping' ? handlePetClick : undefined}
+            style={{
+              transition: 'transform 0.35s cubic-bezier(0.34,1.56,0.64,1), filter 0.5s ease',
+              transform: petTransform,
+              cursor: mood === 'sleeping' ? 'pointer' : 'default',
+              filter: mood === 'sleeping' ? 'grayscale(1) brightness(0.55)' :
+                      mood === 'happy' ? `drop-shadow(0 0 18px ${C})` :
+                      mood === 'annoyed' ? 'drop-shadow(0 0 10px rgba(255,0,80,0.6))' : 'none',
+            }}
+          >
             {walking ? (
               <div style={{
                 width: 180, height: 180,
@@ -596,6 +700,20 @@ function PetHabitat({ pet, onUpdate }: { pet: Pet; onUpdate: (p: Pet) => void })
               <PetCanvas type={pet.type} variant={pet.variant} stage={pet.stage} size={180} />
             )}
           </div>
+
+          {/* Лицо kaomoji — индикатор настроения */}
+          {!walking && pet.stage !== 'egg' && (
+            <div style={{
+              position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)',
+              fontFamily: 'VT323, monospace', fontSize: 18,
+              color: C, opacity: 0.85, letterSpacing: 1,
+              textShadow: `0 0 6px ${C}`,
+              pointerEvents: 'none', zIndex: 6, whiteSpace: 'nowrap',
+              transition: 'opacity 0.4s',
+            }}>
+              {moodFace(mood, isVirus)}
+            </div>
+          )}
 
           {/* Частицы эмоций */}
           {particles.map(p => (
@@ -644,7 +762,30 @@ function PetHabitat({ pet, onUpdate }: { pet: Pet; onUpdate: (p: Pet) => void })
 
       {/* Кнопки взаимодействия — скрыты когда свёрнуто */}
       <div style={{ marginTop: 12, display: collapsed ? 'none' : 'block' }}>
-        {feedMode ? (
+        {talkMode ? (
+          <form onSubmit={handleTalk} style={{ display: 'flex', gap: 8 }}>
+            <div style={{
+              flex: 1, display: 'flex', alignItems: 'center', gap: 8,
+              background: 'rgba(10,10,22,0.95)', border: `1px solid ${C}`,
+              borderRadius: 8, padding: '8px 14px',
+              boxShadow: `0 0 12px rgba(${isVirus ? '255,0,110' : '0,212,255'},0.15)`,
+            }}>
+              <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 13, color: C, opacity: 0.7 }}>&gt;</span>
+              <input
+                autoFocus value={talkInput}
+                onChange={e => setTalkInput(e.target.value)}
+                placeholder="скажи что-нибудь..."
+                maxLength={60}
+                style={{
+                  flex: 1, background: 'transparent', border: 'none', outline: 'none',
+                  fontFamily: 'JetBrains Mono,monospace', fontSize: 12, color: '#E0E8F0',
+                }}
+              />
+            </div>
+            <button type="submit" style={{ ...actionBtn, borderColor: C, color: C }}>СКАЗАТЬ</button>
+            <button type="button" onClick={() => { setTalkMode(false); setTalkInput('') }} style={{ ...actionBtn, borderColor: '#3A4A5A', color: '#3A4A5A' }}>✕</button>
+          </form>
+        ) : feedMode ? (
           <form onSubmit={submitFeed} style={{ display: 'flex', gap: 8 }}>
             <div style={{
               flex: 1, display: 'flex', alignItems: 'center', gap: 8,
@@ -693,6 +834,15 @@ function PetHabitat({ pet, onUpdate }: { pet: Pet; onUpdate: (p: Pet) => void })
             >
               {isVirus ? '⚡ ПОГЛАДИТЬ' : '♥ ПОГЛАДИТЬ'}
             </button>
+            {/* Поговорить — только для baby/adult */}
+            {pet.stage !== 'egg' && (
+              <button
+                onClick={() => setTalkMode(true)}
+                style={{ ...actionBtn, flex: 1, borderColor: C, color: C }}
+              >
+                💬 СКАЗАТЬ
+              </button>
+            )}
             {/* Выгул — только для baby/adult */}
             {pet.stage !== 'egg' && (
               <button
