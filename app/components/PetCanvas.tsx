@@ -11,16 +11,17 @@ interface Props {
   face?: string  // если задан — стираем нарисованные глаза и показываем kaomoji DOM-overlay
 }
 
-// Зона лица питомца в относительных координатах (0..1)
-const FACE_AREA: Record<PetType, { cx: number; cy: number; rx: number; ry: number }> = {
-  jellyfish: { cx: 0.50, cy: 0.40, rx: 0.16, ry: 0.07 },
-  ghost:     { cx: 0.50, cy: 0.46, rx: 0.18, ry: 0.08 },
-  hologram:  { cx: 0.50, cy: 0.50, rx: 0.20, ry: 0.08 },
-  signal:    { cx: 0.50, cy: 0.32, rx: 0.13, ry: 0.06 },
-  radar:     { cx: 0.50, cy: 0.45, rx: 0.13, ry: 0.06 },
-  neuron:    { cx: 0.50, cy: 0.50, rx: 0.15, ry: 0.07 },
-  plasma:    { cx: 0.50, cy: 0.50, rx: 0.15, ry: 0.07 },
-  crystal:   { cx: 0.50, cy: 0.50, rx: 0.13, ry: 0.06 },
+// Точная позиция центра «лица» питомца в относительных координатах (0..1).
+// Совпадает с тем, где исходный код рисует drawEyes для каждого типа.
+const FACE_AREA: Record<PetType, { cx: number; cy: number }> = {
+  jellyfish: { cx: 0.50, cy: 0.34 },
+  ghost:     { cx: 0.50, cy: 0.40 },
+  hologram:  { cx: 0.50, cy: 0.48 },
+  signal:    { cx: 0.50, cy: 0.31 },
+  radar:     { cx: 0.50, cy: 0.49 },
+  neuron:    { cx: 0.50, cy: 0.49 },
+  plasma:    { cx: 0.50, cy: 0.49 },
+  crystal:   { cx: 0.50, cy: 0.49 },
 }
 
 // hex → rgba string
@@ -73,8 +74,12 @@ function drawEgg(ctx: CanvasRenderingContext2D, cx: number, cy: number, isVirus:
   ctx.restore()
 }
 
+// Модульный флаг: если true — drawEyes становится no-op (используем DOM kaomoji)
+let _hideEyes = false
+
 // ── УНИКАЛЬНЫЕ ГЛАЗА ──────────────────────────────────────────────────────────
 function drawEyes(ctx: CanvasRenderingContext2D, type: PetType, cx: number, cy: number, r: number, isVirus: boolean, C: string, t: number) {
+  if (_hideEyes) return
   const eo = r * 0.37
   const eyY = cy - r * 0.06
   const blink = t % 210 < 7
@@ -667,26 +672,11 @@ export default function PetCanvas({ type, variant, stage, size = 120, face }: Pr
     const C = isVirus ? def.colorVirus : def.color
     const w = size, h = size
 
-    function eraseFace(scale = 1, tx = 0, ty = 0) {
-      if (!faceRef.current) return
-      const fa = FACE_AREA[type]
-      ctx.save()
-      ctx.globalCompositeOperation = 'destination-out'
-      ctx.beginPath()
-      ctx.ellipse(
-        tx + fa.cx * w * scale,
-        ty + fa.cy * h * scale,
-        fa.rx * w * scale,
-        fa.ry * h * scale,
-        0, 0, Math.PI * 2,
-      )
-      ctx.fill()
-      ctx.restore()
-    }
-
     function animate() {
       const t = tRef.current
       ctx.clearRect(0, 0, w, h)
+      // Скрываем нарисованные глаза если у нас есть kaomoji-лицо
+      _hideEyes = !!faceRef.current
 
       if (stage === 'egg') {
         drawEgg(ctx, w / 2, h / 2, isVirus, C, t, size)
@@ -696,12 +686,11 @@ export default function PetCanvas({ type, variant, stage, size = 120, face }: Pr
         ctx.scale(0.8, 0.8)
         DRAW_MAP[type](ctx, w, h, t, isVirus, C)
         ctx.restore()
-        eraseFace(0.8, w * 0.1, h * 0.1)
       } else {
         DRAW_MAP[type](ctx, w, h, t, isVirus, C)
-        eraseFace()
       }
 
+      _hideEyes = false
       tRef.current++
       animRef.current = requestAnimationFrame(animate)
     }
