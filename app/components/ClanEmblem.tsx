@@ -4,10 +4,11 @@ function hexToRgb(hex: string) {
   return `${parseInt(hex.slice(1,3),16)},${parseInt(hex.slice(3,5),16)},${parseInt(hex.slice(5,7),16)}`
 }
 
+// scale — относительно размера эмблемы; rotate — поворот слоя; opacity — прозрачность.
 const LAYERS = [
-  { scale: 1.4,  rotate: 0,   opacity: 0.35 },
-  { scale: 0.95, rotate: 42,  opacity: 0.65 },
-  { scale: 0.55, rotate: -18, opacity: 1.0  },
+  { scale: 1.20, rotate: 0,   opacity: 0.30 },
+  { scale: 0.85, rotate: 30,  opacity: 0.55 },
+  { scale: 0.55, rotate: -15, opacity: 1.00 },
 ]
 
 export default function ClanEmblem({ symbols, color, size = 80 }: {
@@ -28,24 +29,26 @@ export default function ClanEmblem({ symbols, color, size = 80 }: {
       {symbols.map((raw, i) => {
         const layer = LAYERS[i] ?? LAYERS[2]
         const { symbol, rotation } = parseClanSymbol(raw)
+        // Каждый слой — это квадрат на всю эмблему с символом, центрированным через flex.
+        // Это гарантирует, что разные unicode-глифы с разными baseline и метриками
+        // выравниваются по геометрическому центру, а не по своим внутренним координатам.
         return (
           <div key={i} style={{
-            position: 'absolute',
-            top: '50%', left: '50%',
-            transform: `translate(-50%, -50%) rotate(${layer.rotate + rotation}deg) scale(${layer.scale})`,
-            fontSize,
+            position: 'absolute', inset: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            transform: `rotate(${layer.rotate + rotation}deg) scale(${layer.scale})`,
+            transformOrigin: 'center center',
             color,
             opacity: layer.opacity,
-            lineHeight: 1,
-            userSelect: 'none',
             pointerEvents: 'none',
+            userSelect: 'none',
           }}>
-            {symbol}
+            <span style={{ fontSize, lineHeight: 1, display: 'block' }}>{symbol}</span>
           </div>
         )
       })}
       {symbols.length === 0 && (
-        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', color, opacity: 0.3, fontSize, lineHeight: 1 }}>?</div>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color, opacity: 0.3, fontSize, lineHeight: 1 }}>?</div>
       )}
     </div>
   )
