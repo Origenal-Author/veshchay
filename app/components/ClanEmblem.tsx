@@ -140,6 +140,8 @@ export default function ClanEmblem({ symbols, color, size = 80 }: {
       background: `rgba(${rgb},0.08)`,
       boxShadow: `0 0 ${Math.round(size*0.4)}px rgba(${rgb},0.25)`,
       position: 'relative', flexShrink: 0, overflow: 'hidden',
+      boxSizing: 'content-box',  // переопределяем глобальный border-box,
+      // иначе border 2px съедает 4px content-площади и canvas обрезается асимметрично
     }}>
       {symbols.map((raw, i) => (
         <SymbolLayer
