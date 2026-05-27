@@ -39,7 +39,25 @@
       "PowerShell(& \"C:\\\\Program Files\\\\Git\\\\bin\\\\git.exe\" -C \"c:\\\\Users\\\\�����������\\\\Desktop\\\\��. ���\\\\veshchay\" commit -m \"fix: clan member type casting\")",
       "PowerShell(& \"C:\\\\Program Files\\\\Git\\\\bin\\\\git.exe\" -C \"c:\\\\Users\\\\�����������\\\\Desktop\\\\��. ���\\\\veshchay\" commit -m \"feat: layered clan emblem - symbols stack with rotation and scale\")",
       "Bash(git -C veshchay log --oneline d576eb0..40f4119)",
-      "Bash(git -C veshchay status)"
+      "Bash(git -C veshchay status)",
+      "Bash(npx tsc *)",
+      "Bash(git -C veshchay add -A)",
+      "Bash(\"C:\\\\Program Files\\\\Git\\\\bin\\\\git.exe\" -C veshchay add -A)",
+      "Bash(\"C:\\\\Program Files\\\\Git\\\\bin\\\\git.exe\" -C veshchay status)",
+      "Bash(\"C:\\\\Program Files\\\\Git\\\\bin\\\\git.exe\" add -A)",
+      "Bash(\"C:\\\\Program Files\\\\Git\\\\bin\\\\git.exe\" status)",
+      "Bash('C:\\\\Program Files\\\\Git\\\\bin\\\\git.exe' commit -m ' *)",
+      "Bash(\"C:\\\\Program Files\\\\Git\\\\bin\\\\git.exe\" push origin HEAD:main)",
+      "Bash(\"C:\\\\Program Files\\\\Git\\\\bin\\\\git.exe\" add veshchay)",
+      "Bash(\"C:\\\\Program Files\\\\Git\\\\bin\\\\git.exe\" log --oneline -3)",
+      "Bash(echo \"EXIT=$?\")",
+      "Bash(\"C:\\\\Program Files\\\\Git\\\\bin\\\\git.exe\" log --oneline -2)",
+      "Bash(\"C:\\\\Program Files\\\\Git\\\\bin\\\\git.exe\" branch --show-current)",
+      "Bash(\"C:\\\\Program Files\\\\Git\\\\bin\\\\git.exe\" show --stat HEAD)",
+      "Bash(\"C:\\\\Program Files\\\\Git\\\\bin\\\\git.exe\" reset --soft HEAD~1)",
+      "Bash('C:\\\\Program Files\\\\Git\\\\bin\\\\git.exe' -C veshchay commit -m ' *)",
+      "Bash(\"C:\\\\Program Files\\\\Git\\\\bin\\\\git.exe\" -C veshchay push origin HEAD:main)",
+      "Bash(\"C:\\\\Program Files\\\\Git\\\\bin\\\\git.exe\" add veshchay .claude/settings.local.json)"
     ],
     "additionalDirectories": [
       "c:\\Users\\Администратор\\Desktop\\соц. сеть\\veshchay\\app\\api\\pets"
