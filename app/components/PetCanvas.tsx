@@ -708,7 +708,7 @@ export default function PetCanvas({ type, variant, stage, size = 120, face }: Pr
   const scale = stage === 'baby' ? 0.8 : 1
   const offset = stage === 'baby' ? 0.1 : 0
   const cyPct = (offset + fa.cy * scale) * 100
-  const fontSize = Math.max(10, size * (stage === 'baby' ? 0.14 : 0.18))
+  const fontSize = Math.max(10, size * (stage === 'baby' ? 0.11 : 0.14))
 
   return (
     <div style={{ position: 'relative', display: 'inline-block', width: size, height: size }}>
