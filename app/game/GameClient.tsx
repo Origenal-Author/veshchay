@@ -336,7 +336,7 @@ function PetHabitat({ pet, onUpdate, onDelete, onDesktopOpen }: {
     'я был хорошим?',
     'прощай, мой человек',
     'не забывай меня...',
-    'спасибо за всё',
+    'спасибо за всё ♥',
   ]
   const VIRUS_FAREWELL = [
     'ЗА ЧТО?!?!',
