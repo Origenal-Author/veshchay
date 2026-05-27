@@ -811,23 +811,15 @@ function PetHabitat({ pet, onUpdate, onDelete, onDesktopOpen }: {
                 }}>// ПАРАЗИТ ГУЛЯЕТ //</div>
               </div>
             ) : (
-              <PetCanvas type={pet.type} variant={pet.variant} stage={pet.stage} size={180} />
+              <PetCanvas
+                type={pet.type}
+                variant={pet.variant}
+                stage={pet.stage}
+                size={180}
+                face={pet.stage === 'egg' ? undefined : moodFace(mood, isVirus)}
+              />
             )}
           </div>
-
-          {/* Лицо kaomoji — индикатор настроения */}
-          {!walking && pet.stage !== 'egg' && (
-            <div style={{
-              position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)',
-              fontFamily: 'VT323, monospace', fontSize: 18,
-              color: C, opacity: 0.85, letterSpacing: 1,
-              textShadow: `0 0 6px ${C}`,
-              pointerEvents: 'none', zIndex: 6, whiteSpace: 'nowrap',
-              transition: 'opacity 0.4s',
-            }}>
-              {moodFace(mood, isVirus)}
-            </div>
-          )}
 
           {/* Частицы эмоций */}
           {particles.map(p => (

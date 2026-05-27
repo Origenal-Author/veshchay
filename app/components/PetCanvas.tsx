@@ -8,6 +8,19 @@ interface Props {
   variant: PetVariant
   stage: PetStage
   size?: number
+  face?: string  // если задан — стираем нарисованные глаза и показываем kaomoji DOM-overlay
+}
+
+// Зона лица питомца в относительных координатах (0..1)
+const FACE_AREA: Record<PetType, { cx: number; cy: number; rx: number; ry: number }> = {
+  jellyfish: { cx: 0.50, cy: 0.40, rx: 0.16, ry: 0.07 },
+  ghost:     { cx: 0.50, cy: 0.46, rx: 0.18, ry: 0.08 },
+  hologram:  { cx: 0.50, cy: 0.50, rx: 0.20, ry: 0.08 },
+  signal:    { cx: 0.50, cy: 0.32, rx: 0.13, ry: 0.06 },
+  radar:     { cx: 0.50, cy: 0.45, rx: 0.13, ry: 0.06 },
+  neuron:    { cx: 0.50, cy: 0.50, rx: 0.15, ry: 0.07 },
+  plasma:    { cx: 0.50, cy: 0.50, rx: 0.15, ry: 0.07 },
+  crystal:   { cx: 0.50, cy: 0.50, rx: 0.13, ry: 0.06 },
 }
 
 // hex → rgba string
@@ -629,10 +642,12 @@ const DRAW_MAP: Record<PetType, DrawFn> = {
 }
 
 // ── КОМПОНЕНТ ─────────────────────────────────────────────────────────────────
-export default function PetCanvas({ type, variant, stage, size = 120 }: Props) {
+export default function PetCanvas({ type, variant, stage, size = 120, face }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animRef = useRef<number>(0)
   const tRef = useRef(0)
+  const faceRef = useRef(face)
+  faceRef.current = face
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -652,22 +667,39 @@ export default function PetCanvas({ type, variant, stage, size = 120 }: Props) {
     const C = isVirus ? def.colorVirus : def.color
     const w = size, h = size
 
+    function eraseFace(scale = 1, tx = 0, ty = 0) {
+      if (!faceRef.current) return
+      const fa = FACE_AREA[type]
+      ctx.save()
+      ctx.globalCompositeOperation = 'destination-out'
+      ctx.beginPath()
+      ctx.ellipse(
+        tx + fa.cx * w * scale,
+        ty + fa.cy * h * scale,
+        fa.rx * w * scale,
+        fa.ry * h * scale,
+        0, 0, Math.PI * 2,
+      )
+      ctx.fill()
+      ctx.restore()
+    }
+
     function animate() {
       const t = tRef.current
       ctx.clearRect(0, 0, w, h)
 
       if (stage === 'egg') {
         drawEgg(ctx, w / 2, h / 2, isVirus, C, t, size)
+      } else if (stage === 'baby') {
+        ctx.save()
+        ctx.translate(w * 0.1, h * 0.1)
+        ctx.scale(0.8, 0.8)
+        DRAW_MAP[type](ctx, w, h, t, isVirus, C)
+        ctx.restore()
+        eraseFace(0.8, w * 0.1, h * 0.1)
       } else {
-        if (stage === 'baby') {
-          ctx.save()
-          ctx.translate(w * 0.1, h * 0.1)
-          ctx.scale(0.8, 0.8)
-          DRAW_MAP[type](ctx, w, h, t, isVirus, C)
-          ctx.restore()
-        } else {
-          DRAW_MAP[type](ctx, w, h, t, isVirus, C)
-        }
+        DRAW_MAP[type](ctx, w, h, t, isVirus, C)
+        eraseFace()
       }
 
       tRef.current++
@@ -678,5 +710,34 @@ export default function PetCanvas({ type, variant, stage, size = 120 }: Props) {
     return () => { if (animRef.current) cancelAnimationFrame(animRef.current) }
   }, [type, variant, stage, size])
 
-  return <canvas ref={canvasRef} style={{ display: 'block' }} />
+  // Цвет kaomoji = цвет питомца
+  const def = getPetDef(type)
+  const C = variant === 'virus' ? def.colorVirus : def.color
+
+  // Позиционирование kaomoji над дыркой в canvas-е
+  const fa = FACE_AREA[type]
+  const scale = stage === 'baby' ? 0.8 : 1
+  const offset = stage === 'baby' ? 0.1 : 0
+  const cyPct = (offset + fa.cy * scale) * 100
+  const fontSize = Math.max(8, size * (stage === 'baby' ? 0.085 : 0.105))
+
+  return (
+    <div style={{ position: 'relative', display: 'inline-block', width: size, height: size }}>
+      <canvas ref={canvasRef} style={{ display: 'block' }} />
+      {face && stage !== 'egg' && (
+        <div style={{
+          position: 'absolute', left: '50%', top: `${cyPct}%`,
+          transform: 'translate(-50%, -50%)',
+          fontFamily: 'VT323, monospace', fontSize, color: C,
+          textShadow: `0 0 6px ${C}, 0 0 2px ${C}`,
+          letterSpacing: 0, whiteSpace: 'nowrap',
+          pointerEvents: 'none', userSelect: 'none',
+          transition: 'color 0.4s',
+          lineHeight: 1,
+        }}>
+          {face}
+        </div>
+      )}
+    </div>
+  )
 }
