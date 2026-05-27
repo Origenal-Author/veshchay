@@ -261,11 +261,11 @@ function formatCooldown(ms: number): string {
 
 // Лица питомцев — kaomoji в зависимости от настроения
 function moodFace(mood: string, isVirus: boolean): string {
-  if (mood === 'sleeping') return isVirus ? '(￣ρ￣)..zZ' : '(＿ ＿*)Zzz'
-  if (mood === 'happy')    return isVirus ? '◕‿◕'      : '─‿‿─'
-  if (mood === 'annoyed')  return isVirus ? '눈_눈'     : '￣ヘ￣'
-  if (mood === 'eating')   return isVirus ? '◔ᴥ◔'      : '￣﹃￣'
-  if (mood === 'hungry')   return isVirus ? 'ಠ╭╮ಠ'    : '￣﹃￣'
+  if (mood === 'sleeping') return isVirus ? '−ρ−' : '−ω−'
+  if (mood === 'happy')    return isVirus ? '◕‿◕' : '─‿‿─'
+  if (mood === 'annoyed')  return isVirus ? '눈_눈' : '￣ヘ￣'
+  if (mood === 'eating')   return isVirus ? '◔ᴥ◔' : '￣﹃￣'
+  if (mood === 'hungry')   return isVirus ? 'ಠ╭╮ಠ' : '￣﹃￣'
   return isVirus ? '·_·' : '°▽°'  // idle
 }
 

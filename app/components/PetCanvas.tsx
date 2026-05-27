@@ -708,7 +708,10 @@ export default function PetCanvas({ type, variant, stage, size = 120, face }: Pr
   const scale = stage === 'baby' ? 0.8 : 1
   const offset = stage === 'baby' ? 0.1 : 0
   const cyPct = (offset + fa.cy * scale) * 100
-  const fontSize = Math.max(10, size * (stage === 'baby' ? 0.11 : 0.14))
+  // Размер kaomoji: уменьшаем для длинных строк, чтобы они умещались в зоне лица питомца
+  const baseScale = stage === 'baby' ? 0.11 : 0.14
+  const charScale = face ? Math.min(1, 5 / Math.max(3, face.length)) : 1
+  const fontSize = Math.max(9, size * baseScale * charScale)
 
   return (
     <div style={{ position: 'relative', display: 'inline-block', width: size, height: size }}>
