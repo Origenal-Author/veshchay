@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=JetBrains+Mono:wght@300;400;500;700&family=Exo+2:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=JetBrains+Mono:wght@300;400;500;700&family=Exo+2:wght@300;400;500;600;700&family=VT323&display=swap');
 @import "tailwindcss";
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -571,10 +571,13 @@ body[data-weather="fog"] .site-header { background: rgba(7,10,14,0.90); }
   .video-grid { grid-template-columns: repeat(3, 1fr); gap: 12px; }
 }
 
-@media (max-width: 640px) {
+/* Гамбургер-меню — только на телефонах в портретной ориентации */
+@media (pointer: coarse) and (orientation: portrait) and (max-width: 640px) {
   .hide-mobile { display: none !important; }
   .show-mobile { display: initial !important; }
+}
 
+@media (max-width: 640px) {
   /* Страницы авторизации — убираем колонку с брендингом */
   .auth-layout {
     grid-template-columns: 1fr !important;

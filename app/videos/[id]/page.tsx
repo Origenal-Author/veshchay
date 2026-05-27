@@ -6,6 +6,7 @@ import Echoes from '@/app/components/Echoes'
 import ViewTracker from '@/app/components/ViewTracker'
 import AddToPlaylist from '@/app/components/AddToPlaylist'
 import VideoPlayer from '@/app/components/VideoPlayer'
+import VerifiedBadge from '@/app/components/VerifiedBadge'
 
 export default async function VideoPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -17,7 +18,7 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
 
   const { data: author } = await supabase
     .from('profiles')
-    .select('id, username, avatar_url, xp, rank')
+    .select('id, username, avatar_url, xp, rank, verified')
     .eq('id', video.user_id)
     .single()
 
@@ -112,8 +113,9 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
 
               {/* Инфо */}
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontFamily: "'Orbitron',monospace", fontSize: 13, fontWeight: 700, color: 'var(--text)', letterSpacing: 1 }}>
-                  @{author.username || 'аноним'}
+                <div style={{ fontFamily: "'Orbitron',monospace", fontSize: 13, fontWeight: 700, color: 'var(--text)', letterSpacing: 1, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span>@{author.username || 'аноним'}</span>
+                  {author.verified && <VerifiedBadge size={14} />}
                 </div>
                 <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 9, color: 'var(--accent)', letterSpacing: 2, marginTop: 3 }}>
                   {author.rank || 'СТАТИЧЕСКИЙ ШУМ'}

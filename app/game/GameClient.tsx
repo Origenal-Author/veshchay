@@ -301,6 +301,7 @@ function PetHabitat({ pet, onUpdate }: { pet: Pet; onUpdate: (p: Pet) => void })
 
   const pidRef = useRef(0)
   const poopTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const virusPetCountRef = useRef(0)
   const habitatRef = useRef<HTMLDivElement>(null)
 
   function handleCollapse() {
@@ -448,7 +449,9 @@ function PetHabitat({ pet, onUpdate }: { pet: Pet; onUpdate: (p: Pet) => void })
       const msgs = ['ОТСТАНЬ!', 'ГРР!!!', '❌ НЕТ', 'УЙДИ!!']
       addParticle(msgs[Math.floor(Math.random() * msgs.length)])
 
-      if (Math.random() < 0.3 && !poop) {
+      virusPetCountRef.current += 1
+      if (virusPetCountRef.current >= 5 && !poop) {
+        virusPetCountRef.current = 0
         setTimeout(() => {
           // Случайная позиция какашки
           const randomRight = `${10 + Math.random() * 55}%`
@@ -548,7 +551,7 @@ function PetHabitat({ pet, onUpdate }: { pet: Pet; onUpdate: (p: Pet) => void })
           <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 10, color: C, letterSpacing: 2, marginLeft: 8, flex: 1 }}>
             {collapsed
               ? (isVirus ? '// СВЁРНУТО //' : kodMsg ? `// ${kodMsg}` : '// СВЁРНУТО //')
-              : (isVirus ? '// ЗОНА ЗАРАЖЕНИЯ //' : '// ЦИФРОВОЕ ГНЕЗДО //')}
+              : (isVirus ? '// ЦИФРОВОЕ ГНЕЗДО :: ЗАРАЖЕНО //' : '// ЦИФРОВОЕ ГНЕЗДО //')}
           </div>
           {/* Стрелка expand для КОД */}
           {collapsed && !isVirus && (

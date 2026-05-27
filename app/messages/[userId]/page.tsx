@@ -18,8 +18,11 @@ export default async function ChatPage({ params }: { params: Promise<{ userId: s
   if (!fr) notFound()
 
   const { data: otherProfile } = await supabase
-    .from('profiles').select('id, username, avatar_url, rank').eq('id', otherId).single()
+    .from('profiles').select('id, username, avatar_url, rank, xp').eq('id', otherId).single()
   if (!otherProfile) notFound()
+
+  const { data: myProfile } = await supabase
+    .from('profiles').select('xp').eq('id', user.id).single()
 
   const { data: messages } = await supabase.from('messages').select('*')
     .or(`and(sender_id.eq.${user.id},receiver_id.eq.${otherId}),and(sender_id.eq.${otherId},receiver_id.eq.${user.id})`)
@@ -34,6 +37,8 @@ export default async function ChatPage({ params }: { params: Promise<{ userId: s
       currentUserId={user.id}
       otherId={otherId}
       otherProfile={otherProfile}
+      otherXp={otherProfile.xp ?? 0}
+      myXp={myProfile?.xp ?? 0}
       initialMessages={messages ?? []}
     />
   )

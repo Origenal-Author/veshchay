@@ -12,6 +12,7 @@ import AchievementsGrid from '@/app/components/AchievementsGrid'
 import AttackButton from '@/app/components/AttackButton'
 import ProfileGraffiti from '@/app/components/ProfileGraffiti'
 import { getPreset } from '@/lib/presetAvatars'
+import VerifiedBadge from '@/app/components/VerifiedBadge'
 
 const RANKS = [
   { xp: 0,     rank: 'СТАТИЧЕСКИЙ ШУМ',  color: '#8892B0' },
@@ -172,8 +173,9 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                 `// ${rankInfo.rank}`
               )}
             </div>
-            <h1 style={{ fontFamily: "'Orbitron',monospace", fontSize: 22, fontWeight: 900, color: 'var(--text)', marginBottom: 8 }}>
-              @{profile.username || 'аноним'}
+            <h1 style={{ fontFamily: "'Orbitron',monospace", fontSize: 22, fontWeight: 900, color: 'var(--text)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span>@{profile.username || 'аноним'}</span>
+              {profile.verified && <VerifiedBadge size={20} />}
             </h1>
             {profile.bio && <p style={{ fontFamily: "'Exo 2',sans-serif", fontSize: 14, color: 'var(--subtext)', lineHeight: 1.6 }}>{profile.bio}</p>}
           </div>

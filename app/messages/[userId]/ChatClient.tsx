@@ -6,16 +6,39 @@ import Link from 'next/link'
 type Message = { id: string; sender_id: string; receiver_id: string; content: string; read: boolean; created_at: string }
 type Profile = { id: string; username: string | null; avatar_url: string | null; rank: string | null }
 
+const RANK_COLORS: { xp: number; color: string }[] = [
+  { xp: 30000, color: '#FFFFFF' },
+  { xp: 15000, color: '#FF006E' },
+  { xp: 7500,  color: '#FF7B00' },
+  { xp: 4000,  color: '#FFB300' },
+  { xp: 2000,  color: '#9B10FF' },
+  { xp: 1000,  color: '#7AAED4' },
+  { xp: 500,   color: '#00FF88' },
+  { xp: 200,   color: '#00FFF0' },
+  { xp: 75,    color: '#64B5F6' },
+  { xp: 0,     color: '#8892B0' },
+]
+
+function rankColorByXp(xp: number) {
+  return RANK_COLORS.find(r => xp >= r.xp)?.color ?? '#8892B0'
+}
+
 function timeLabel(date: string) {
   return new Date(date).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
 }
 
-export default function ChatClient({ currentUserId, otherId, otherProfile, initialMessages }: {
+const PIXEL_FONT = "'VT323', 'Courier New', monospace"
+
+export default function ChatClient({ currentUserId, otherId, otherProfile, otherXp, myXp, initialMessages }: {
   currentUserId: string
   otherId: string
   otherProfile: Profile
+  otherXp: number
+  myXp: number
   initialMessages: Message[]
 }) {
+  const myColor = rankColorByXp(myXp)
+  const otherColor = rankColorByXp(otherXp)
   const [messages, setMessages] = useState<Message[]>(initialMessages)
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
@@ -106,14 +129,19 @@ export default function ChatClient({ currentUserId, otherId, otherProfile, initi
         )}
         {messages.map(m => {
           const isMine = m.sender_id === currentUserId
+          const c = isMine ? myColor : otherColor
           return (
             <div key={m.id} style={{ display: 'flex', justifyContent: isMine ? 'flex-end' : 'flex-start' }}>
               <div style={{
                 maxWidth: '60%', padding: '8px 12px', borderRadius: isMine ? '14px 14px 2px 14px' : '14px 14px 14px 2px',
-                background: isMine ? 'rgba(0,255,240,0.12)' : 'rgba(255,255,255,0.05)',
-                border: `1px solid ${isMine ? 'rgba(0,255,240,0.2)' : 'rgba(255,255,255,0.07)'}`,
+                background: isMine ? `rgba(${parseInt(c.slice(1,3),16)},${parseInt(c.slice(3,5),16)},${parseInt(c.slice(5,7),16)},0.10)` : 'rgba(255,255,255,0.05)',
+                border: `1px solid ${isMine ? c + '40' : 'rgba(255,255,255,0.07)'}`,
               }}>
-                <div style={{ fontFamily: "'Exo 2',sans-serif", fontSize: 13, color: 'var(--text)', lineHeight: 1.5, wordBreak: 'break-word' }}>
+                <div style={{
+                  fontFamily: PIXEL_FONT, fontSize: 20,
+                  color: c, lineHeight: 1.15, wordBreak: 'break-word',
+                  textShadow: `0 0 6px ${c}55`,
+                }}>
                   {m.content}
                 </div>
                 <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 7, color: 'var(--subtext)', marginTop: 2, textAlign: 'right', letterSpacing: 1, opacity: 0.6 }}>
@@ -141,8 +169,8 @@ export default function ChatClient({ currentUserId, otherId, otherProfile, initi
           style={{
             flex: 1, resize: 'none', background: 'var(--surface)',
             border: '1px solid var(--border)', borderRadius: 8,
-            color: 'var(--text)', fontFamily: "'Exo 2',sans-serif", fontSize: 13,
-            padding: '10px 14px', outline: 'none', lineHeight: 1.5,
+            color: myColor, fontFamily: PIXEL_FONT, fontSize: 20,
+            padding: '8px 14px', outline: 'none', lineHeight: 1.2,
           }}
         />
         <button

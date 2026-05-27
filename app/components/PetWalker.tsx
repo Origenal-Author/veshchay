@@ -201,14 +201,19 @@ export default function PetWalker({ pet, onReturn }: { pet: Pet; onReturn: () =>
       return
     }
 
-    // Медуза: sin-волна
+    const MARGIN = 80
+    const clamp = (v: number, max: number) => Math.max(MARGIN, Math.min(max - MARGIN, v))
+
+    // Медуза: sin-волна (с гарантией оставаться в видимой области)
     if (pet.type === 'jellyfish') {
       let t = 0
       const cx = W / 2, baseY = H / 2
+      const ampX = Math.min(W * 0.3, (W - MARGIN * 2) / 2)
+      const ampY = Math.min(H * 0.2, (H - MARGIN * 2) / 2)
       function tick() {
         t += 0.015
-        const x = cx + Math.sin(t * 0.7) * W * 0.3
-        const y = baseY + Math.sin(t) * H * 0.2
+        const x = clamp(cx + Math.sin(t * 0.7) * ampX, W)
+        const y = clamp(baseY + Math.sin(t) * ampY, H)
         posRef.current = { x, y }
         setPos({ x, y })
         rafRef.current = requestAnimationFrame(tick)
@@ -221,10 +226,12 @@ export default function PetWalker({ pet, onReturn }: { pet: Pet; onReturn: () =>
     if (pet.type === 'ghost' && !isVirus) {
       let t = 0
       const cx = W / 2, cy = H / 2
+      const ampX = Math.min(W * 0.35, (W - MARGIN * 2) / 2)
+      const ampY = Math.min(H * 0.3, (H - MARGIN * 2) / 2)
       function tick() {
         t += 0.008
-        const x = cx + Math.sin(t * 1.1) * W * 0.35
-        const y = cy + Math.sin(t * 0.8) * H * 0.3
+        const x = clamp(cx + Math.sin(t * 1.1) * ampX, W)
+        const y = clamp(cy + Math.sin(t * 0.8) * ampY, H)
         posRef.current = { x, y }
         setPos({ x, y })
         rafRef.current = requestAnimationFrame(tick)
@@ -238,8 +245,8 @@ export default function PetWalker({ pet, onReturn }: { pet: Pet; onReturn: () =>
       let t = 0
       function tick() {
         t += 0.01
-        const x = W * (0.2 + 0.6 * (0.5 + 0.5 * Math.sin(t)))
-        const y = H * (0.2 + 0.6 * (0.5 + 0.5 * Math.sin(t * 0.7 + 1)))
+        const x = clamp(W * (0.2 + 0.6 * (0.5 + 0.5 * Math.sin(t))), W)
+        const y = clamp(H * (0.2 + 0.6 * (0.5 + 0.5 * Math.sin(t * 0.7 + 1))), H)
         posRef.current = { x, y }
         setPos({ x, y })
         const id = trailId.current++
