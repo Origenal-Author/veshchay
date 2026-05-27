@@ -7,10 +7,12 @@ function hexToRgb(hex: string) {
   return `${parseInt(hex.slice(1,3),16)},${parseInt(hex.slice(3,5),16)},${parseInt(hex.slice(5,7),16)}`
 }
 
+// Все символы — ровно в центр квадрата, без поворота слоёв.
+// Пользовательский поворот (кнопка «повернуть») применяется отдельно к каждому символу.
 const LAYERS = [
-  { scale: 1.20, rotate: 0,   opacity: 0.30 },
-  { scale: 0.85, rotate: 30,  opacity: 0.55 },
-  { scale: 0.55, rotate: -15, opacity: 1.00 },
+  { scale: 1.20, rotate: 0, opacity: 0.30 },
+  { scale: 0.85, rotate: 0, opacity: 0.55 },
+  { scale: 0.55, rotate: 0, opacity: 1.00 },
 ]
 
 // Слой с одним символом, нарисованным на canvas с правильной геометрической
