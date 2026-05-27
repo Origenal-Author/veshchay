@@ -52,10 +52,13 @@ function SymbolLayer({ raw, layer, size, fontSize, color }: {
       const m = ctx.measureText(symbol)
       const ascent = m.actualBoundingBoxAscent ?? fontSize * 0.7
       const descent = m.actualBoundingBoxDescent ?? fontSize * 0.2
-      // Геометрический центр глифа = baselineY + (descent - ascent) / 2.
-      // Хотим, чтобы он попал в size/2, отсюда:
+      const bbLeft = m.actualBoundingBoxLeft ?? 0
+      const bbRight = m.actualBoundingBoxRight ?? 0
+      // ВЕРТИКАЛЬНО: центр глифа = baselineY + (descent - ascent)/2 → размещаем в size/2
       const baselineY = size / 2 + (ascent - descent) / 2
-      ctx.fillText(symbol, size / 2, baselineY)
+      // ГОРИЗОНТАЛЬНО (textAlign='center'): центр глифа = x + (bbRight - bbLeft)/2 → размещаем в size/2
+      const drawX = size / 2 + (bbLeft - bbRight) / 2
+      ctx.fillText(symbol, drawX, baselineY)
     }
 
     // Ждём готовности шрифтов перед рисованием
