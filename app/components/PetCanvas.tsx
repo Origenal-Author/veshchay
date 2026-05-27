@@ -9,19 +9,20 @@ interface Props {
   stage: PetStage
   size?: number
   face?: string  // если задан — стираем нарисованные глаза и показываем kaomoji DOM-overlay
+  crying?: boolean  // показать капающие слёзы из глаз
 }
 
-// Точная позиция центра «лица» питомца в относительных координатах (0..1).
-// Совпадает с тем, где исходный код рисует drawEyes для каждого типа.
-const FACE_AREA: Record<PetType, { cx: number; cy: number }> = {
-  jellyfish: { cx: 0.50, cy: 0.34 },
-  ghost:     { cx: 0.50, cy: 0.40 },
-  hologram:  { cx: 0.50, cy: 0.48 },
-  signal:    { cx: 0.50, cy: 0.31 },
-  radar:     { cx: 0.50, cy: 0.49 },
-  neuron:    { cx: 0.50, cy: 0.49 },
-  plasma:    { cx: 0.50, cy: 0.49 },
-  crystal:   { cx: 0.50, cy: 0.49 },
+// Точная позиция центра «лица» и расстояния между глазами в относительных координатах (0..1).
+// cy/cx — центр лица, eo — горизонтальный отступ от центра до каждого глаза.
+const FACE_AREA: Record<PetType, { cx: number; cy: number; eo: number }> = {
+  jellyfish: { cx: 0.50, cy: 0.34, eo: 0.073 },
+  ghost:     { cx: 0.50, cy: 0.40, eo: 0.093 },
+  hologram:  { cx: 0.50, cy: 0.48, eo: 0.082 },
+  signal:    { cx: 0.50, cy: 0.31, eo: 0.058 },
+  radar:     { cx: 0.50, cy: 0.49, eo: 0.037 },
+  neuron:    { cx: 0.50, cy: 0.49, eo: 0.060 },
+  plasma:    { cx: 0.50, cy: 0.49, eo: 0.070 },
+  crystal:   { cx: 0.50, cy: 0.49, eo: 0.056 },
 }
 
 // hex → rgba string
@@ -647,7 +648,7 @@ const DRAW_MAP: Record<PetType, DrawFn> = {
 }
 
 // ── КОМПОНЕНТ ─────────────────────────────────────────────────────────────────
-export default function PetCanvas({ type, variant, stage, size = 120, face }: Props) {
+export default function PetCanvas({ type, variant, stage, size = 120, face, crying }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animRef = useRef<number>(0)
   const tRef = useRef(0)
@@ -730,6 +731,33 @@ export default function PetCanvas({ type, variant, stage, size = 120, face }: Pr
           {face}
         </div>
       )}
+      {/* Слёзы из глаз */}
+      {crying && stage !== 'egg' && (() => {
+        const tearTop = (offset + (fa.cy + 0.02) * scale) * 100
+        const eoPct = fa.eo * scale * 100
+        const tearStyle: React.CSSProperties = {
+          position: 'absolute', top: `${tearTop}%`,
+          width: Math.max(4, size * 0.035), height: Math.max(7, size * 0.06),
+          background: 'linear-gradient(to bottom, rgba(91,206,250,0) 0%, rgba(91,206,250,0.85) 80%, rgba(91,206,250,1) 100%)',
+          borderRadius: '50% 50% 50% 50% / 40% 40% 60% 60%',
+          filter: 'drop-shadow(0 0 4px #5BCEFA)',
+          pointerEvents: 'none',
+        }
+        return (
+          <>
+            <div style={{
+              ...tearStyle,
+              left: `calc(50% - ${eoPct}% - ${Math.max(2, size * 0.018)}px)`,
+              animation: 'petTearFall 1.6s ease-in infinite',
+            }} />
+            <div style={{
+              ...tearStyle,
+              left: `calc(50% + ${eoPct}% - ${Math.max(2, size * 0.018)}px)`,
+              animation: 'petTearFall 1.6s ease-in 0.5s infinite',
+            }} />
+          </>
+        )
+      })()}
     </div>
   )
 }

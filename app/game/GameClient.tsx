@@ -1030,7 +1030,7 @@ function PetHabitat({ pet, onUpdate, onDelete, onDesktopOpen }: {
           position: 'fixed', inset: 0, zIndex: 100000,
           background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)',
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          gap: 24, animation: isVirus ? 'shake 0.7s ease infinite' : 'none',
+          gap: 24,
         }}>
           {/* Крестик одуматься */}
           <button onClick={cancelDelete} title="Отменить" style={{
@@ -1038,46 +1038,50 @@ function PetHabitat({ pet, onUpdate, onDelete, onDesktopOpen }: {
             width: 36, height: 36, borderRadius: '50%',
             border: '1px solid var(--accent)', background: 'rgba(0,255,240,0.1)',
             color: 'var(--accent)', cursor: 'pointer', fontSize: 18,
+            zIndex: 2,
           }}>✕</button>
 
-          {/* Питомец смотрит на тебя */}
+          {/* Содержимое — трясётся только для вируса, фон остаётся статичным */}
           <div style={{
-            filter: 'grayscale(0.5) drop-shadow(0 0 20px rgba(255,0,110,0.4))',
-            animation: isVirus ? 'shake 0.3s ease infinite' : 'none',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24,
+            animation: isVirus ? 'shake 0.7s ease infinite' : 'none',
           }}>
-            <PetCanvas type={pet.type} variant={pet.variant} stage={pet.stage} size={140} />
-          </div>
-
-          {/* Слёзы для КОД */}
-          {!isVirus && (
-            <div style={{ display: 'flex', gap: 12, marginTop: -10, opacity: 0.8 }}>
-              <span style={{ fontSize: 18, animation: 'tearFall 1.5s ease-in-out infinite' }}>💧</span>
-              <span style={{ fontSize: 18, animation: 'tearFall 1.5s ease-in-out 0.4s infinite' }}>💧</span>
+            {/* Питомец смотрит на тебя — со слезами из глаз для КОД */}
+            <div style={{
+              filter: 'grayscale(0.5) drop-shadow(0 0 20px rgba(255,0,110,0.4))',
+            }}>
+              <PetCanvas
+                type={pet.type}
+                variant={pet.variant}
+                stage={pet.stage}
+                size={140}
+                crying={!isVirus}
+              />
             </div>
-          )}
 
-          {/* Прощальная фраза */}
-          <div style={{
-            fontFamily: 'Orbitron,monospace', fontSize: 18, letterSpacing: 2,
-            color: isVirus ? '#FF006E' : '#C0C8D0',
-            maxWidth: 360, textAlign: 'center', minHeight: 28,
-            textShadow: `0 0 12px ${isVirus ? '#FF006E' : 'rgba(0,255,240,0.4)'}`,
-            animation: 'fadeIn 0.6s ease',
-          }} key={farewellLine}>
-            «{farewellLine}»
-          </div>
-
-          {/* Прогресс-бар */}
-          <div style={{ width: 320, fontFamily: 'JetBrains Mono,monospace', textAlign: 'center' }}>
-            <div style={{ width: '100%', height: 6, background: 'rgba(255,255,255,0.06)', borderRadius: 3, overflow: 'hidden' }}>
-              <div style={{
-                width: `${deleteProgress}%`, height: '100%',
-                background: '#FF006E', boxShadow: '0 0 8px #FF006E',
-                transition: 'width 0.6s linear',
-              }} />
+            {/* Прощальная фраза */}
+            <div style={{
+              fontFamily: 'Orbitron,monospace', fontSize: 18, letterSpacing: 2,
+              color: isVirus ? '#FF006E' : '#C0C8D0',
+              maxWidth: 360, textAlign: 'center', minHeight: 28,
+              textShadow: `0 0 12px ${isVirus ? '#FF006E' : 'rgba(0,255,240,0.4)'}`,
+              animation: 'fadeIn 0.6s ease',
+            }} key={farewellLine}>
+              «{farewellLine}»
             </div>
-            <div style={{ fontSize: 10, color: '#506080', letterSpacing: 2, marginTop: 8 }}>
-              УДАЛЕНИЕ {Math.round(deleteProgress)}% · нажми ✕ если передумал
+
+            {/* Прогресс-бар */}
+            <div style={{ width: 320, fontFamily: 'JetBrains Mono,monospace', textAlign: 'center' }}>
+              <div style={{ width: '100%', height: 6, background: 'rgba(255,255,255,0.06)', borderRadius: 3, overflow: 'hidden' }}>
+                <div style={{
+                  width: `${deleteProgress}%`, height: '100%',
+                  background: '#FF006E', boxShadow: '0 0 8px #FF006E',
+                  transition: 'width 0.6s linear',
+                }} />
+              </div>
+              <div style={{ fontSize: 10, color: '#506080', letterSpacing: 2, marginTop: 8 }}>
+                УДАЛЕНИЕ {Math.round(deleteProgress)}% · нажми ✕ если передумал
+              </div>
             </div>
           </div>
         </div>
