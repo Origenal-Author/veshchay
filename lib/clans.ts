@@ -7,7 +7,24 @@ export const CLAN_ROLES = {
 
 export type ClanRole = keyof typeof CLAN_ROLES
 
-export const CLAN_SYMBOLS = ['◈','⬡','◆','▲','✦','⊕','⊗','◉','⬢','✧','★','⚡','☠','⊘','⊛','❖','◐','▣','⟁','⬟']
+export const CLAN_SYMBOLS = [
+  '◈','⬡','◆','▲','✦','⊕','⊗','◉','⬢','✧',
+  '★','☠','⊘','⊛','❖','◐','▣','⟁','⬟','⬣',
+  '⬨','◇','△','▽','◢','◣','✷','✶','✸','✺',
+  '⊞','⊠','⌬','⎔','◍','◌','◑','◒','⌖','⌘',
+  '☥','✠','⚙','⟐','⟢','⟣','⟴','⟆',
+]
+
+// Парсит "⬡:90" → { symbol: "⬡", rotation: 90 }. Просто "⬡" → rotation 0.
+export function parseClanSymbol(raw: string): { symbol: string; rotation: number } {
+  const [symbol, rotStr] = raw.split(':')
+  const rotation = rotStr ? Number(rotStr) || 0 : 0
+  return { symbol, rotation }
+}
+
+export function encodeClanSymbol(symbol: string, rotation: number): string {
+  return rotation ? `${symbol}:${rotation}` : symbol
+}
 
 export const CLAN_COLORS = [
   { label: 'СИГНАЛ',    value: '#00FFF0' },

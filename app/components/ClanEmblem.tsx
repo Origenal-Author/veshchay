@@ -1,3 +1,5 @@
+import { parseClanSymbol } from '@/lib/clans'
+
 function hexToRgb(hex: string) {
   return `${parseInt(hex.slice(1,3),16)},${parseInt(hex.slice(3,5),16)},${parseInt(hex.slice(5,7),16)}`
 }
@@ -23,13 +25,14 @@ export default function ClanEmblem({ symbols, color, size = 80 }: {
       boxShadow: `0 0 ${Math.round(size*0.4)}px rgba(${rgb},0.25)`,
       position: 'relative', flexShrink: 0, overflow: 'hidden',
     }}>
-      {symbols.map((s, i) => {
+      {symbols.map((raw, i) => {
         const layer = LAYERS[i] ?? LAYERS[2]
+        const { symbol, rotation } = parseClanSymbol(raw)
         return (
           <div key={i} style={{
             position: 'absolute',
             top: '50%', left: '50%',
-            transform: `translate(-50%, -50%) rotate(${layer.rotate}deg) scale(${layer.scale})`,
+            transform: `translate(-50%, -50%) rotate(${layer.rotate + rotation}deg) scale(${layer.scale})`,
             fontSize,
             color,
             opacity: layer.opacity,
@@ -37,7 +40,7 @@ export default function ClanEmblem({ symbols, color, size = 80 }: {
             userSelect: 'none',
             pointerEvents: 'none',
           }}>
-            {s}
+            {symbol}
           </div>
         )
       })}

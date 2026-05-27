@@ -815,26 +815,33 @@ function CrateIcon({ glowing }: { glowing?: boolean }) {
 }
 
 // ── ФЕЙКОВАЯ РЕКЛАМА ──────────────────────────────────────────────────────────
-const FAKE_ADS = [
-  {
-    title: '🎉 ПОЗДРАВЛЯЕМ!',
-    body: 'Вы стали 1 000 000-м посетителем!\nНажмите OK для получения СУПЕРПРИЗА',
-    pos: { left: '15%', top: '18%' },
-  },
-  {
-    title: '⚠ ОШИБКА СИСТЕМЫ',
-    body: 'Обнаружено 47 вирусов-паразитов!\nНемедленно скачайте ANTIPET_PRO.exe',
-    pos: { right: '12%', top: '25%' },
-  },
-  {
-    title: '🔥 ТОЛЬКО СЕГОДНЯ',
-    body: 'Скидка 999% на корм для питомца!\nПредложение истекает через 00:03',
-    pos: { left: '30%', bottom: '20%' },
-  },
+type FakeAd = { title: string; body: string; pos: React.CSSProperties }
+
+const FAKE_AD_POOL: FakeAd[] = [
+  { title: '🎉 ПОЗДРАВЛЯЕМ!', body: 'Вы стали 1 000 000-м посетителем!\nНажмите OK для получения СУПЕРПРИЗА', pos: { left: '15%', top: '18%' } },
+  { title: '⚠ ОШИБКА СИСТЕМЫ', body: 'Обнаружено 47 вирусов-паразитов!\nНемедленно скачайте ANTIPET_PRO.exe', pos: { right: '12%', top: '25%' } },
+  { title: '🔥 ТОЛЬКО СЕГОДНЯ', body: 'Скидка 999% на корм для питомца!\nПредложение истекает через 00:03', pos: { left: '30%', bottom: '20%' } },
+  { title: '💸 ВЫИГРЫШ', body: 'Вам начислено 50 000 ВЕЩБАКСОВ!\nЗаберите свой приз сейчас!', pos: { right: '20%', bottom: '25%' } },
+  { title: '🚨 ВНИМАНИЕ', body: 'Ваш аккаунт в опасности!\nСрочно введите пароль в это окно', pos: { left: '40%', top: '35%' } },
+  { title: '🌐 СЕТЬ', body: 'Подключение к ВЕЩАЙ.PRO+\nза 9.99/мес. Жми сюда!', pos: { left: '8%', bottom: '15%' } },
+  { title: '📡 СИГНАЛ', body: 'Найден новый сигнал в твоём районе!\nРасшифруй его за 1 клик', pos: { right: '8%', top: '40%' } },
+  { title: '🎁 ПОДАРОК', body: 'Тебе прислали кристалл редкости!\nЗабрать сейчас? [Y/Y]', pos: { left: '20%', top: '50%' } },
+  { title: '⚡ СРОЧНО!', body: 'Твой питомец требует внимания!\nКОРМИ ЕГО НЕМЕДЛЕННО', pos: { right: '15%', bottom: '12%' } },
+  { title: '🎬 ВИДЕО', body: '12 раз кликни сюда\nи получи редкое яйцо!', pos: { left: '45%', bottom: '30%' } },
+  { title: '👁 НАБЛЮДАТЕЛЬ', body: 'За тобой наблюдают 3 пользователя.\nУзнай кто — жми ОК', pos: { right: '35%', top: '18%' } },
+  { title: '☠ ВЗЛОМ', body: 'Твой пароль слили в сеть!\nСрочно введи новый прямо тут', pos: { left: '12%', top: '40%' } },
+  { title: '🐛 ПАРАЗИТ', body: 'В системе обнаружен жук-захватчик!\nЗапусти АНТИЖУК.exe', pos: { right: '10%', bottom: '40%' } },
+  { title: '🎰 КАЗИНО', body: 'Крути цифровой барабан!\nПервая попытка бесплатно', pos: { left: '50%', top: '20%' } },
+  { title: '📞 ВЫЗОВ', body: 'Тебе звонит АНТИВИРУС.\nОтветить? [ДА/ДА]', pos: { right: '25%', top: '50%' } },
 ]
 
+function pickFakeAds(): FakeAd[] {
+  return [...FAKE_AD_POOL].sort(() => Math.random() - 0.5).slice(0, 3)
+}
+
 function FakeAds({ onAllClosed }: { onAllClosed: () => void }) {
-  const [closed, setClosed] = useState([false, false, false])
+  const [ads] = useState<FakeAd[]>(() => pickFakeAds())
+  const [closed, setClosed] = useState<boolean[]>(() => [false, false, false])
 
   useEffect(() => {
     if (closed.every(Boolean)) onAllClosed()
@@ -842,7 +849,7 @@ function FakeAds({ onAllClosed }: { onAllClosed: () => void }) {
 
   return (
     <>
-      {FAKE_ADS.map((ad, i) => closed[i] ? null : (
+      {ads.map((ad, i) => closed[i] ? null : (
         <div key={i} style={{
           position: 'fixed', zIndex: 99992, width: 260,
           ...ad.pos as React.CSSProperties,

@@ -3,42 +3,57 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { CLAN_SYMBOLS, CLAN_COLORS } from '@/lib/clans'
+import { CLAN_SYMBOLS, CLAN_COLORS, encodeClanSymbol } from '@/lib/clans'
 import ClanEmblem from '@/app/components/ClanEmblem'
+
+type SymbolPick = { symbol: string; rotation: number }
+const ROTATIONS = [0, 90, 180, 270] as const
 
 export default function CreateClanPage() {
   const router = useRouter()
   const [name, setName] = useState('')
   const [tag, setTag] = useState('')
   const [description, setDescription] = useState('')
-  const [selectedSymbols, setSelectedSymbols] = useState<string[]>([])
+  const [picks, setPicks] = useState<SymbolPick[]>([])
   const [color, setColor] = useState('#00FFF0')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   function toggleSymbol(s: string) {
-    setSelectedSymbols(prev =>
-      prev.includes(s) ? prev.filter(x => x !== s) : prev.length < 3 ? [...prev, s] : prev
-    )
+    setPicks(prev => {
+      const exists = prev.findIndex(p => p.symbol === s)
+      if (exists >= 0) return prev.filter((_, i) => i !== exists)
+      if (prev.length >= 3) return prev
+      return [...prev, { symbol: s, rotation: 0 }]
+    })
+  }
+
+  function rotateSymbol(idx: number) {
+    setPicks(prev => prev.map((p, i) => i === idx
+      ? { ...p, rotation: ROTATIONS[(ROTATIONS.indexOf(p.rotation as typeof ROTATIONS[number]) + 1) % ROTATIONS.length] }
+      : p
+    ))
   }
 
   async function submit() {
-    if (!name.trim() || !tag.trim() || selectedSymbols.length === 0) {
+    if (!name.trim() || !tag.trim() || picks.length === 0) {
       setError('Заполни имя, тег и выбери хотя бы 1 символ')
       return
     }
     setLoading(true)
     setError(null)
+    const emblemSymbols = picks.map(p => encodeClanSymbol(p.symbol, p.rotation))
     const res = await fetch('/api/clans', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, tag, description, emblemSymbols: selectedSymbols, emblemColor: color }),
+      body: JSON.stringify({ name, tag, description, emblemSymbols, emblemColor: color }),
     })
     const data = await res.json()
     if (!res.ok) { setError(data.error); setLoading(false); return }
     router.push(`/clans/${data.clan.id}`)
   }
 
-  const emblemPreview = selectedSymbols.join('')
+  const previewSymbols = picks.map(p => encodeClanSymbol(p.symbol, p.rotation))
+  const selectedSet = new Set(picks.map(p => p.symbol))
 
   return (
     <div style={{ minHeight: '100vh', position: 'relative', zIndex: 2, paddingBottom: 60 }}>
@@ -56,7 +71,7 @@ export default function CreateClanPage() {
 
         {/* Превью эмблемы */}
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 32 }}>
-          <ClanEmblem symbols={selectedSymbols} color={color} size={100} />
+          <ClanEmblem symbols={previewSymbols} color={color} size={100} />
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -94,15 +109,37 @@ export default function CreateClanPage() {
               {CLAN_SYMBOLS.map(s => (
                 <button key={s} onClick={() => toggleSymbol(s)} style={{
                   width: 40, height: 40, borderRadius: 8, fontSize: 18,
-                  border: `1px solid ${selectedSymbols.includes(s) ? color : 'rgba(255,255,255,0.1)'}`,
-                  background: selectedSymbols.includes(s) ? `rgba(${hexToRgb(color)},0.15)` : 'var(--surface)',
-                  color: selectedSymbols.includes(s) ? color : 'var(--subtext)',
+                  border: `1px solid ${selectedSet.has(s) ? color : 'rgba(255,255,255,0.1)'}`,
+                  background: selectedSet.has(s) ? `rgba(${hexToRgb(color)},0.15)` : 'var(--surface)',
+                  color: selectedSet.has(s) ? color : 'var(--subtext)',
                   cursor: 'pointer', transition: 'all 0.15s',
-                  boxShadow: selectedSymbols.includes(s) ? `0 0 10px rgba(${hexToRgb(color)},0.3)` : 'none',
+                  boxShadow: selectedSet.has(s) ? `0 0 10px rgba(${hexToRgb(color)},0.3)` : 'none',
                 }}>{s}</button>
               ))}
             </div>
           </div>
+
+          {/* Поворот выбранных символов */}
+          {picks.length > 0 && (
+            <div>
+              <label style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 9, letterSpacing: 3, color: 'var(--accent)', display: 'block', marginBottom: 8 }}>// ПОВЕРНУТЬ СИМВОЛЫ (клик)</label>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {picks.map((p, i) => (
+                  <button key={i} onClick={() => rotateSymbol(i)} title={`Поворот: ${p.rotation}°`} style={{
+                    width: 52, height: 52, borderRadius: 8, fontSize: 22,
+                    border: `1px solid ${color}`,
+                    background: `rgba(${hexToRgb(color)},0.12)`,
+                    color, cursor: 'pointer', transition: 'transform 0.25s',
+                    boxShadow: `0 0 10px rgba(${hexToRgb(color)},0.3)`,
+                    transform: `rotate(${p.rotation}deg)`,
+                  }}>{p.symbol}</button>
+                ))}
+              </div>
+              <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 9, color: 'var(--subtext)', marginTop: 6, opacity: 0.7 }}>
+                Клик по символу — поворот на 90°
+              </div>
+            </div>
+          )}
 
           {/* Цвет */}
           <div>
