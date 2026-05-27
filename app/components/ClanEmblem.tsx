@@ -1,6 +1,6 @@
 'use client'
 
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { parseClanSymbol } from '@/lib/clans'
 
 function hexToRgb(hex: string) {
@@ -13,7 +13,71 @@ const LAYERS = [
   { scale: 0.55, rotate: -15, opacity: 1.00 },
 ]
 
-type Offset = { x: number; y: number }
+// Слой с одним символом, нарисованным на canvas с правильной геометрической
+// центровкой через measureText.actualBoundingBoxAscent/Descent.
+// CSS transform применяет поворот и масштаб слоя.
+function SymbolLayer({ raw, layer, size, fontSize, color }: {
+  raw: string
+  layer: { scale: number; rotate: number; opacity: number }
+  size: number
+  fontSize: number
+  color: string
+}) {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const { symbol, rotation } = parseClanSymbol(raw)
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    function draw() {
+      if (!canvas) return
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return
+      const dpr = window.devicePixelRatio || 1
+      canvas.width = size * dpr
+      canvas.height = size * dpr
+      canvas.style.width = `${size}px`
+      canvas.style.height = `${size}px`
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      ctx.clearRect(0, 0, size, size)
+
+      ctx.font = `${fontSize}px 'JetBrains Mono', monospace`
+      ctx.fillStyle = color
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'alphabetic'
+
+      const m = ctx.measureText(symbol)
+      const ascent = m.actualBoundingBoxAscent ?? fontSize * 0.7
+      const descent = m.actualBoundingBoxDescent ?? fontSize * 0.2
+      // Геометрический центр глифа = baselineY + (descent - ascent) / 2.
+      // Хотим, чтобы он попал в size/2, отсюда:
+      const baselineY = size / 2 + (ascent - descent) / 2
+      ctx.fillText(symbol, size / 2, baselineY)
+    }
+
+    // Ждём готовности шрифтов перед рисованием
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => requestAnimationFrame(draw))
+    } else {
+      draw()
+    }
+  }, [symbol, fontSize, size, color])
+
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{
+        position: 'absolute', inset: 0,
+        width: size, height: size,
+        opacity: layer.opacity,
+        transform: `rotate(${layer.rotate + rotation}deg) scale(${layer.scale})`,
+        transformOrigin: '50% 50%',
+        pointerEvents: 'none',
+      }}
+    />
+  )
+}
 
 export default function ClanEmblem({ symbols, color, size = 80 }: {
   symbols: string[]; color: string; size?: number
@@ -21,47 +85,6 @@ export default function ClanEmblem({ symbols, color, size = 80 }: {
   const rgb = hexToRgb(color)
   const radius = Math.round(size * 0.22)
   const fontSize = Math.round(size * 0.55)
-
-  const textRefs = useRef<(SVGTextElement | null)[]>([])
-  const [offsets, setOffsets] = useState<Offset[]>([])
-
-  // Измеряем реальный bbox каждого глифа после рендера и шрифта.
-  // Сдвигаем text так, чтобы геометрический центр bbox оказался в центре SVG.
-  useLayoutEffect(() => {
-    let cancelled = false
-
-    function measure() {
-      if (cancelled) return
-      const news: Offset[] = textRefs.current.map(el => {
-        if (!el) return { x: 0, y: 0 }
-        try {
-          const bbox = el.getBBox()
-          if (!bbox.width || !bbox.height) return { x: 0, y: 0 }
-          const cx = bbox.x + bbox.width / 2
-          const cy = bbox.y + bbox.height / 2
-          return { x: size / 2 - cx, y: size / 2 - cy }
-        } catch {
-          return { x: 0, y: 0 }
-        }
-      })
-      setOffsets(news)
-    }
-
-    // Ждём загрузки шрифтов перед измерением, иначе bbox даст значения fallback-шрифта.
-    if (typeof document !== 'undefined' && document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(() => {
-        // RAF чтобы дождаться следующего кадра когда шрифт точно применился
-        requestAnimationFrame(measure)
-      })
-    } else {
-      measure()
-    }
-
-    return () => { cancelled = true }
-  }, [symbols.join('|'), fontSize, size])
-
-  const cx = size / 2
-  const cy = size / 2
 
   return (
     <div style={{
@@ -71,42 +94,23 @@ export default function ClanEmblem({ symbols, color, size = 80 }: {
       boxShadow: `0 0 ${Math.round(size*0.4)}px rgba(${rgb},0.25)`,
       position: 'relative', flexShrink: 0, overflow: 'hidden',
     }}>
-      <svg
-        width={size} height={size}
-        viewBox={`0 0 ${size} ${size}`}
-        style={{ position: 'absolute', inset: 0, overflow: 'visible' }}
-      >
-        {symbols.map((raw, i) => {
-          const layer = LAYERS[i] ?? LAYERS[2]
-          const { symbol, rotation } = parseClanSymbol(raw)
-          const off = offsets[i] ?? { x: 0, y: 0 }
-          // SVG transform: scale и rotate вокруг центра (cx, cy) эмблемы
-          const transform = `rotate(${layer.rotate + rotation} ${cx} ${cy}) translate(${cx} ${cy}) scale(${layer.scale}) translate(${-cx} ${-cy})`
-          return (
-            <g key={`${i}-${symbol}-${rotation}`} transform={transform} opacity={layer.opacity}>
-              <text
-                ref={el => { textRefs.current[i] = el }}
-                x={cx + off.x}
-                y={cy + off.y}
-                textAnchor="middle"
-                dominantBaseline="central"
-                fontSize={fontSize}
-                fill={color}
-                style={{ userSelect: 'none' }}
-              >
-                {symbol}
-              </text>
-            </g>
-          )
-        })}
-        {symbols.length === 0 && (
-          <text
-            x={cx} y={cy}
-            textAnchor="middle" dominantBaseline="central"
-            fontSize={fontSize} fill={color} opacity={0.3}
-          >?</text>
-        )}
-      </svg>
+      {symbols.map((raw, i) => (
+        <SymbolLayer
+          key={`${i}-${raw}`}
+          raw={raw}
+          layer={LAYERS[i] ?? LAYERS[2]}
+          size={size}
+          fontSize={fontSize}
+          color={color}
+        />
+      ))}
+      {symbols.length === 0 && (
+        <div style={{
+          position: 'absolute', inset: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color, opacity: 0.3, fontSize, lineHeight: 1,
+        }}>?</div>
+      )}
     </div>
   )
 }
