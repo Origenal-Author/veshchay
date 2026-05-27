@@ -36,6 +36,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   { key: 'FEEDER',         name: 'КОРМИЛЕЦ',              description: 'Покормить питомца 10 раз',             category: 'pets',     icon: '🍖' },
   { key: 'JANITOR',        name: 'САНИТАР',               description: 'Раздавить 5 жуков',                   category: 'pets',     icon: '🐛' },
   { key: 'LEGEND',         name: 'ЛЕГЕНДА',               description: 'Получить питомца КРИСТАЛЛ',            category: 'pets',     icon: '💎' },
+  { key: 'LOST_FRIEND',    name: 'ПОТЕРЯ ДРУГА',          description: 'Потерять питомца',                     category: 'pets',     icon: '💔' },
 
   // Секретные
   { key: 'GHOST_SIGNAL',   name: 'ПРИЗРАК ЭФИРА',         description: 'Зайти на сайт в 3:00–4:00 ночи',      category: 'secret',   icon: '👻', secret: true },

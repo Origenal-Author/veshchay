@@ -550,6 +550,24 @@ body[data-weather="fog"] .site-header { background: rgba(7,10,14,0.90); }
   100% { transform: translateY(-26px) rotate(12deg); opacity: 0; }
 }
 
+@keyframes heartBreak {
+  0%   { transform: scale(0.4) rotate(0deg);   opacity: 0; }
+  30%  { transform: scale(1.4) rotate(-4deg);  opacity: 1; }
+  60%  { transform: scale(1.1) rotate(4deg);   opacity: 1; }
+  100% { transform: scale(1)   rotate(0deg);   opacity: 0.85; }
+}
+
+@keyframes tearFall {
+  0%   { transform: translateY(-6px); opacity: 0; }
+  30%  { opacity: 0.9; }
+  100% { transform: translateY(14px); opacity: 0; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
 @keyframes shake {
   0%,100% { transform: translateX(0) rotate(0); }
   15%      { transform: translateX(-10px) rotate(-1deg); }

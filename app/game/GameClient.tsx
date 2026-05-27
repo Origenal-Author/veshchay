@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import PetCanvas from '@/app/components/PetCanvas'
+import SnakeGame from '@/app/components/SnakeGame'
 import { checkAchievements } from '@/app/components/AchievementToast'
 import { getMaxPets } from '@/lib/xp'
 import {
@@ -251,6 +252,13 @@ const KIN_WORDS: Record<string, string[]> = {
 }
 const BAD_FOOD = ['яд', 'poison', 'мусор', 'null', 'error', 'delete', 'удали', 'токсин']
 
+function formatCooldown(ms: number): string {
+  const total = Math.max(0, Math.ceil(ms / 1000))
+  const m = Math.floor(total / 60)
+  const s = total % 60
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+}
+
 // Лица питомцев — kaomoji в зависимости от настроения
 function moodFace(mood: string, isVirus: boolean): string {
   if (mood === 'sleeping') return isVirus ? '(￣ρ￣)..zZ' : '(＿ ＿*)Zzz'
@@ -261,7 +269,12 @@ function moodFace(mood: string, isVirus: boolean): string {
   return isVirus ? '·_·' : '°▽°'  // idle
 }
 
-function PetHabitat({ pet, onUpdate }: { pet: Pet; onUpdate: (p: Pet) => void }) {
+function PetHabitat({ pet, onUpdate, onDelete, onDesktopOpen }: {
+  pet: Pet;
+  onUpdate: (p: Pet) => void;
+  onDelete: (id: string) => void;
+  onDesktopOpen: () => void;
+}) {
   const [walking, setWalking] = useState(false)
   const [sessionFeeds, setSessionFeeds] = useState(0)
   const [virusKinCount, setVirusKinCount] = useState(0)
@@ -306,6 +319,88 @@ function PetHabitat({ pet, onUpdate }: { pet: Pet; onUpdate: (p: Pet) => void })
   const [wakeClicks, setWakeClicks] = useState(0)
   const lastActivityRef = useRef(Date.now())
   const SLEEP_AFTER_MS = 90_000  // 90 секунд без активности → засыпает
+
+  // Удаление питомца (красная точка)
+  type DeleteStage = null | 'confirm' | 'deleting' | 'done'
+  const [deleteStage, setDeleteStage] = useState<DeleteStage>(null)
+  const [deleteProgress, setDeleteProgress] = useState(0)  // 0..100
+  const [farewellLine, setFarewellLine] = useState<string>('')
+  const deleteIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const deleteLineIvRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const KOD_FAREWELL = [
+    'Я люблю тебя...',
+    'буду скучать ─_─',
+    'надеюсь, мы весело провели время',
+    'почему?...',
+    'я был хорошим? ;_;',
+    'прощай, мой человек',
+    'не забывай меня...',
+    'спасибо за всё ♥',
+  ]
+  const VIRUS_FAREWELL = [
+    'ЗА ЧТО?!?!',
+    'Чудовище... 눈_눈',
+    'Я слишком прекрасен чтобы умирать!1!!',
+    'ТЫ ЕЩЁ ПОЖАЛЕЕШЬ',
+    'ПРЕДАТЕЛЬ!!!',
+    'НЕНАВИЖУ ТЕБЯ',
+    'Пошкодим в другой жизни',
+    'Прощай, придурок',
+  ]
+
+  function startDelete() {
+    setDeleteStage('deleting')
+    setDeleteProgress(0)
+    // Линия каждую ~7 сек, чтобы фразы успели читаться
+    const lines = isVirus ? VIRUS_FAREWELL : KOD_FAREWELL
+    let idx = 0
+    setFarewellLine(lines[0])
+    deleteLineIvRef.current = setInterval(() => {
+      idx = (idx + 1) % lines.length
+      setFarewellLine(lines[idx])
+    }, 7000)
+    // Прогресс 100% за 60 секунд → шаг каждые 600мс
+    const TICK = 600
+    deleteIntervalRef.current = setInterval(() => {
+      setDeleteProgress(prev => {
+        const next = prev + (100 / (60_000 / TICK))
+        if (next >= 100) {
+          if (deleteIntervalRef.current) clearInterval(deleteIntervalRef.current)
+          if (deleteLineIvRef.current) clearInterval(deleteLineIvRef.current)
+          finalizeDelete()
+          return 100
+        }
+        return next
+      })
+    }, TICK)
+  }
+
+  function cancelDelete() {
+    if (deleteIntervalRef.current) clearInterval(deleteIntervalRef.current)
+    if (deleteLineIvRef.current) clearInterval(deleteLineIvRef.current)
+    setDeleteStage(null)
+    setDeleteProgress(0)
+    setFarewellLine('')
+  }
+
+  async function finalizeDelete() {
+    setDeleteStage('done')
+    try {
+      const res = await fetch(`/api/pets/${pet.id}`, { method: 'DELETE' })
+      const data = await res.json()
+      if (data.achievementUnlocked) {
+        window.dispatchEvent(new CustomEvent('achievement-unlocked', { detail: { key: 'LOST_FRIEND' } }))
+      }
+    } catch { /* ignore */ }
+    // Анимация разбитого сердца ~3.5 сек → удалить из UI
+    setTimeout(() => onDelete(pet.id), 3500)
+  }
+
+  useEffect(() => () => {
+    if (deleteIntervalRef.current) clearInterval(deleteIntervalRef.current)
+    if (deleteLineIvRef.current) clearInterval(deleteLineIvRef.current)
+  }, [])
   const [poop, setPoop] = useState(false)
   const [poopPos, setPoopPos] = useState({ right: '22%', bottom: 14 })
   const [bugs, setBugs] = useState<number[]>([])
@@ -619,7 +714,17 @@ function PetHabitat({ pet, onUpdate }: { pet: Pet; onUpdate: (p: Pet) => void })
           borderBottom: `1px solid ${borderColor}`, background: 'rgba(6,6,18,0.6)',
         }}>
           <div style={{ display: 'flex', gap: 5 }}>
-            <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#FF5F56', opacity: 0.7 }} />
+            {/* Красная точка — удалить питомца */}
+            <button
+              onClick={() => setDeleteStage('confirm')}
+              title="Удалить питомца"
+              disabled={!!deleteStage}
+              style={{
+                width: 10, height: 10, borderRadius: '50%', background: '#FF5F56',
+                border: 'none', cursor: deleteStage ? 'default' : 'pointer', padding: 0, opacity: 0.85,
+                transition: 'opacity 0.2s, box-shadow 0.2s',
+              }}
+            />
             {/* Жёлтая точка — кнопка сворачивания */}
             <button
               onClick={collapsed ? handleOpen : handleCollapse}
@@ -630,7 +735,16 @@ function PetHabitat({ pet, onUpdate }: { pet: Pet; onUpdate: (p: Pet) => void })
                 transition: 'opacity 0.2s',
               }}
             />
-            <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#27C93F', opacity: 0.7 }} />
+            {/* Зелёная точка — открыть рабочий стол */}
+            <button
+              onClick={onDesktopOpen}
+              title="Открыть рабочий стол"
+              style={{
+                width: 10, height: 10, borderRadius: '50%', background: '#27C93F',
+                border: 'none', cursor: 'pointer', padding: 0, opacity: 0.85,
+                transition: 'opacity 0.2s',
+              }}
+            />
           </div>
           <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 10, color: C, letterSpacing: 2, marginLeft: 8, flex: 1 }}>
             {collapsed
@@ -879,6 +993,275 @@ function PetHabitat({ pet, onUpdate }: { pet: Pet; onUpdate: (p: Pet) => void })
       {bugs.map(id => (
         <BugRunner key={id} onSquash={() => setBugs(b => b.filter(x => x !== id))} />
       ))}
+
+      {/* МОДАЛКА УДАЛЕНИЯ ПИТОМЦА */}
+      {deleteStage === 'confirm' && (
+        <div onClick={cancelDelete} style={{
+          position: 'fixed', inset: 0, zIndex: 100000,
+          background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            maxWidth: 380, padding: 28, borderRadius: 12,
+            background: 'rgba(6,6,18,0.98)', border: '1px solid #FF006E',
+            boxShadow: '0 0 40px rgba(255,0,110,0.4)',
+            fontFamily: 'JetBrains Mono,monospace', textAlign: 'center',
+          }}>
+            <div style={{ fontSize: 36, marginBottom: 8 }}>⚠</div>
+            <div style={{ fontFamily: 'Orbitron,monospace', fontSize: 13, letterSpacing: 3, color: '#FF006E', marginBottom: 12 }}>
+              УДАЛИТЬ ПИТОМЦА?
+            </div>
+            <div style={{ fontSize: 12, color: '#C0C8D0', lineHeight: 1.6, marginBottom: 20 }}>
+              Ты точно уверен что хочешь этого?<br />
+              <span style={{ color: '#FF006E' }}>{getPetDef(pet.type).nameRu}</span> исчезнет навсегда.<br />
+              Новый слот откроется через 25 минут.
+            </div>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+              <button onClick={startDelete} style={{
+                padding: '10px 18px', borderRadius: 6, border: '1px solid #FF006E',
+                background: 'rgba(255,0,110,0.15)', color: '#FF006E',
+                fontFamily: 'Orbitron,monospace', fontSize: 10, letterSpacing: 2, cursor: 'pointer',
+              }}>ТОЧНО ДА</button>
+              <button onClick={cancelDelete} style={{
+                padding: '10px 18px', borderRadius: 6, border: '1px solid var(--accent)',
+                background: 'rgba(0,255,240,0.08)', color: 'var(--accent)',
+                fontFamily: 'Orbitron,monospace', fontSize: 10, letterSpacing: 2, cursor: 'pointer',
+              }}>ТОЧНО НЕТ</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* СЦЕНА УДАЛЕНИЯ — драматичная загрузка с возможностью отменить */}
+      {deleteStage === 'deleting' && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 100000,
+          background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          gap: 24, animation: isVirus ? 'shake 0.7s ease infinite' : 'none',
+        }}>
+          {/* Крестик одуматься */}
+          <button onClick={cancelDelete} title="Отменить" style={{
+            position: 'absolute', top: 20, right: 20,
+            width: 36, height: 36, borderRadius: '50%',
+            border: '1px solid var(--accent)', background: 'rgba(0,255,240,0.1)',
+            color: 'var(--accent)', cursor: 'pointer', fontSize: 18,
+          }}>✕</button>
+
+          {/* Питомец смотрит на тебя */}
+          <div style={{
+            filter: 'grayscale(0.5) drop-shadow(0 0 20px rgba(255,0,110,0.4))',
+            animation: isVirus ? 'shake 0.3s ease infinite' : 'none',
+          }}>
+            <PetCanvas type={pet.type} variant={pet.variant} stage={pet.stage} size={140} />
+          </div>
+
+          {/* Слёзы для КОД */}
+          {!isVirus && (
+            <div style={{ display: 'flex', gap: 12, marginTop: -10, opacity: 0.8 }}>
+              <span style={{ fontSize: 18, animation: 'tearFall 1.5s ease-in-out infinite' }}>💧</span>
+              <span style={{ fontSize: 18, animation: 'tearFall 1.5s ease-in-out 0.4s infinite' }}>💧</span>
+            </div>
+          )}
+
+          {/* Прощальная фраза */}
+          <div style={{
+            fontFamily: 'Orbitron,monospace', fontSize: 18, letterSpacing: 2,
+            color: isVirus ? '#FF006E' : '#C0C8D0',
+            maxWidth: 360, textAlign: 'center', minHeight: 28,
+            textShadow: `0 0 12px ${isVirus ? '#FF006E' : 'rgba(0,255,240,0.4)'}`,
+            animation: 'fadeIn 0.6s ease',
+          }} key={farewellLine}>
+            «{farewellLine}»
+          </div>
+
+          {/* Прогресс-бар */}
+          <div style={{ width: 320, fontFamily: 'JetBrains Mono,monospace', textAlign: 'center' }}>
+            <div style={{ width: '100%', height: 6, background: 'rgba(255,255,255,0.06)', borderRadius: 3, overflow: 'hidden' }}>
+              <div style={{
+                width: `${deleteProgress}%`, height: '100%',
+                background: '#FF006E', boxShadow: '0 0 8px #FF006E',
+                transition: 'width 0.6s linear',
+              }} />
+            </div>
+            <div style={{ fontSize: 10, color: '#506080', letterSpacing: 2, marginTop: 8 }}>
+              УДАЛЕНИЕ {Math.round(deleteProgress)}% · нажми ✕ если передумал
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* РАЗБИТОЕ СЕРДЦЕ — после удаления */}
+      {deleteStage === 'done' && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 100000,
+          background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 18,
+          animation: 'fadeIn 0.4s ease',
+        }}>
+          <div style={{
+            fontSize: 92,
+            animation: 'heartBreak 1.4s ease forwards',
+            filter: 'drop-shadow(0 0 30px rgba(255,0,110,0.6))',
+          }}>💔</div>
+          <div style={{
+            fontFamily: 'Orbitron,monospace', fontSize: 13, letterSpacing: 4, color: '#FF006E',
+            textShadow: '0 0 12px rgba(255,0,110,0.5)',
+          }}>{isVirus ? '// СГИНУЛ //' : '// ПОТЕРЯН //'}</div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── РАБОЧИЙ СТОЛ (зелёная кнопка) ─────────────────────────────────────────────
+const SECRET_FOLDERS = [
+  'СЕКРЕТНЫЕ ДАННЫЕ [Дисней]',
+  'СЕКРЕТНЫЕ ДАННЫЕ [РКН]',
+  'СЕКРЕТНЫЕ ДАННЫЕ [ЦРУ]',
+  'СЕКРЕТНЫЕ ДАННЫЕ [Yandex]',
+  'СЕКРЕТНЫЕ ДАННЫЕ [Google]',
+  'СЕКРЕТНЫЕ ДАННЫЕ [Mojang]',
+  'СЕКРЕТНЫЕ ДАННЫЕ [Telegram]',
+]
+
+const SECRET_CONTENTS = [
+  'mickey_mouse_real_face.jpg — корумпирован',
+  'list_of_banned_words.txt — 47ГБ',
+  'aliens_are_real.pdf — доступ запрещён',
+  'sergey_brin_basement.mp4 — поврежден',
+  'page_rank_v2.exe — нет лицензии',
+  'minecraft_dungeons_2.iso — leaked',
+  'pavel_durov_routine.json — зашифрован',
+]
+
+function DesktopWindow({ pet, onClose }: { pet: Pet; onClose: () => void }) {
+  const [open, setOpen] = useState<string | null>(null)
+  const [showSnake, setShowSnake] = useState(false)
+  const secretIdx = useRef(Math.floor(Math.random() * SECRET_FOLDERS.length))
+  const folderName = SECRET_FOLDERS[secretIdx.current]
+  const folderContent = SECRET_CONTENTS[secretIdx.current]
+
+  const ICONS = [
+    { id: 'computer', icon: '💻', label: 'МОЙ КОМПЬЮТЕР' },
+    { id: 'trash',    icon: '🗑',  label: 'МУСОРКА' },
+    { id: 'browser',  icon: '🌐', label: 'ВЕЩАЙ-БРАУЗЕР' },
+    { id: 'folder',   icon: '📁', label: folderName },
+    { id: 'mine',     icon: '⛏', label: 'МАЙНКРАФТ.EXE' },
+    { id: 'worm',     icon: '🪱', label: 'ЦИФРОВОЙ ЧЕРВЬ' },
+  ]
+
+  const DIALOGS: Record<string, { title: string; body: string }> = {
+    computer: { title: 'МОЙ КОМПЬЮТЕР', body: 'C:\\ ПИТОМЦЫ\\ — 8 ГБ свободно\nD:\\ ДАННЫЕ\\ — заражено\nE:\\ ВИРУСЫ\\ — 99% занято' },
+    trash:    { title: 'МУСОРКА', body: 'недокормленный_питомец.bin\nстарый_аватар.png\nкакашка_таракана.txt\n\n[ВОССТАНОВИТЬ?] [УДАЛИТЬ НАВСЕГДА?]' },
+    browser:  { title: 'ВЕЩАЙ-БРАУЗЕР', body: 'http://veshchay.local/\n\n[ОШИБКА]: антивирус заблокировал доступ.\n«Этот сайт пытается заразить вашего питомца!»' },
+    folder:   { title: folderName, body: folderContent + '\n\n[ДОСТУП ЗАПРЕЩЁН]\nЭй, ты не должен это видеть.' },
+    mine:     { title: 'МАЙНКРАФТ.EXE', body: 'Запуск пиратской версии...\n\n[ОШИБКА 137]: Mojang передал привет.\n«ты что, серьёзно?»' },
+  }
+
+  return (
+    <div onClick={onClose} style={{
+      position: 'fixed', inset: 0, zIndex: 100001,
+      background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
+    }}>
+      <div onClick={e => e.stopPropagation()} style={{
+        width: '100%', maxWidth: 720, height: '78vh', maxHeight: 560,
+        borderRadius: 12, border: '1px solid rgba(0,255,240,0.3)',
+        background: 'linear-gradient(180deg, #061525 0%, #0a1830 100%)',
+        boxShadow: '0 0 40px rgba(0,255,240,0.15)',
+        display: 'flex', flexDirection: 'column', overflow: 'hidden',
+        animation: 'fadeIn 0.3s ease',
+      }}>
+        {/* Шапка окна */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px',
+          borderBottom: '1px solid rgba(0,255,240,0.15)', background: 'rgba(6,6,18,0.6)',
+        }}>
+          <div style={{ display: 'flex', gap: 5 }}>
+            <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#FF5F56' }} />
+            <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#FFBD2E' }} />
+            <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#27C93F' }} />
+          </div>
+          <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 10, color: '#00FFF0', letterSpacing: 2, marginLeft: 8, flex: 1 }}>
+            // РАБОЧИЙ СТОЛ {getPetDef(pet.type).nameRu.toUpperCase()} //
+          </div>
+          <button onClick={onClose} style={{
+            background: 'rgba(255,0,110,0.15)', border: '1px solid #FF006E',
+            color: '#FF006E', width: 22, height: 22, borderRadius: 4, cursor: 'pointer', fontSize: 11,
+          }}>✕</button>
+        </div>
+
+        {/* Иконки */}
+        <div style={{ flex: 1, padding: 24, overflowY: 'auto', position: 'relative' }}>
+          {/* Фоновая сетка */}
+          <div style={{
+            position: 'absolute', inset: 0, pointerEvents: 'none',
+            backgroundImage: 'repeating-linear-gradient(0deg,transparent,transparent 22px,rgba(0,255,240,0.04) 22px,rgba(0,255,240,0.04) 23px),repeating-linear-gradient(90deg,transparent,transparent 22px,rgba(0,255,240,0.04) 22px,rgba(0,255,240,0.04) 23px)',
+          }} />
+          <div style={{
+            display: 'grid', gridTemplateColumns: 'repeat(auto-fill, 100px)',
+            gap: 14, position: 'relative', zIndex: 1,
+          }}>
+            {ICONS.map(it => (
+              <button key={it.id} onClick={() => it.id === 'worm' ? setShowSnake(true) : setOpen(it.id)} style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+                padding: 8, background: 'transparent', border: '1px solid transparent',
+                borderRadius: 6, cursor: 'pointer',
+              }} onMouseEnter={e => { e.currentTarget.style.border = '1px dashed rgba(0,255,240,0.3)'; e.currentTarget.style.background = 'rgba(0,255,240,0.05)' }}
+                 onMouseLeave={e => { e.currentTarget.style.border = '1px solid transparent'; e.currentTarget.style.background = 'transparent' }}>
+                <div style={{ fontSize: 40 }}>{it.icon}</div>
+                <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 9, color: '#C0C8D0', letterSpacing: 1, textAlign: 'center', lineHeight: 1.2 }}>
+                  {it.label}
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Statusbar */}
+        <div style={{
+          padding: '6px 14px', borderTop: '1px solid rgba(0,255,240,0.15)',
+          background: 'rgba(6,6,18,0.6)',
+          fontFamily: 'JetBrains Mono,monospace', fontSize: 9, color: '#506080', letterSpacing: 2,
+          display: 'flex', justifyContent: 'space-between',
+        }}>
+          <span>VESCHAY-OS v1.0 [aware build]</span>
+          <span>{new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}</span>
+        </div>
+
+        {/* Окно-диалог */}
+        {open && DIALOGS[open] && (
+          <div onClick={() => setOpen(null)} style={{
+            position: 'absolute', inset: 0, zIndex: 5, display: 'flex',
+            alignItems: 'center', justifyContent: 'center', padding: 20,
+            background: 'rgba(0,0,0,0.5)',
+          }}>
+            <div onClick={e => e.stopPropagation()} style={{
+              maxWidth: 360, padding: 18, borderRadius: 10,
+              background: 'rgba(13,13,26,0.99)', border: '1px solid #00FFF0',
+              boxShadow: '0 0 25px rgba(0,255,240,0.25)',
+            }}>
+              <div style={{ fontFamily: 'Orbitron,monospace', fontSize: 11, letterSpacing: 3, color: '#00FFF0', marginBottom: 10 }}>
+                {DIALOGS[open].title}
+              </div>
+              <pre style={{
+                fontFamily: 'JetBrains Mono,monospace', fontSize: 11, color: '#C0C8D0',
+                whiteSpace: 'pre-wrap', margin: 0, lineHeight: 1.7,
+              }}>{DIALOGS[open].body}</pre>
+              <button onClick={() => setOpen(null)} style={{
+                marginTop: 14, padding: '6px 14px', borderRadius: 4,
+                border: '1px solid #00FFF0', background: 'rgba(0,255,240,0.1)',
+                color: '#00FFF0', fontFamily: 'Orbitron,monospace', fontSize: 9,
+                letterSpacing: 2, cursor: 'pointer',
+              }}>OK</button>
+            </div>
+          </div>
+        )}
+
+        {/* Цифровой червь (SnakeGame в режиме «играй до посинения») */}
+        {showSnake && <SnakeGame onClose={() => setShowSnake(false)} />}
+      </div>
     </div>
   )
 }
@@ -1052,9 +1435,9 @@ function FakeAds({ onAllClosed }: { onAllClosed: () => void }) {
 type Phase = 'locked' | 'choose' | 'opening' | 'revealed' | 'manage'
 const BOX_LABELS = ['КОНТЕЙНЕР А', 'КОНТЕЙНЕР Б', 'КОНТЕЙНЕР В']
 
-interface Props { userId: string; xp: number; initialPets: Pet[] }
+interface Props { userId: string; xp: number; initialPets: Pet[]; petsUnlockAt?: string | null }
 
-export default function GameClient({ userId, xp, initialPets }: Props) {
+export default function GameClient({ userId, xp, initialPets, petsUnlockAt }: Props) {
   const [pets, setPets] = useState<Pet[]>(initialPets)
   const [activePet, setActivePet] = useState(0)
   const [phase, setPhase] = useState<Phase>(
@@ -1064,13 +1447,37 @@ export default function GameClient({ userId, xp, initialPets }: Props) {
   const [newPet, setNewPet] = useState<Pet | null>(null)
   const [loading, setLoading] = useState(false)
   const [claimError, setClaimError] = useState('')
+  const [unlockAt, setUnlockAt] = useState<string | null>(petsUnlockAt ?? null)
+  const [desktopOpen, setDesktopOpen] = useState(false)
+
+  // Тикающий счётчик cooldown
+  const [now, setNow] = useState(() => Date.now())
+  useEffect(() => {
+    if (!unlockAt) return
+    const iv = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(iv)
+  }, [unlockAt])
+  const cooldownMs = unlockAt ? Math.max(0, new Date(unlockAt).getTime() - now) : 0
+  const onCooldown = cooldownMs > 0
 
   function updatePet(updated: Pet) {
     setPets(prev => prev.map(p => p.id === updated.id ? updated : p))
   }
 
+  function removePet(id: string) {
+    setPets(prev => {
+      const next = prev.filter(p => p.id !== id)
+      if (activePet >= next.length) setActivePet(Math.max(0, next.length - 1))
+      if (next.length === 0) setPhase(xp < 500 ? 'locked' : 'choose')
+      return next
+    })
+    // Сразу обновляем cooldown локально
+    setUnlockAt(new Date(Date.now() + 25 * 60 * 1000).toISOString())
+  }
+
   async function handleBox(i: number) {
     if (phase !== 'choose' || loading) return
+    if (onCooldown) { setClaimError(`Подожди ${formatCooldown(cooldownMs)} перед следующим питомцем`); return }
     setSelected(i)
     setPhase('opening')
     setLoading(true)
@@ -1128,10 +1535,33 @@ export default function GameClient({ userId, xp, initialPets }: Props) {
       <div style={titleStyle}>ИНКУБАТОР</div>
       <div style={{ textAlign: 'center', marginBottom: 8 }}>
         <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 11, color: '#506080', letterSpacing: 2 }}>
-          // выбери один контейнер — внутри твой паразит //
+          {onCooldown
+            ? '// инкубатор остыл — нужно подождать //'
+            : '// выбери один контейнер — внутри твой паразит //'}
         </div>
       </div>
-      <div style={{ display: 'flex', justifyContent: 'center', gap: 32, marginTop: 60, flexWrap: 'wrap' }}>
+      {onCooldown && (
+        <div style={{
+          margin: '40px auto 0', maxWidth: 380, padding: 24, borderRadius: 12,
+          border: '1px solid rgba(255,0,110,0.25)', background: 'rgba(255,0,110,0.04)',
+          textAlign: 'center',
+        }}>
+          <div style={{ fontSize: 36, marginBottom: 6 }}>💔</div>
+          <div style={{ fontFamily: 'Orbitron,monospace', fontSize: 13, letterSpacing: 3, color: '#FF006E' }}>
+            ИНКУБАТОР ПЕРЕЗАПУСКАЕТСЯ
+          </div>
+          <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 24, color: '#E0E8F0', letterSpacing: 3, marginTop: 16 }}>
+            {formatCooldown(cooldownMs)}
+          </div>
+          <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 10, color: '#506080', marginTop: 10, letterSpacing: 1 }}>
+            следующий питомец появится через ↑
+          </div>
+        </div>
+      )}
+      <div style={{
+        display: onCooldown ? 'none' : 'flex',
+        justifyContent: 'center', gap: 32, marginTop: 60, flexWrap: 'wrap',
+      }}>
         {BOX_LABELS.map((label, i) => (
           <button key={i} onClick={() => handleBox(i)} style={boxStyle} className="game-box">
             <CrateIcon />
@@ -1243,7 +1673,8 @@ export default function GameClient({ userId, xp, initialPets }: Props) {
           <PetTabs pets={pets} active={activePet} onSelect={setActivePet} />
         )}
 
-        <PetHabitat key={currentPet.id} pet={currentPet} onUpdate={updatePet} />
+        <PetHabitat key={currentPet.id} pet={currentPet} onUpdate={updatePet} onDelete={removePet} onDesktopOpen={() => setDesktopOpen(true)} />
+        {desktopOpen && <DesktopWindow pet={currentPet} onClose={() => setDesktopOpen(false)} />}
 
         {/* Получить ещё питомца */}
         {canGetMore && (
@@ -1257,14 +1688,23 @@ export default function GameClient({ userId, xp, initialPets }: Props) {
                 {pets.length}/{maxPets} питомца · слот свободен
               </div>
               <div style={{ fontFamily: 'Exo 2,sans-serif', fontSize: 13, color: '#8892B0', lineHeight: 1.5 }}>
-                Предыдущий паразит вырос. Можешь завести ещё одного.
+                {onCooldown
+                  ? `Инкубатор перезапускается: ${formatCooldown(cooldownMs)}`
+                  : 'Предыдущий паразит вырос. Можешь завести ещё одного.'}
               </div>
             </div>
             <button
-              onClick={() => { setClaimError(''); setPhase('choose') }}
-              style={{ ...btnStyle, borderColor: '#00FFF0', color: '#00FFF0', boxShadow: '0 0 10px rgba(0,255,240,0.2)' }}
+              onClick={() => { if (!onCooldown) { setClaimError(''); setPhase('choose') } }}
+              disabled={onCooldown}
+              style={{
+                ...btnStyle,
+                borderColor: onCooldown ? '#3A4A5A' : '#00FFF0',
+                color: onCooldown ? '#3A4A5A' : '#00FFF0',
+                boxShadow: onCooldown ? 'none' : '0 0 10px rgba(0,255,240,0.2)',
+                cursor: onCooldown ? 'default' : 'pointer',
+              }}
             >
-              + ПОЛУЧИТЬ ЕЩЁ ПАРАЗИТА
+              {onCooldown ? `⏳ ${formatCooldown(cooldownMs)}` : '+ ПОЛУЧИТЬ ЕЩЁ ПАРАЗИТА'}
             </button>
           </div>
         )}

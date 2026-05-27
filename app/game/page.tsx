@@ -11,7 +11,7 @@ export default async function GamePage() {
   if (!user) redirect('/auth/login')
 
   const { data: profile } = await supabase
-    .from('profiles').select('xp, rank').eq('id', user.id).single()
+    .from('profiles').select('xp, rank, pets_unlock_at').eq('id', user.id).single()
 
   if (!profile) redirect('/')
 
@@ -31,6 +31,7 @@ export default async function GamePage() {
         userId={user.id}
         xp={profile.xp || 0}
         initialPets={(pets ?? []) as Pet[]}
+        petsUnlockAt={profile.pets_unlock_at ?? null}
       />
     </div>
   )
