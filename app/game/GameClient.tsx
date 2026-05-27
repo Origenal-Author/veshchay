@@ -178,7 +178,7 @@ function FloatingSymbols({ isVirus, C }: { isVirus: boolean; C: string }) {
 }
 
 // ── ИНФО ПИТОМЦА ──────────────────────────────────────────────────────────────
-function PetInfo({ pet }: { pet: Pet }) {
+function PetInfo({ pet, onRename }: { pet: Pet; onRename?: () => void }) {
   const def = getPetDef(pet.type)
   const isVirus = pet.variant === 'virus'
   const C = isVirus ? def.colorVirus : def.color
@@ -190,15 +190,41 @@ function PetInfo({ pet }: { pet: Pet }) {
 
   return (
     <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ fontFamily: 'Orbitron,monospace', fontSize: 18, letterSpacing: 4, color: C, textShadow: `0 0 12px ${C}` }}>
-          {def.nameRu}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ fontFamily: 'Orbitron,monospace', fontSize: pet.name ? 20 : 18, letterSpacing: pet.name ? 2 : 4, color: C, textShadow: `0 0 12px ${C}`, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {pet.name || def.nameRu}
+            </div>
+            {onRename && (
+              <button
+                onClick={onRename}
+                title={pet.name ? 'Изменить имя' : 'Дать имя'}
+                style={{
+                  background: 'none', border: `1px solid rgba(${hexToRgb(C)},0.4)`,
+                  color: C, cursor: 'pointer',
+                  width: 24, height: 24, borderRadius: 4,
+                  fontSize: 11, lineHeight: 1, padding: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  opacity: 0.7, transition: 'opacity 0.15s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.opacity = '1'}
+                onMouseLeave={e => e.currentTarget.style.opacity = '0.7'}
+              >✎</button>
+            )}
+          </div>
+          {pet.name && (
+            <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 9, color: '#506080', letterSpacing: 2, marginTop: 2 }}>
+              {def.nameRu}
+            </div>
+          )}
         </div>
         <span style={{
           fontFamily: 'Orbitron,monospace', fontSize: 9, letterSpacing: 3,
           color: rColor, border: `1px solid ${rColor}`,
           background: `rgba(${hexToRgb(rColor)},0.1)`,
           padding: '3px 10px', borderRadius: 4, boxShadow: `0 0 8px ${rGlow}`,
+          flexShrink: 0,
         }}>★ {def.rarityLabel}</span>
       </div>
 
@@ -320,6 +346,35 @@ function PetHabitat({ pet, onUpdate, onDelete, onDesktopOpen }: {
   const [wakeClicks, setWakeClicks] = useState(0)
   const lastActivityRef = useRef(Date.now())
   const SLEEP_AFTER_MS = 90_000  // 90 секунд без активности → засыпает
+
+  // Переименование питомца
+  const [renameMode, setRenameMode] = useState(false)
+  const [renameInput, setRenameInput] = useState('')
+  const [renameSaving, setRenameSaving] = useState(false)
+
+  function openRename() {
+    setRenameInput(pet.name ?? '')
+    setRenameMode(true)
+  }
+
+  async function saveRename(e: React.FormEvent) {
+    e.preventDefault()
+    if (renameSaving) return
+    setRenameSaving(true)
+    try {
+      const res = await fetch(`/api/pets/${pet.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: renameInput }),
+      })
+      const data = await res.json()
+      if (data.pet) {
+        onUpdate(data.pet)
+        setRenameMode(false)
+      }
+    } catch { /* ignore */ }
+    finally { setRenameSaving(false) }
+  }
 
   // Удаление питомца (красная точка)
   type DeleteStage = null | 'confirm' | 'deleting' | 'done'
@@ -1044,7 +1099,69 @@ function PetHabitat({ pet, onUpdate, onDelete, onDesktopOpen }: {
       )}
 
       {/* Инфо питомца */}
-      {!collapsed && <PetInfo pet={pet} />}
+      {!collapsed && <PetInfo pet={pet} onRename={pet.stage !== 'egg' ? openRename : undefined} />}
+
+      {/* МОДАЛКА ИМЕНИ */}
+      {renameMode && (
+        <div onClick={() => !renameSaving && setRenameMode(false)} style={{
+          position: 'fixed', inset: 0, zIndex: 99999,
+          background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
+        }}>
+          <form onClick={e => e.stopPropagation()} onSubmit={saveRename} style={{
+            width: '100%', maxWidth: 380, padding: 24, borderRadius: 12,
+            background: 'rgba(6,6,18,0.98)', border: `1px solid ${C}`,
+            boxShadow: `0 0 30px rgba(${isVirus ? '255,0,110' : '0,212,255'},0.35)`,
+            fontFamily: 'JetBrains Mono,monospace',
+            animation: 'fadeIn 0.3s ease',
+          }}>
+            <div style={{ fontFamily: 'Orbitron,monospace', fontSize: 11, letterSpacing: 3, color: C, marginBottom: 12 }}>
+              ✎ {pet.name ? 'ПЕРЕИМЕНОВАТЬ' : 'ДАТЬ ИМЯ'}
+            </div>
+            <input
+              autoFocus
+              value={renameInput}
+              onChange={e => setRenameInput(e.target.value)}
+              placeholder="имя питомца..."
+              maxLength={24}
+              disabled={renameSaving}
+              style={{
+                width: '100%', boxSizing: 'border-box',
+                background: `rgba(${hexToRgb(C)},0.06)`,
+                border: `1px solid ${C}`,
+                borderRadius: 8, padding: '10px 14px',
+                fontFamily: 'JetBrains Mono,monospace', fontSize: 14, color: '#E0E8F0',
+                outline: 'none', marginBottom: 14,
+              }}
+            />
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                type="submit" disabled={renameSaving}
+                style={{
+                  flex: 1, padding: '10px', borderRadius: 6, border: `1px solid ${C}`,
+                  background: `rgba(${hexToRgb(C)},0.18)`, color: C,
+                  fontFamily: 'Orbitron,monospace', fontSize: 10, letterSpacing: 2,
+                  cursor: renameSaving ? 'default' : 'pointer',
+                  opacity: renameSaving ? 0.5 : 1,
+                }}
+              >{renameSaving ? '...' : 'СОХРАНИТЬ'}</button>
+              <button
+                type="button" disabled={renameSaving}
+                onClick={() => setRenameMode(false)}
+                style={{
+                  padding: '10px 16px', borderRadius: 6, border: '1px solid #3A4A5A',
+                  background: 'rgba(255,255,255,0.04)', color: '#8892B0',
+                  fontFamily: 'Orbitron,monospace', fontSize: 10, letterSpacing: 2,
+                  cursor: renameSaving ? 'default' : 'pointer',
+                }}
+              >✕</button>
+            </div>
+            <div style={{ fontSize: 8, color: '#506080', marginTop: 10, letterSpacing: 1 }}>
+              макс. 24 символа · пустое = сбросить
+            </div>
+          </form>
+        </div>
+      )}
 
       {/* Фейковая реклама от злого вируса */}
       {showAds && <FakeAds onAllClosed={() => setShowAds(false)} />}
@@ -1411,8 +1528,8 @@ function PetTabs({ pets, active, onSelect }: { pets: Pet[]; active: number; onSe
           >
             <PetCanvas type={pet.type} variant={pet.variant} stage={pet.stage} size={36} />
             <div style={{ textAlign: 'left' }}>
-              <div style={{ fontFamily: 'Orbitron,monospace', fontSize: 9, letterSpacing: 2, color: C }}>
-                {def.nameRu}
+              <div style={{ fontFamily: 'Orbitron,monospace', fontSize: 9, letterSpacing: 2, color: C, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 120 }}>
+                {pet.name || def.nameRu}
               </div>
               <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 8, color: '#506080', letterSpacing: 1 }}>
                 {stageLabel[pet.stage]} · {isVirus ? 'ВИР' : 'КОД'}

@@ -45,3 +45,34 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }
 
   return NextResponse.json({ ok: true, unlockAt, achievementUnlocked })
 }
+
+// PATCH — обновить имя питомца
+export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }> }) {
+  const { id } = await ctx.params
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const body = await req.json().catch(() => null) as { name?: string | null } | null
+  if (body === null) return NextResponse.json({ error: 'Bad request' }, { status: 400 })
+
+  // Нормализуем имя
+  const rawName = (body.name ?? '').toString().trim()
+  if (rawName.length > 24) {
+    return NextResponse.json({ error: 'Имя слишком длинное (макс. 24)' }, { status: 400 })
+  }
+  const newName: string | null = rawName.length === 0 ? null : rawName
+
+  // Проверяем владение
+  const { data: pet } = await supabase
+    .from('pets').select('id, user_id').eq('id', id).single()
+  if (!pet || pet.user_id !== user.id) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  }
+
+  const { data: updated, error } = await serviceClient
+    .from('pets').update({ name: newName }).eq('id', id).select().single()
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  return NextResponse.json({ pet: updated })
+}
