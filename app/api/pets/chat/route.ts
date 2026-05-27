@@ -1,7 +1,11 @@
 import { createClient } from '@/lib/supabase-server'
 import { createClient as createSupabase } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
-import { buildSystemPrompt, instantReply } from '@/lib/petChat'
+import {
+  buildSystemPrompt, instantReply,
+  detectRude, pickChallenge, checkAnswer,
+  type Challenge,
+} from '@/lib/petChat'
 import type { Pet } from '@/lib/pets'
 
 const serviceClient = createSupabase(
@@ -71,7 +75,57 @@ export async function POST(req: Request) {
     .from('pets').select('*').eq('id', body.petId).eq('user_id', user.id).single()
   if (!pet) return NextResponse.json({ error: 'Pet not found' }, { status: 404 })
 
-  // Проверка на спам: сколько user-сообщений за последние SPAM_WINDOW_MS
+  const isVirus = pet.variant === 'virus'
+
+  // ─── ШАГ 1: Активный challenge от вируса ────────────────────────────────
+  // Если есть нерешённое задание — это ответ на него.
+  const { data: activeChallenge } = await serviceClient
+    .from('pet_challenges')
+    .select('*')
+    .eq('pet_id', body.petId)
+    .eq('user_id', user.id)
+    .eq('solved', false)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (activeChallenge) {
+    const challenge: Challenge = {
+      question: activeChallenge.question,
+      answers: activeChallenge.answers as string[],
+    }
+    if (checkAnswer(message, challenge)) {
+      // Правильно — снимаем блокировку
+      await serviceClient.from('pet_challenges')
+        .update({ solved: true }).eq('id', activeChallenge.id)
+      await serviceClient.from('pet_messages').insert([
+        { pet_id: body.petId, user_id: user.id, role: 'user', content: message },
+        { pet_id: body.petId, user_id: user.id, role: 'pet',  content: 'ладно, ты не такой тупой как казалось. говори дальше.' },
+      ])
+      return NextResponse.json({
+        reply: 'ладно, ты не такой тупой как казалось. говори дальше.',
+        mood: 'idle',
+        challengeResolved: true,
+      })
+    } else {
+      // Неправильно — продолжаем требовать
+      const wrongReplies = [
+        'нет. думай ещё.',
+        'мимо. попробуй снова.',
+        'нееет. совсем тупой?',
+        'не угадал. ещё попытка.',
+        'мимо тушкан. думай.',
+      ]
+      const r = wrongReplies[Math.floor(Math.random() * wrongReplies.length)]
+      return NextResponse.json({
+        reply: r,
+        mood: 'annoyed',
+        challenge: { question: activeChallenge.question },  // показать снова
+      })
+    }
+  }
+
+  // ─── ШАГ 2: Проверка на спам ─────────────────────────────────────────────
   const since = new Date(Date.now() - SPAM_WINDOW_MS).toISOString()
   const { count: recentCount } = await serviceClient
     .from('pet_messages')
@@ -81,17 +135,48 @@ export async function POST(req: Request) {
     .eq('role', 'user')
     .gte('created_at', since)
 
-  if ((recentCount ?? 0) >= SPAM_THRESHOLD) {
-    // Питомец устал
-    const tiredReplies = pet.variant === 'virus'
-      ? ['ОТВАЛИ Я УСТАЛ!', 'хватит спамить мне в мозги', 'я перегрелся, отстань на минуту']
-      : ['уф... я немного устал, давай позже', 'дай отдохнуть чуть-чуть', 'устал болтать, отдохну']
+  const isSpamming = (recentCount ?? 0) >= SPAM_THRESHOLD
+  const isRude = detectRude(message)
+
+  // ─── ШАГ 3: Вирус наказывает спамом/грубостью заданием ───────────────────
+  if (isVirus && (isRude || isSpamming)) {
+    const challenge = pickChallenge()
+    const { data: created } = await serviceClient.from('pet_challenges')
+      .insert({
+        pet_id: body.petId, user_id: user.id,
+        question: challenge.question, answers: challenge.answers,
+      })
+      .select().single()
+
+    const reasonReply = isRude
+      ? `так? иди учи уроки. реши и поговорим: ${challenge.question}`
+      : `достал спамить! решишь — продолжим: ${challenge.question}`
+
+    await serviceClient.from('pet_messages').insert([
+      { pet_id: body.petId, user_id: user.id, role: 'user', content: message },
+      { pet_id: body.petId, user_id: user.id, role: 'pet',  content: reasonReply },
+    ])
+
+    return NextResponse.json({
+      reply: reasonReply,
+      mood: 'annoyed',
+      challenge: { question: challenge.question, id: created?.id },
+    })
+  }
+
+  // ─── Усталость для КОД-питомца (вирус наказывает заданием выше) ──────────
+  if (isSpamming && !isVirus) {
+    const tiredReplies = [
+      'уф... я немного устал, давай позже',
+      'дай отдохнуть чуть-чуть',
+      'устал болтать, отдохну',
+    ]
     const tired = tiredReplies[Math.floor(Math.random() * tiredReplies.length)]
     return NextResponse.json({ reply: tired, mood: 'sleeping', tired: true, tiredUntilMs: TIRED_DURATION_MS })
   }
 
   // Мгновенный ответ на мяу/гав без обращения к LLM
-  const instant = instantReply(message, pet.variant === 'virus')
+  const instant = instantReply(message, isVirus)
   if (instant) {
     await serviceClient.from('pet_messages').insert([
       { pet_id: body.petId, user_id: user.id, role: 'user', content: message },
@@ -142,7 +227,7 @@ export async function POST(req: Request) {
   // Определяем mood для UI (для разнообразия)
   const lower = reply.toLowerCase()
   let mood: 'happy' | 'annoyed' | 'idle' = 'idle'
-  if (pet.variant === 'virus') {
+  if (isVirus) {
     mood = /[!?]{2,}|отвал|тупой|придурок|дебил|бесит|отстань/i.test(reply) ? 'annoyed' : 'idle'
   } else {
     mood = /спасибо|круто|здорово|интересно|приятно|рад/i.test(lower) ? 'happy' : 'idle'

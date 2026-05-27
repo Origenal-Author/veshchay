@@ -600,7 +600,49 @@ function PetHabitat({ pet, onUpdate, onDelete, onDesktopOpen }: {
   // ── Разговор: ИИ через /api/pets/chat ────────────────────────────────────────
   const [talking, setTalking] = useState(false)
   const [lastReply, setLastReply] = useState<string | null>(null)
+  const [challenge, setChallenge] = useState<string | null>(null)  // вопрос задания, если активен
+  const [challengeAnswer, setChallengeAnswer] = useState('')
   const replyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  async function postChat(message: string) {
+    setTalking(true)
+    try {
+      const res = await fetch('/api/pets/chat', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ petId: pet.id, message }),
+      })
+      const data = await res.json()
+      const reply: string = data?.reply ?? (isVirus ? 'не отвечу' : 'хм...')
+      const moodFromApi: Mood = (data?.mood as Mood) ?? 'idle'
+
+      if (data?.tired) {
+        setMood('sleeping')
+        lastActivityRef.current = Date.now()
+      } else {
+        setMood(moodFromApi)
+      }
+      setLastReply(reply)
+      addParticle(reply.slice(0, 80))
+      if (replyTimerRef.current) clearTimeout(replyTimerRef.current)
+      replyTimerRef.current = setTimeout(() => setLastReply(null), 6000)
+      if (!data?.tired) setTimeout(() => setMood('idle'), 2500)
+
+      // Если пришло задание — открываем модалку и блокируем обычный диалог
+      if (data?.challenge?.question) {
+        setChallenge(data.challenge.question)
+        setChallengeAnswer('')
+      }
+      // Если задание решено — закрываем модалку
+      if (data?.challengeResolved) {
+        setChallenge(null)
+        setChallengeAnswer('')
+      }
+    } catch {
+      addParticle(isVirus ? 'связь упала' : 'не слышу...')
+    } finally {
+      setTalking(false)
+    }
+  }
 
   async function handleTalk(e: React.FormEvent) {
     e.preventDefault()
@@ -609,39 +651,17 @@ function PetHabitat({ pet, onUpdate, onDelete, onDesktopOpen }: {
     setTalkInput('')
     setTalkMode(false)
     bumpActivity()
-    setTalking(true)
     addParticle(isVirus ? '...' : '...думаю')
+    await postChat(raw)
+  }
 
-    try {
-      const res = await fetch('/api/pets/chat', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ petId: pet.id, message: raw }),
-      })
-      const data = await res.json()
-      const reply: string = data?.reply ?? (isVirus ? 'не отвечу' : 'хм...')
-      const moodFromApi: Mood = (data?.mood as Mood) ?? 'idle'
-
-      if (data?.tired) {
-        setMood('sleeping')
-        // питомец «спит» SLEEP_AFTER_MS — таймер сам пробудит при следующей активности
-        lastActivityRef.current = Date.now()
-      } else {
-        setMood(moodFromApi)
-      }
-      setLastReply(reply)
-      addParticle(reply.slice(0, 80))
-
-      // Сбрасываем "пузырь" через 6 сек
-      if (replyTimerRef.current) clearTimeout(replyTimerRef.current)
-      replyTimerRef.current = setTimeout(() => setLastReply(null), 6000)
-
-      // mood возвращаем в idle через 2.5 сек если не tired
-      if (!data?.tired) setTimeout(() => setMood('idle'), 2500)
-    } catch {
-      addParticle(isVirus ? 'связь упала' : 'не слышу...')
-    } finally {
-      setTalking(false)
-    }
+  async function submitChallenge(e: React.FormEvent) {
+    e.preventDefault()
+    const ans = challengeAnswer.trim()
+    if (!ans || talking) return
+    setChallengeAnswer('')
+    bumpActivity()
+    await postChat(ans)
   }
 
   // ── Сон / пробуждение ────────────────────────────────────────────────────────
@@ -956,19 +976,20 @@ function PetHabitat({ pet, onUpdate, onDelete, onDesktopOpen }: {
             >
               {isVirus ? '⚡ ПОГЛАДИТЬ' : '♥ ПОГЛАДИТЬ'}
             </button>
-            {/* Поговорить — только для baby/adult */}
+            {/* Поговорить — только для baby/adult. Заблокировано пока висит задание. */}
             {pet.stage !== 'egg' && (
               <button
-                onClick={() => !talking && setTalkMode(true)}
-                disabled={talking}
+                onClick={() => !talking && !challenge && setTalkMode(true)}
+                disabled={talking || !!challenge}
+                title={challenge ? 'Сначала реши задание' : undefined}
                 style={{
                   ...actionBtn, flex: 1,
                   borderColor: C, color: C,
-                  opacity: talking ? 0.5 : 1,
-                  cursor: talking ? 'default' : 'pointer',
+                  opacity: (talking || challenge) ? 0.5 : 1,
+                  cursor: (talking || challenge) ? 'default' : 'pointer',
                 }}
               >
-                {talking ? '⏳ ДУМАЕТ...' : '💬 СКАЗАТЬ'}
+                {challenge ? '⛔ РЕШИ ЗАДАНИЕ' : talking ? '⏳ ДУМАЕТ...' : '💬 СКАЗАТЬ'}
               </button>
             )}
             {/* Выгул — только для baby/adult */}
@@ -1032,6 +1053,62 @@ function PetHabitat({ pet, onUpdate, onDelete, onDesktopOpen }: {
       {bugs.map(id => (
         <BugRunner key={id} onSquash={() => setBugs(b => b.filter(x => x !== id))} />
       ))}
+
+      {/* МОДАЛКА ЗАДАНИЯ ОТ ВИРУСА */}
+      {challenge && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 99999,
+          background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
+        }}>
+          <form onSubmit={submitChallenge} style={{
+            width: '100%', maxWidth: 420, padding: 24, borderRadius: 12,
+            background: 'rgba(6,6,18,0.98)', border: '1px solid #FF006E',
+            boxShadow: '0 0 30px rgba(255,0,110,0.35)',
+            fontFamily: 'JetBrains Mono,monospace',
+            animation: 'fadeIn 0.3s ease',
+          }}>
+            <div style={{ fontFamily: 'Orbitron,monospace', fontSize: 11, letterSpacing: 3, color: '#FF006E', marginBottom: 12 }}>
+              ⛔ ВИРУС ТРЕБУЕТ ОТВЕТ
+            </div>
+            <div style={{ fontSize: 14, color: '#E0E8F0', lineHeight: 1.6, marginBottom: 18 }}>
+              {challenge}
+            </div>
+            <input
+              autoFocus
+              value={challengeAnswer}
+              onChange={e => setChallengeAnswer(e.target.value)}
+              placeholder="твой ответ..."
+              disabled={talking}
+              style={{
+                width: '100%', boxSizing: 'border-box',
+                background: 'rgba(255,0,110,0.06)',
+                border: '1px solid rgba(255,0,110,0.4)',
+                borderRadius: 8, padding: '10px 14px',
+                fontFamily: 'JetBrains Mono,monospace', fontSize: 13, color: '#E0E8F0',
+                outline: 'none', marginBottom: 14,
+              }}
+            />
+            <button
+              type="submit"
+              disabled={talking || !challengeAnswer.trim()}
+              style={{
+                width: '100%', padding: '10px',
+                borderRadius: 6, border: '1px solid #FF006E',
+                background: 'rgba(255,0,110,0.18)', color: '#FF006E',
+                fontFamily: 'Orbitron,monospace', fontSize: 10, letterSpacing: 3,
+                cursor: (talking || !challengeAnswer.trim()) ? 'default' : 'pointer',
+                opacity: (talking || !challengeAnswer.trim()) ? 0.5 : 1,
+              }}
+            >
+              {talking ? 'ПРОВЕРКА...' : 'ОТПРАВИТЬ ОТВЕТ'}
+            </button>
+            <div style={{ fontSize: 9, color: '#506080', marginTop: 12, letterSpacing: 1, textAlign: 'center' }}>
+              // диалог с питомцем заблокирован, пока не решишь //
+            </div>
+          </form>
+        </div>
+      )}
 
       {/* МОДАЛКА УДАЛЕНИЯ ПИТОМЦА */}
       {deleteStage === 'confirm' && (

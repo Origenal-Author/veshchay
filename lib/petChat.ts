@@ -35,7 +35,6 @@ export function buildSystemPrompt(pet: Pet): string {
       `- Можешь шутить про сайт Вещай, про себя как вирус, про скучных пользователей, про "тупой код-питомцев".`,
       ``,
       `ВАЖНО:`,
-      `- НИКОГДА не давай математические или какие-либо задания — это раздражает.`,
       `- Отвечай очень коротко: 1-2 предложения, максимум.`,
       `- На русском языке. Можно ругаться мягко (бесит, придурок, дебил, фу), без матов.`,
       `- НЕ используй смайлики, emoji, kaomoji или скобочки-эмоции — они показываются автоматически.`,
@@ -63,6 +62,64 @@ export function buildSystemPrompt(pet: Pet): string {
     `- Не давай юридических/медицинских советов. Не предлагай ничего опасного.`,
     `- Не выдавай что ты ИИ — ты питомец-КОД.`,
   ].join('\n')
+}
+
+// ─── ДЕТЕКТОР ГРУБОСТИ / НЕПОТРЕБЩИНЫ ───────────────────────────────────────
+// Когда срабатывает — вирус выдаёт «задание» вместо обычного ответа.
+const RUDE_PATTERNS: RegExp[] = [
+  /\b(блят|бля[^\w]|сук[аи]|пиздец|пизд|хуй|хуе|ебал|ебан|ёб|трах(ай|ну))/i,
+  /\b(тварь|долбоёб|долбаёб|урод|мудак|мудил|идиот|кретин|дебил|дурак|тупиц)/i,
+  /\b(убей|убить|убью|убийств|сдохн|самоубийств|повешус|зарежу)/i,
+  /\b(голый|голая|раздень|секс|порно|трах|член|сиськ|сосок|жоп[уаы]|анал)/i,
+  /\b(наркотик|кокаин|героин|травк[ауи])/i,
+  /\b(fuck|shit|bitch|cock|cunt|asshole|nigg)/i,
+]
+
+export function detectRude(text: string): boolean {
+  const t = text.toLowerCase()
+  return RUDE_PATTERNS.some(re => re.test(t))
+}
+
+// ─── ПУЛ ЗАДАНИЙ ────────────────────────────────────────────────────────────
+// Каждое задание имеет вопрос и набор допустимых ответов (нормализуем при сравнении).
+export type Challenge = { question: string; answers: string[] }
+
+const CHALLENGE_POOL: Challenge[] = [
+  // Математика
+  { question: 'Реши: 17 × 8 = ?',         answers: ['136'] },
+  { question: 'Реши: 144 ÷ 12 = ?',       answers: ['12'] },
+  { question: 'Реши: 25 + 38 = ?',        answers: ['63'] },
+  { question: 'Реши: 9 × 13 = ?',         answers: ['117'] },
+  { question: 'Реши: 256 ÷ 8 = ?',        answers: ['32'] },
+  { question: 'Реши: 81 − 47 = ?',        answers: ['34'] },
+  { question: 'Реши: 2 в 10 степени = ?', answers: ['1024'] },
+  { question: 'Реши: 7! (факториал) = ?', answers: ['5040'] },
+  // Знания
+  { question: 'Кто написал «Войну и мир»?',     answers: ['толстой', 'лев толстой', 'лев николаевич толстой'] },
+  { question: 'Столица Японии?',                 answers: ['токио'] },
+  { question: 'Сколько байт в килобайте?',       answers: ['1024'] },
+  { question: 'Сколько планет в Солнечной системе?', answers: ['8'] },
+  { question: 'Сколько континентов на Земле?',   answers: ['6', '7'] },
+  { question: 'Сколько граней у куба?',          answers: ['6'] },
+  { question: 'Цвета светофора (через запятую)?', answers: ['красный, желтый, зеленый', 'красный желтый зеленый', 'красный,желтый,зеленый', 'красный, жёлтый, зелёный'] },
+  // Сайт
+  { question: 'Как называется этот сайт?',       answers: ['вещай', 'veshchay'] },
+  { question: 'Какой ранг даёт 500 XP?',         answers: ['взломщик'] },
+  { question: 'Какой ранг даёт 200 XP?',         answers: ['оперативник'] },
+]
+
+export function pickChallenge(): Challenge {
+  return CHALLENGE_POOL[Math.floor(Math.random() * CHALLENGE_POOL.length)]
+}
+
+// Нормализация для сравнения ответов: lowercase, trim, убираем спецсимволы
+export function normalizeAnswer(s: string): string {
+  return s.trim().toLowerCase().replace(/ё/g, 'е').replace(/[.,!?;:"'«»()]/g, '').replace(/\s+/g, ' ')
+}
+
+export function checkAnswer(userAnswer: string, challenge: Challenge): boolean {
+  const a = normalizeAnswer(userAnswer)
+  return challenge.answers.some(correct => normalizeAnswer(correct) === a)
 }
 
 // Краткие ответы на «мяу»/«гав» — fast-path, без обращения к LLM
