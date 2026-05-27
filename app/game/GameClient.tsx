@@ -597,36 +597,51 @@ function PetHabitat({ pet, onUpdate, onDelete, onDesktopOpen }: {
     addParticle('убрано ✓', -60)
   }
 
-  // ── Разговор: мяу/гав и общие реакции ────────────────────────────────────────
-  function handleTalk(e: React.FormEvent) {
+  // ── Разговор: ИИ через /api/pets/chat ────────────────────────────────────────
+  const [talking, setTalking] = useState(false)
+  const [lastReply, setLastReply] = useState<string | null>(null)
+  const replyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  async function handleTalk(e: React.FormEvent) {
     e.preventDefault()
-    const raw = talkInput.trim().toLowerCase()
-    if (!raw) return
+    const raw = talkInput.trim()
+    if (!raw || talking) return
     setTalkInput('')
     setTalkMode(false)
     bumpActivity()
+    setTalking(true)
+    addParticle(isVirus ? '...' : '...думаю')
 
-    // Мяу / гав
-    const isMew = /^м[яиа][ауво]+|^мя|^meow|^mew/.test(raw)
-    const isWoof = /^[гr]а[вы]|^гав|^woof|^bark|^аф+/.test(raw)
-    if (isMew) {
-      if (!isVirus) { setMood('happy'); addParticle('Мияу ˵◕ω◕˵', -20); addParticle('ня~ ня~', 30) }
-      else          { setMood('annoyed'); addParticle('гав? ◕ｪ◕'); addParticle('я не кот!') }
-      setTimeout(() => setMood('idle'), 1800)
-      return
+    try {
+      const res = await fetch('/api/pets/chat', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ petId: pet.id, message: raw }),
+      })
+      const data = await res.json()
+      const reply: string = data?.reply ?? (isVirus ? 'не отвечу' : 'хм...')
+      const moodFromApi: Mood = (data?.mood as Mood) ?? 'idle'
+
+      if (data?.tired) {
+        setMood('sleeping')
+        // питомец «спит» SLEEP_AFTER_MS — таймер сам пробудит при следующей активности
+        lastActivityRef.current = Date.now()
+      } else {
+        setMood(moodFromApi)
+      }
+      setLastReply(reply)
+      addParticle(reply.slice(0, 80))
+
+      // Сбрасываем "пузырь" через 6 сек
+      if (replyTimerRef.current) clearTimeout(replyTimerRef.current)
+      replyTimerRef.current = setTimeout(() => setLastReply(null), 6000)
+
+      // mood возвращаем в idle через 2.5 сек если не tired
+      if (!data?.tired) setTimeout(() => setMood('idle'), 2500)
+    } catch {
+      addParticle(isVirus ? 'связь упала' : 'не слышу...')
+    } finally {
+      setTalking(false)
     }
-    if (isWoof) {
-      if (!isVirus) { setMood('annoyed'); addParticle('э... мяу? ˵-ω-˵'); addParticle('я не пёс...') }
-      else          { setMood('happy'); addParticle('АВАФ! ◕ｪ◕', -20); addParticle('гр-гр-р!', 30) }
-      setTimeout(() => setMood('idle'), 1800)
-      return
-    }
-    // Общая реакция
-    const kodMsgs = ['что-что?', 'хм... ─‿‿─', 'не понимаю...', '*склоняет голову*', 'расскажи ещё']
-    const virusMsgs = ['отстань 눈_눈', 'и чо?', 'мне всё равно', 'скучно...', 'ты мне надоел']
-    setMood(isVirus ? 'annoyed' : 'happy')
-    addParticle((isVirus ? virusMsgs : kodMsgs)[Math.floor(Math.random() * 5)])
-    setTimeout(() => setMood('idle'), 1500)
   }
 
   // ── Сон / пробуждение ────────────────────────────────────────────────────────
@@ -944,10 +959,16 @@ function PetHabitat({ pet, onUpdate, onDelete, onDesktopOpen }: {
             {/* Поговорить — только для baby/adult */}
             {pet.stage !== 'egg' && (
               <button
-                onClick={() => setTalkMode(true)}
-                style={{ ...actionBtn, flex: 1, borderColor: C, color: C }}
+                onClick={() => !talking && setTalkMode(true)}
+                disabled={talking}
+                style={{
+                  ...actionBtn, flex: 1,
+                  borderColor: C, color: C,
+                  opacity: talking ? 0.5 : 1,
+                  cursor: talking ? 'default' : 'pointer',
+                }}
               >
-                💬 СКАЗАТЬ
+                {talking ? '⏳ ДУМАЕТ...' : '💬 СКАЗАТЬ'}
               </button>
             )}
             {/* Выгул — только для baby/adult */}
@@ -975,6 +996,31 @@ function PetHabitat({ pet, onUpdate, onDelete, onDesktopOpen }: {
         )}
       </div>
 
+
+      {/* Пузырь с полным ответом питомца */}
+      {lastReply && !collapsed && (
+        <div style={{
+          margin: '10px auto 0', maxWidth: 480, padding: '12px 16px',
+          borderRadius: 12, borderTopLeftRadius: 2,
+          border: `1px solid ${C}`,
+          background: `rgba(${isVirus ? '255,0,110' : '0,212,255'},0.06)`,
+          boxShadow: `0 0 12px rgba(${isVirus ? '255,0,110' : '0,212,255'},0.15)`,
+          fontFamily: "'Exo 2',sans-serif", fontSize: 14, color: C,
+          lineHeight: 1.5, position: 'relative',
+          animation: 'fadeIn 0.3s ease',
+        }}>
+          <div style={{
+            position: 'absolute', top: -6, left: 16, width: 10, height: 10,
+            background: `rgba(${isVirus ? '255,0,110' : '0,212,255'},0.06)`,
+            borderTop: `1px solid ${C}`, borderLeft: `1px solid ${C}`,
+            transform: 'rotate(45deg)',
+          }} />
+          <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 8, letterSpacing: 2, color: C, opacity: 0.5, marginBottom: 4 }}>
+            // {getPetDef(pet.type).nameRu.toUpperCase()}
+          </div>
+          {lastReply}
+        </div>
+      )}
 
       {/* Инфо питомца */}
       {!collapsed && <PetInfo pet={pet} />}
