@@ -29,7 +29,9 @@ async function callGroq(messages: GroqMessage[]): Promise<string> {
       model: 'llama-3.3-70b-versatile',
       messages,
       max_tokens: 120,
-      temperature: 0.85,
+      temperature: 0.95,
+      presence_penalty: 0.6,   // штраф за повтор тем/слов
+      frequency_penalty: 0.5,  // штраф за повторяющиеся фразы
     }),
   })
 
