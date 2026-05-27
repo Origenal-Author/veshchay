@@ -13,62 +13,7 @@ const LAYERS = [
   { scale: 0.55, rotate: -15, opacity: 1.00 },
 ]
 
-// Слой с одним символом: измеряем реальный bbox глифа после рендера
-// и корректируем позицию так, чтобы геометрический центр bbox совпал с центром SVG.
-function SymbolLayer({
-  symbol, rotation, size, fontSize, color, layer,
-}: {
-  symbol: string
-  rotation: number
-  size: number
-  fontSize: number
-  color: string
-  layer: { scale: number; rotate: number; opacity: number }
-}) {
-  const textRef = useRef<SVGTextElement>(null)
-  const [offset, setOffset] = useState({ x: 0, y: 0 })
-
-  useLayoutEffect(() => {
-    const el = textRef.current
-    if (!el) return
-    try {
-      const bbox = el.getBBox()
-      // Реальный центр глифа
-      const cx = bbox.x + bbox.width / 2
-      const cy = bbox.y + bbox.height / 2
-      // Хотим, чтобы он попал в (size/2, size/2)
-      setOffset({ x: size / 2 - cx, y: size / 2 - cy })
-    } catch { /* getBBox может бросить если не в DOM */ }
-  }, [symbol, fontSize, size])
-
-  return (
-    <svg
-      width={size} height={size}
-      viewBox={`0 0 ${size} ${size}`}
-      style={{
-        position: 'absolute', inset: 0,
-        opacity: layer.opacity,
-        pointerEvents: 'none',
-        transform: `rotate(${layer.rotate + rotation}deg) scale(${layer.scale})`,
-        transformOrigin: 'center center',
-        overflow: 'visible',
-      }}
-    >
-      <text
-        ref={textRef}
-        x={size / 2 + offset.x}
-        y={size / 2 + offset.y}
-        textAnchor="middle"
-        dominantBaseline="central"
-        fontSize={fontSize}
-        fill={color}
-        style={{ userSelect: 'none' }}
-      >
-        {symbol}
-      </text>
-    </svg>
-  )
-}
+type Offset = { x: number; y: number }
 
 export default function ClanEmblem({ symbols, color, size = 80 }: {
   symbols: string[]; color: string; size?: number
@@ -76,6 +21,47 @@ export default function ClanEmblem({ symbols, color, size = 80 }: {
   const rgb = hexToRgb(color)
   const radius = Math.round(size * 0.22)
   const fontSize = Math.round(size * 0.55)
+
+  const textRefs = useRef<(SVGTextElement | null)[]>([])
+  const [offsets, setOffsets] = useState<Offset[]>([])
+
+  // Измеряем реальный bbox каждого глифа после рендера и шрифта.
+  // Сдвигаем text так, чтобы геометрический центр bbox оказался в центре SVG.
+  useLayoutEffect(() => {
+    let cancelled = false
+
+    function measure() {
+      if (cancelled) return
+      const news: Offset[] = textRefs.current.map(el => {
+        if (!el) return { x: 0, y: 0 }
+        try {
+          const bbox = el.getBBox()
+          if (!bbox.width || !bbox.height) return { x: 0, y: 0 }
+          const cx = bbox.x + bbox.width / 2
+          const cy = bbox.y + bbox.height / 2
+          return { x: size / 2 - cx, y: size / 2 - cy }
+        } catch {
+          return { x: 0, y: 0 }
+        }
+      })
+      setOffsets(news)
+    }
+
+    // Ждём загрузки шрифтов перед измерением, иначе bbox даст значения fallback-шрифта.
+    if (typeof document !== 'undefined' && document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => {
+        // RAF чтобы дождаться следующего кадра когда шрифт точно применился
+        requestAnimationFrame(measure)
+      })
+    } else {
+      measure()
+    }
+
+    return () => { cancelled = true }
+  }, [symbols.join('|'), fontSize, size])
+
+  const cx = size / 2
+  const cy = size / 2
 
   return (
     <div style={{
@@ -85,26 +71,42 @@ export default function ClanEmblem({ symbols, color, size = 80 }: {
       boxShadow: `0 0 ${Math.round(size*0.4)}px rgba(${rgb},0.25)`,
       position: 'relative', flexShrink: 0, overflow: 'hidden',
     }}>
-      {symbols.map((raw, i) => {
-        const layer = LAYERS[i] ?? LAYERS[2]
-        const { symbol, rotation } = parseClanSymbol(raw)
-        return (
-          <SymbolLayer
-            key={`${i}-${symbol}-${rotation}`}
-            symbol={symbol}
-            rotation={rotation}
-            size={size}
-            fontSize={fontSize}
-            color={color}
-            layer={layer}
-          />
-        )
-      })}
-      {symbols.length === 0 && (
-        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ position: 'absolute', inset: 0, opacity: 0.3 }}>
-          <text x={size/2} y={size/2} textAnchor="middle" dominantBaseline="central" fontSize={fontSize} fill={color}>?</text>
-        </svg>
-      )}
+      <svg
+        width={size} height={size}
+        viewBox={`0 0 ${size} ${size}`}
+        style={{ position: 'absolute', inset: 0, overflow: 'visible' }}
+      >
+        {symbols.map((raw, i) => {
+          const layer = LAYERS[i] ?? LAYERS[2]
+          const { symbol, rotation } = parseClanSymbol(raw)
+          const off = offsets[i] ?? { x: 0, y: 0 }
+          // SVG transform: scale и rotate вокруг центра (cx, cy) эмблемы
+          const transform = `rotate(${layer.rotate + rotation} ${cx} ${cy}) translate(${cx} ${cy}) scale(${layer.scale}) translate(${-cx} ${-cy})`
+          return (
+            <g key={`${i}-${symbol}-${rotation}`} transform={transform} opacity={layer.opacity}>
+              <text
+                ref={el => { textRefs.current[i] = el }}
+                x={cx + off.x}
+                y={cy + off.y}
+                textAnchor="middle"
+                dominantBaseline="central"
+                fontSize={fontSize}
+                fill={color}
+                style={{ userSelect: 'none' }}
+              >
+                {symbol}
+              </text>
+            </g>
+          )
+        })}
+        {symbols.length === 0 && (
+          <text
+            x={cx} y={cy}
+            textAnchor="middle" dominantBaseline="central"
+            fontSize={fontSize} fill={color} opacity={0.3}
+          >?</text>
+        )}
+      </svg>
     </div>
   )
 }
