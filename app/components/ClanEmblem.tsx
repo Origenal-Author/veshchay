@@ -37,6 +37,40 @@ function SymbolLayer({ raw, layer, size, fontSize, color }: {
       const ctx = canvas.getContext('2d')
       if (!ctx) return
       const dpr = window.devicePixelRatio || 1
+      const PAD = Math.ceil(size * 0.3)  // запас по краям, чтобы глиф точно влез
+      const W = size + PAD * 2
+
+      // ─── 1. Pixel-scan через временный canvas ────────────────────────────
+      // Рисуем символ непрозрачным белым и сканируем альфу — находим точный bbox.
+      const tmp = document.createElement('canvas')
+      tmp.width = W * dpr
+      tmp.height = W * dpr
+      const tctx = tmp.getContext('2d')
+      if (!tctx) return
+      tctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      tctx.font = `${fontSize}px 'JetBrains Mono', monospace`
+      tctx.fillStyle = '#ffffff'
+      tctx.textAlign = 'left'
+      tctx.textBaseline = 'top'
+      // Рисуем в центре временного canvas с запасом
+      tctx.fillText(symbol, PAD, PAD)
+
+      const imageData = tctx.getImageData(0, 0, W * dpr, W * dpr).data
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity
+      const stride = W * dpr * 4
+      for (let y = 0; y < W * dpr; y++) {
+        const rowStart = y * stride
+        for (let x = 0; x < W * dpr; x++) {
+          if (imageData[rowStart + x * 4 + 3] > 0) {
+            if (x < minX) minX = x
+            if (x > maxX) maxX = x
+            if (y < minY) minY = y
+            if (y > maxY) maxY = y
+          }
+        }
+      }
+
+      // ─── 2. Рисуем настоящий canvas со смещением ─────────────────────────
       canvas.width = size * dpr
       canvas.height = size * dpr
       canvas.style.width = `${size}px`
@@ -46,19 +80,27 @@ function SymbolLayer({ raw, layer, size, fontSize, color }: {
 
       ctx.font = `${fontSize}px 'JetBrains Mono', monospace`
       ctx.fillStyle = color
-      ctx.textAlign = 'center'
-      ctx.textBaseline = 'alphabetic'
+      ctx.textAlign = 'left'
+      ctx.textBaseline = 'top'
 
-      const m = ctx.measureText(symbol)
-      const ascent = m.actualBoundingBoxAscent ?? fontSize * 0.7
-      const descent = m.actualBoundingBoxDescent ?? fontSize * 0.2
-      const bbLeft = m.actualBoundingBoxLeft ?? 0
-      const bbRight = m.actualBoundingBoxRight ?? 0
-      // ВЕРТИКАЛЬНО: центр глифа = baselineY + (descent - ascent)/2 → размещаем в size/2
-      const baselineY = size / 2 + (ascent - descent) / 2
-      // ГОРИЗОНТАЛЬНО (textAlign='center'): центр глифа = x + (bbRight - bbLeft)/2 → размещаем в size/2
-      const drawX = size / 2 + (bbLeft - bbRight) / 2
-      ctx.fillText(symbol, drawX, baselineY)
+      if (minX === Infinity) {
+        // глиф не нарисовался (например, отсутствует во шрифте) — просто в центр
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillText(symbol, size / 2, size / 2)
+        return
+      }
+
+      // Реальный пиксельный центр глифа в координатах временного canvas (css px)
+      const cxGlyph = ((minX + maxX) / 2) / dpr
+      const cyGlyph = ((minY + maxY) / 2) / dpr
+      // На временном canvas мы рисовали в (PAD, PAD).
+      // Чтобы получить координату рисования в основном canvas, в которой центр глифа = (size/2, size/2):
+      //   drawX = size/2 - (cxGlyph - PAD)
+      //   drawY = size/2 - (cyGlyph - PAD)
+      const drawX = size / 2 - (cxGlyph - PAD)
+      const drawY = size / 2 - (cyGlyph - PAD)
+      ctx.fillText(symbol, drawX, drawY)
     }
 
     // Ждём готовности шрифтов перед рисованием
