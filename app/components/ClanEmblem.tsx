@@ -29,26 +29,37 @@ export default function ClanEmblem({ symbols, color, size = 80 }: {
       {symbols.map((raw, i) => {
         const layer = LAYERS[i] ?? LAYERS[2]
         const { symbol, rotation } = parseClanSymbol(raw)
-        // Каждый слой — это квадрат на всю эмблему с символом, центрированным через flex.
-        // Это гарантирует, что разные unicode-глифы с разными baseline и метриками
-        // выравниваются по геометрическому центру, а не по своим внутренним координатам.
+        // SVG <text> с text-anchor="middle" и dominant-baseline="central"
+        // центрирует глиф по его геометрическому центру — независимо от baseline.
+        // CSS transform применяется к самому <svg> относительно его центра.
         return (
-          <div key={i} style={{
-            position: 'absolute', inset: 0,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            transform: `rotate(${layer.rotate + rotation}deg) scale(${layer.scale})`,
-            transformOrigin: 'center center',
-            color,
-            opacity: layer.opacity,
-            pointerEvents: 'none',
-            userSelect: 'none',
-          }}>
-            <span style={{ fontSize, lineHeight: 1, display: 'block' }}>{symbol}</span>
-          </div>
+          <svg key={i}
+            width={size} height={size}
+            viewBox={`0 0 ${size} ${size}`}
+            style={{
+              position: 'absolute', inset: 0,
+              opacity: layer.opacity,
+              pointerEvents: 'none',
+              transform: `rotate(${layer.rotate + rotation}deg) scale(${layer.scale})`,
+              transformOrigin: 'center center',
+            }}
+          >
+            <text
+              x={size/2} y={size/2}
+              textAnchor="middle" dominantBaseline="central"
+              fontSize={fontSize}
+              fill={color}
+              style={{ userSelect: 'none' }}
+            >
+              {symbol}
+            </text>
+          </svg>
         )
       })}
       {symbols.length === 0 && (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color, opacity: 0.3, fontSize, lineHeight: 1 }}>?</div>
+        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ position: 'absolute', inset: 0, opacity: 0.3 }}>
+          <text x={size/2} y={size/2} textAnchor="middle" dominantBaseline="central" fontSize={fontSize} fill={color}>?</text>
+        </svg>
       )}
     </div>
   )
