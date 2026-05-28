@@ -249,7 +249,6 @@ function drawHologram(ctx: CanvasRenderingContext2D, w: number, h: number, t: nu
   // Антенны
   ctx.save(); ctx.shadowColor = C; ctx.shadowBlur = 6
   ctx.strokeStyle = ca(C, 0.5); ctx.lineWidth = 1.5
-  const antLen = h * 0.16
   ;[[-bw * 0.4, -bh * 1.1, -bw * 0.6, -bh * 1.6], [bw * 0.4, -bh * 1.1, bw * 0.6, -bh * 1.6]].forEach(([x1, y1, x2, y2]) => {
     ctx.beginPath(); ctx.moveTo(cx + x1, cy + y1); ctx.lineTo(cx + x2, cy + y2); ctx.stroke()
     ctx.fillStyle = C; ctx.beginPath(); ctx.arc(cx + x2, cy + y2, 2.5, 0, Math.PI * 2); ctx.fill()
@@ -260,7 +259,7 @@ function drawHologram(ctx: CanvasRenderingContext2D, w: number, h: number, t: nu
   ctx.save(); ctx.font = `${Math.floor(h * 0.065)}px 'JetBrains Mono',monospace`
   ctx.fillStyle = ca(C, 0.3); ctx.textAlign = 'center'
   const codeLines = isVirus ? ['ER!', 'X0X', '!!X'] : ['010', '{}[]', '<>//']
-  const clipW = bw * 1.9, clipH = bh * 1.9
+  const clipH = bh * 1.9
   ctx.save()
   ctx.beginPath(); ctx.ellipse(cx, cy, bw, bh, 0, 0, Math.PI * 2); ctx.clip()
   const scrollY = (t * 0.4) % (clipH * 0.4)
