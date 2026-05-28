@@ -108,17 +108,30 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     updates.name = rawName.length === 0 ? null : rawName
   }
 
-  // Одежда — проверяем, что все ключи куплены пользователем
+  // Одежда — проверяем что куплено + совместимо со слотом
   if ('equipped' in body && Array.isArray(body.equipped)) {
-    const equipped = body.equipped.slice(0, 4)  // максимум 4 слота
+    const equipped = body.equipped.slice(0, 4)
     if (equipped.length > 0) {
       // Используем serviceClient — RLS на user_clothing блокирует authenticated
       const { data: owned } = await serviceClient
         .from('user_clothing').select('item_key').eq('user_id', user.id)
       const ownedSet = new Set((owned ?? []).map(r => r.item_key as string))
+
+      const { findClothing } = await import('@/lib/clothing')
+      const { PAW_POSITIONS } = await import('@/app/components/PetCanvas')
+
+      // Тип питомца для проверки paw-совместимости
+      const { data: petData } = await supabase
+        .from('pets').select('type').eq('id', id).single()
+      const petType = petData?.type as keyof typeof PAW_POSITIONS | undefined
+
       for (const key of equipped) {
         if (!ownedSet.has(key)) {
           return NextResponse.json({ error: `Не куплено: ${key}` }, { status: 400 })
+        }
+        const item = findClothing(key)
+        if (item?.slot === 'paw' && petType && PAW_POSITIONS[petType] === null) {
+          return NextResponse.json({ error: 'У этого питомца нет подходящей конечности' }, { status: 400 })
         }
       }
     }

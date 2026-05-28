@@ -29,10 +29,10 @@ const CLOTHING_POSITIONS: Record<string, { cx: number; cy: number; size: number 
 // null = у питомца нет подходящей конечности → браслет не доступен.
 // swing = добавляем CSS-анимацию покачивания (для гибких щупалец).
 export const PAW_POSITIONS: Record<PetType, { cx: number; cy: number; size: number; swing?: boolean } | null> = {
-  jellyfish: { cx: 0.38, cy: 0.74, size: 0.22, swing: true },
-  ghost:     { cx: 0.35, cy: 0.82, size: 0.22, swing: true },
-  hologram:  { cx: 0.28, cy: 0.22, size: 0.18 },
-  signal:    { cx: 0.30, cy: 0.62, size: 0.20, swing: true },
+  jellyfish: { cx: 0.36, cy: 0.66, size: 0.14, swing: true },   // ближе к телу, на щупальце
+  ghost:     { cx: 0.36, cy: 0.66, size: 0.14, swing: true },   // на хвосте, ближе к телу
+  hologram:  { cx: 0.26, cy: 0.20, size: 0.12 },                 // на антенне (уменьшено)
+  signal:    { cx: 0.28, cy: 0.50, size: 0.14, swing: true },   // на голове сбоку
   radar:     null,
   neuron:    null,
   plasma:    null,
