@@ -12,6 +12,7 @@ import NotificationBell from '@/app/components/NotificationBell'
 import MessagesIcon from '@/app/components/MessagesIcon'
 import HideOnMessages from '@/app/components/HideOnMessages'
 import IdleWormHost from '@/app/components/IdleWormHost'
+import OperatorsCounter from '@/app/components/OperatorsCounter'
 
 export const metadata: Metadata = {
   title: 'ВЕЩАЙ',
@@ -29,6 +30,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <DailyXP />
           <AchievementToast />
           <IdleWormHost />
+          <HideOnMessages>
+            <OperatorsCounter />
+          </HideOnMessages>
           <HideOnMessages>
             <InventoryPanel />
             <PetWalkerHost />
