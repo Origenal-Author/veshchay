@@ -16,11 +16,12 @@ interface Props {
 }
 
 // Координаты одежды относительно зоны питомца. Slot-based, не зависит от типа.
-// Все значения в долях от размера PetCanvas.
+// Большинство head-SVG имеют главную массу в нижней половине viewBox (y=20..75),
+// поэтому позиционируем по верху чтобы шапка/корона оказались НАД головой питомца.
 const CLOTHING_POSITIONS: Record<string, { cx: number; cy: number; size: number }> = {
-  head: { cx: 0.50, cy: 0.18, size: 0.55 },   // над головой/куполом
-  face: { cx: 0.50, cy: 0.42, size: 0.50 },   // на лице
-  neck: { cx: 0.50, cy: 0.65, size: 0.55 },   // на шее/основании
+  head: { cx: 0.50, cy: 0.05, size: 0.42 },   // над головой/куполом
+  face: { cx: 0.50, cy: 0.38, size: 0.42 },   // на лице
+  neck: { cx: 0.50, cy: 0.60, size: 0.50 },   // на шее/основании
   paw:  { cx: 0.50, cy: 0.82, size: 0.35 },   // нижний аксессуар
 }
 
@@ -730,7 +731,10 @@ export default function PetCanvas({ type, variant, stage, size = 120, face, cryi
     <div style={{
       position: 'relative', display: 'inline-block', width: size, height: size,
       filter: infected ? 'hue-rotate(280deg) saturate(1.4) brightness(1.05)' : undefined,
-      animation: infected ? 'infectedPulse 1.6s ease-in-out infinite' : undefined,
+      // Лёгкое покачивание питомца целиком — двигаются canvas + лицо + одежда вместе
+      animation: stage === 'egg'
+        ? undefined
+        : (infected ? 'infectedPulse 1.6s ease-in-out infinite' : 'petIdleFloat 3s ease-in-out infinite'),
     }}>
       <canvas ref={canvasRef} style={{ display: 'block' }} />
       {infected && (

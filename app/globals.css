@@ -570,6 +570,11 @@ body[data-weather="fog"] .site-header { background: rgba(7,10,14,0.90); }
   100% { transform: translateY(40px) scale(0.6); opacity: 0; }
 }
 
+@keyframes petIdleFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-4px); }
+}
+
 @keyframes infectedPulse {
   0%, 100% { transform: scale(1)    rotate(0deg); }
   25%      { transform: scale(1.02) rotate(0.5deg); }
