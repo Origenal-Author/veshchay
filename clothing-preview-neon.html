@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Одежда — neon финал</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #06060f;
+    color: #E0E8F0;
+    font-family: 'JetBrains Mono', Courier, monospace;
+    min-height: 100vh;
+    padding: 30px 20px;
+    background-image:
+      linear-gradient(rgba(0,255,240,0.03) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(0,255,240,0.03) 1px,transparent 1px);
+    background-size: 40px 40px;
+  }
+  h1 { color: #00FFF0; letter-spacing: 6px; text-align: center; margin-bottom: 8px; font-size: 22px; text-shadow: 0 0 14px rgba(0,255,240,0.5); }
+  .subtitle { text-align: center; color: #506080; letter-spacing: 3px; font-size: 11px; margin-bottom: 30px; }
+  .section-title {
+    color: #506080; letter-spacing: 4px; font-size: 12px;
+    margin: 32px auto 14px; text-align: center; max-width: 1200px;
+    border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    max-width: 1200px; margin: 0 auto;
+  }
+  .card {
+    background: rgba(13,13,26,0.7);
+    border: 1px solid rgba(0,255,240,0.15);
+    border-radius: 10px;
+    padding: 16px 12px;
+    text-align: center;
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+  }
+  .card:hover {
+    border-color: rgba(0,255,240,0.5);
+    box-shadow: 0 6px 24px rgba(0,255,240,0.15);
+    transform: translateY(-2px);
+  }
+  .canvas-wrap {
+    width: 160px; height: 160px;
+    margin: 0 auto 10px;
+    background: radial-gradient(circle at center, rgba(0,255,240,0.04), transparent 70%);
+    border: 1px dashed rgba(255,255,255,0.05);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .canvas-wrap svg { width: 132px; height: 132px; }
+  .name { color: #00FFF0; font-size: 11px; letter-spacing: 2px; margin-bottom: 6px; font-weight: bold; }
+  .meta { color: #506080; font-size: 9px; letter-spacing: 1.5px; margin-bottom: 6px; }
+  .price {
+    display: inline-block;
+    color: #FFD700;
+    font-size: 10px;
+    padding: 2px 8px;
+    border: 1px solid rgba(255,215,0,0.4);
+    border-radius: 3px;
+    margin-bottom: 6px;
+  }
+  .descr { color: #8892B0; font-size: 9.5px; line-height: 1.4; margin-top: 4px; }
+  #error { color:#FF006E; padding:20px; max-width:800px; margin:0 auto; white-space:pre-wrap; font-size:12px; }
+</style>
+</head>
+<body>
+
+<h1>NEON-ОДЕЖДА</h1>
+<div class="subtitle">// финальный стиль · векторный + glow //</div>
+
+<div id="error"></div>
+<div id="root"></div>
+
+<script>
+try {
+
+// Каждый предмет: имя, slot, стиль, цена, SVG-функция (содержимое внутри <svg viewBox="0 0 100 100">)
+const CLOTHING = [
+  // ─── ГОЛОВНЫЕ УБОРЫ ───
+  { name:'РОЗОВЫЙ БАНТИК', slot:'head', style:'cute', price:80, desc:'милый розовый бант', color:'#FF66CC',
+    svg: `<g stroke="#FF66CC" stroke-width="2.5" fill="rgba(255,102,204,0.22)" stroke-linejoin="round" filter="drop-shadow(0 0 8px #FF66CC)" vector-effect="non-scaling-stroke">
+      <!-- левое сердце: та же форма что в очках, повёрнута остриём к центру (вправо) -->
+      <g transform="translate(50 50) rotate(90) scale(1.5) translate(-30 -66)" vector-effect="non-scaling-stroke">
+        <path d="M30 66 C18 56 14 48 18 42 C22 36 28 38 30 44 C32 38 38 36 42 42 C46 48 42 56 30 66 Z"/>
+      </g>
+      <!-- правое сердце: зеркало -->
+      <g transform="translate(50 50) rotate(-90) scale(1.5) translate(-30 -66)" vector-effect="non-scaling-stroke">
+        <path d="M30 66 C18 56 14 48 18 42 C22 36 28 38 30 44 C32 38 38 36 42 42 C46 48 42 56 30 66 Z"/>
+      </g>
+    </g>`
+  },
+  { name:'КОРОНА', slot:'head', style:'royal', price:500, desc:'королевская корона', color:'#FFD700',
+    svg: `<g stroke="#FFD700" stroke-width="2.5" fill="rgba(255,215,0,0.2)" stroke-linejoin="round" filter="drop-shadow(0 0 10px #FFD700)">
+      <!-- корпус: 3 зубца с центральным самым высоким + плоское основание -->
+      <path d="M18 70 L22 50 L30 30 L40 50 L50 22 L60 50 L70 30 L78 50 L82 70 Z"/>
+      <!-- горизонтальная разделительная линия основания -->
+      <line x1="22" y1="50" x2="78" y2="50" stroke-width="1.5" opacity="0.7"/>
+      <!-- камни на вершинах зубцов -->
+      <circle cx="30" cy="30" r="2.5" fill="#00FFF0" stroke="none"/>
+      <circle cx="50" cy="22" r="3" fill="#FF006E" stroke="none"/>
+      <circle cx="70" cy="30" r="2.5" fill="#00FFF0" stroke="none"/>
+      <!-- декоративный камень в основании -->
+      <circle cx="50" cy="60" r="2.5" fill="#FF006E" stroke="#FFD700" stroke-width="1"/>
+    </g>`
+  },
+  { name:'ЦИЛИНДР', slot:'head', style:'cool', price:200, desc:'аристократичный цилиндр', color:'#00FFF0',
+    svg: `<g filter="drop-shadow(0 0 8px #00FFF0)">
+      <!-- основание шляпы -->
+      <rect x="14" y="68" width="72" height="6" rx="2" stroke="#00FFF0" stroke-width="2.5" fill="rgba(0,255,240,0.15)"/>
+      <!-- корпус шляпы: низ ровно на верхнем крае основания (y=68), без перекрытия -->
+      <rect x="28" y="20" width="44" height="48" rx="2" stroke="#00FFF0" stroke-width="2.5" fill="rgba(0,255,240,0.15)"/>
+      <!-- лента -->
+      <rect x="30" y="44" width="40" height="6" fill="rgba(255,0,110,0.55)"/>
+      <line x1="30" y1="44" x2="70" y2="44" stroke="#FF006E" stroke-width="1.5"/>
+      <line x1="30" y1="50" x2="70" y2="50" stroke="#FF006E" stroke-width="1.5"/>
+    </g>`
+  },
+  { name:'ШАПКА', slot:'head', style:'casual', price:100, desc:'вязаная шапка', color:'#FF006E',
+    svg: `<g stroke="#FF006E" stroke-width="2.5" fill="rgba(255,0,110,0.15)" stroke-linejoin="round" filter="drop-shadow(0 0 8px #FF006E)">
+      <path d="M18 70 Q18 24 50 24 Q82 24 82 70 Z"/>
+      <line x1="18" y1="60" x2="82" y2="60" stroke-width="1.5"/>
+      <line x1="28" y1="48" x2="32" y2="52" stroke-width="1.2"/>
+      <line x1="48" y1="44" x2="52" y2="48" stroke-width="1.2"/>
+      <line x1="68" y1="48" x2="72" y2="52" stroke-width="1.2"/>
+      <circle cx="50" cy="18" r="6" fill="rgba(255,255,255,0.4)" stroke="#FF006E" stroke-width="2"/>
+    </g>`
+  },
+  { name:'РОЖКИ', slot:'head', style:'evil', price:300, desc:'демонические рога', color:'#FF006E',
+    svg: `<g stroke="#FF006E" stroke-width="2.5" fill="rgba(255,0,110,0.2)" stroke-linejoin="round" filter="drop-shadow(0 0 10px #FF006E)">
+      <!-- левый рог покороче -->
+      <path d="M28 60 Q22 54 30 40 Q33 48 35 60 Z"/>
+      <!-- правый рог покороче -->
+      <path d="M72 60 Q78 54 70 40 Q67 48 65 60 Z"/>
+      <!-- ободок-дуга выгнутая вверх (как полумесяц/брови) -->
+      <path d="M28 60 Q50 50 72 60" stroke-width="2" fill="none" opacity="0.85"/>
+    </g>`
+  },
+  { name:'НИМБ', slot:'head', style:'royal', price:400, desc:'священный нимб', color:'#FFD700',
+    svg: `<g stroke="#FFD700" stroke-width="2.5" fill="none" filter="drop-shadow(0 0 14px #FFD700)">
+      <ellipse cx="50" cy="42" rx="36" ry="10" fill="rgba(255,255,200,0.15)"/>
+      <ellipse cx="50" cy="42" rx="30" ry="6" stroke-width="1.5" opacity="0.6"/>
+    </g>`
+  },
+  // ─── ОЧКИ / ЛИЦО ───
+  { name:'ОЧКИ', slot:'face', style:'cool', price:150, desc:'крутые очки', color:'#00FFF0',
+    svg: `<g stroke="#00FFF0" stroke-width="2.5" fill="rgba(0,255,240,0.18)" stroke-linejoin="round" filter="drop-shadow(0 0 8px #00FFF0)">
+      <rect x="14" y="40" width="32" height="22" rx="4"/>
+      <rect x="54" y="40" width="32" height="22" rx="4"/>
+      <line x1="46" y1="51" x2="54" y2="51" stroke-width="2.5"/>
+      <line x1="14" y1="40" x2="6" y2="34" stroke-width="2"/>
+      <line x1="86" y1="40" x2="94" y2="34" stroke-width="2"/>
+    </g>`
+  },
+  { name:'ОЧКИ-СЕРДЕЧКИ', slot:'face', style:'cute', price:250, desc:'розовые очки-сердечки', color:'#FF66CC',
+    svg: `<g stroke="#FF66CC" stroke-width="2.5" fill="rgba(255,102,204,0.18)" stroke-linejoin="round" filter="drop-shadow(0 0 8px #FF66CC)">
+      <!-- левое сердце -->
+      <path d="M30 66 C18 56 14 48 18 42 C22 36 28 38 30 44 C32 38 38 36 42 42 C46 48 42 56 30 66 Z"/>
+      <!-- правое сердце -->
+      <path d="M70 66 C58 56 54 48 58 42 C62 36 68 38 70 44 C72 38 78 36 82 42 C86 48 82 56 70 66 Z"/>
+      <!-- перемычка -->
+      <line x1="44" y1="50" x2="56" y2="50" stroke-width="2.5"/>
+    </g>`
+  },
+  // ─── ШЕЯ ───
+  { name:'ГАЛСТУК-БАБОЧКА', slot:'neck', style:'cool', price:120, desc:'элегантный галстук', color:'#FF006E',
+    svg: `<g stroke="#FF006E" stroke-width="2.5" fill="rgba(255,0,110,0.22)" stroke-linejoin="round" filter="drop-shadow(0 0 8px #FF006E)">
+      <path d="M50 50 L20 36 L20 64 Z"/>
+      <path d="M50 50 L80 36 L80 64 Z"/>
+    </g>`
+  },
+  { name:'ЦЕПОЧКА', slot:'neck', style:'cool', price:180, desc:'золотая цепь', color:'#FFD700',
+    svg: `<g stroke="#FFD700" stroke-width="2.5" fill="none" filter="drop-shadow(0 0 8px #FFD700)">
+      <path d="M16 38 Q50 78 84 38" stroke-width="2.5"/>
+      <circle cx="50" cy="68" r="6" fill="rgba(255,215,0,0.3)"/>
+      <circle cx="50" cy="68" r="2" fill="#FFD700"/>
+      <line x1="30" y1="50" x2="32" y2="54" stroke-width="1.5"/>
+      <line x1="40" y1="60" x2="42" y2="64" stroke-width="1.5"/>
+      <line x1="58" y1="64" x2="60" y2="60" stroke-width="1.5"/>
+      <line x1="68" y1="54" x2="70" y2="50" stroke-width="1.5"/>
+    </g>`
+  },
+  { name:'ШАРФ', slot:'neck', style:'casual', price:90, desc:'тёплый шарф', color:'#00FFF0',
+    svg: `<g stroke="#00FFF0" stroke-width="2.5" fill="rgba(0,255,240,0.18)" stroke-linejoin="round" filter="drop-shadow(0 0 8px #00FFF0)">
+      <!-- основная намотка вокруг шеи -->
+      <path d="M22 50 Q50 30 78 50 Q70 56 50 56 Q30 56 22 50 Z"/>
+      <!-- висящий конец слева -->
+      <path d="M30 54 Q26 70 36 84 L46 80 Q42 66 44 54 Z"/>
+      <!-- бахрома на конце -->
+      <line x1="36" y1="84" x2="36" y2="88" stroke-width="1.5"/>
+      <line x1="40" y1="83" x2="40" y2="88" stroke-width="1.5"/>
+      <line x1="44" y1="82" x2="45" y2="88" stroke-width="1.5"/>
+    </g>`
+  },
+  // ─── ЛАПКА ───
+  { name:'БРАСЛЕТИК', slot:'paw', style:'cute', price:70, desc:'милый браслетик', color:'#FF66CC',
+    svg: `<g stroke="#FF66CC" stroke-width="2" fill="none" stroke-linecap="round" filter="drop-shadow(0 0 6px #FF66CC)">
+      <ellipse cx="50" cy="50" rx="22" ry="4"/>
+      <circle cx="50" cy="54" r="2.5" fill="#FF66CC"/>
+    </g>`
+  },
+];
+
+const SLOTS = { head: 'ГОЛОВА', face: 'ЛИЦО', neck: 'ШЕЯ', paw: 'ЛАПКА / АКСЕССУАР' };
+const STYLE_COLORS = { cute: '#FF66CC', cool: '#00FFF0', evil: '#FF006E', royal: '#FFD700', casual: '#00FF88' };
+
+const root = document.getElementById('root');
+
+Object.keys(SLOTS).forEach(slot => {
+  const items = CLOTHING.filter(i => i.slot === slot);
+  if (items.length === 0) return;
+  const title = document.createElement('div');
+  title.className = 'section-title';
+  title.textContent = '// ' + SLOTS[slot] + ' //';
+  root.appendChild(title);
+
+  const grid = document.createElement('div');
+  grid.className = 'grid';
+  root.appendChild(grid);
+
+  items.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'card';
+
+    const wrap = document.createElement('div');
+    wrap.className = 'canvas-wrap';
+    wrap.innerHTML = '<svg viewBox="0 0 100 100">' + item.svg + '</svg>';
+    card.appendChild(wrap);
+
+    const name = document.createElement('div');
+    name.className = 'name';
+    name.textContent = item.name;
+    card.appendChild(name);
+
+    const meta = document.createElement('div');
+    meta.className = 'meta';
+    meta.style.color = STYLE_COLORS[item.style];
+    meta.textContent = '// ' + item.style.toUpperCase();
+    card.appendChild(meta);
+
+    const price = document.createElement('span');
+    price.className = 'price';
+    price.textContent = item.price + ' XP';
+    card.appendChild(price);
+
+    const descr = document.createElement('div');
+    descr.className = 'descr';
+    descr.textContent = item.desc;
+    card.appendChild(descr);
+
+    grid.appendChild(card);
+  });
+});
+
+} catch(err) {
+  document.getElementById('error').textContent = 'ОШИБКА: ' + (err && err.message ? err.message : err) + '\n\n' + (err && err.stack ? err.stack : '');
+}
+</script>
+
+</body>
+</html>

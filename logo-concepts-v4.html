@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Концепты лого Вещай — v4</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #06060f;
+    color: #E0E8F0;
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 100vh;
+    padding: 40px 20px;
+    background-image:
+      linear-gradient(rgba(0,255,240,0.03) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(0,255,240,0.03) 1px,transparent 1px);
+    background-size: 40px 40px;
+  }
+  h1 {
+    font-family: 'Orbitron', monospace;
+    color: #00FFF0;
+    letter-spacing: 6px;
+    text-align: center;
+    margin-bottom: 12px;
+    text-shadow: 0 0 16px rgba(0,255,240,0.5);
+  }
+  .subtitle {
+    text-align: center;
+    color: #506080;
+    letter-spacing: 3px;
+    font-size: 11px;
+    margin-bottom: 50px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .card {
+    background: rgba(13,13,26,0.7);
+    border: 1px solid rgba(0,255,240,0.15);
+    border-radius: 12px;
+    padding: 28px 20px 20px;
+    text-align: center;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(0,255,240,0.5);
+    box-shadow: 0 8px 30px rgba(0,255,240,0.18);
+  }
+  .number {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: #00FFF0;
+    letter-spacing: 3px;
+    padding: 3px 10px;
+    border: 1px solid rgba(0,255,240,0.3);
+    border-radius: 4px;
+    margin-bottom: 16px;
+  }
+  .preview {
+    width: 140px;
+    height: 140px;
+    margin: 0 auto 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at center, rgba(0,255,240,0.05), transparent 70%);
+  }
+  .preview svg { width: 100%; height: 100%; }
+  .name {
+    font-family: 'Orbitron', monospace;
+    font-size: 14px;
+    letter-spacing: 3px;
+    color: #00FFF0;
+    margin-bottom: 6px;
+    text-shadow: 0 0 8px rgba(0,255,240,0.4);
+  }
+  .descr {
+    font-size: 10px;
+    color: #8892B0;
+    line-height: 1.6;
+    letter-spacing: 1px;
+  }
+  .header-preview {
+    margin-top: 18px;
+    padding: 10px 16px;
+    border-top: 1px dashed rgba(255,255,255,0.06);
+    display: flex; align-items: center; gap: 10px;
+    justify-content: center;
+  }
+  .header-preview svg { width: 28px; height: 28px; }
+  .header-preview .txt {
+    font-family: 'Orbitron', monospace;
+    font-size: 18px; font-weight: 900;
+    color: #00FFF0;
+    letter-spacing: 6px;
+    text-shadow: 0 0 10px rgba(0,255,240,0.6);
+  }
+  .note {
+    text-align: center;
+    color: #506080;
+    margin-top: 40px;
+    font-size: 11px;
+    letter-spacing: 2px;
+  }
+  @keyframes onairBlink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0.3; }
+  }
+  .blink { animation: onairBlink 1.4s steps(1) infinite; }
+</style>
+</head>
+<body>
+
+<h1>ВЕЩАЙ // ЛОГО v4</h1>
+<div class="subtitle">// направление: звук, голос, вещание — продолжение микрофон+рупор //</div>
+
+<div class="grid">
+
+  <!-- 26. СТУДИЙНЫЙ МИК НА ПОДВЕСЕ -->
+  <div class="card">
+    <div class="number">// ВАРИАНТ 26</div>
+    <div class="preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <!-- внешняя рамка-обруч (паук подвеса) -->
+        <ellipse cx="50" cy="50" rx="32" ry="36" stroke="#00FFF0" stroke-width="1.5" fill="rgba(0,255,240,0.03)" filter="drop-shadow(0 0 6px #00FFF0)"/>
+        <!-- 4 стропы крепления -->
+        <line x1="18" y1="50" x2="34" y2="50" stroke="#00FFF0" stroke-width="0.8" opacity="0.5"/>
+        <line x1="66" y1="50" x2="82" y2="50" stroke="#00FFF0" stroke-width="0.8" opacity="0.5"/>
+        <line x1="50" y1="14" x2="50" y2="20" stroke="#00FFF0" stroke-width="0.8" opacity="0.5"/>
+        <line x1="50" y1="80" x2="50" y2="86" stroke="#00FFF0" stroke-width="0.8" opacity="0.5"/>
+        <line x1="28" y1="28" x2="36" y2="34" stroke="#00FFF0" stroke-width="0.6" opacity="0.4"/>
+        <line x1="72" y1="28" x2="64" y2="34" stroke="#00FFF0" stroke-width="0.6" opacity="0.4"/>
+        <line x1="28" y1="72" x2="36" y2="66" stroke="#00FFF0" stroke-width="0.6" opacity="0.4"/>
+        <line x1="72" y1="72" x2="64" y2="66" stroke="#00FFF0" stroke-width="0.6" opacity="0.4"/>
+        <!-- сам микрофон-конденсатор (овал) -->
+        <rect x="38" y="26" width="24" height="48" rx="12" stroke="#00FFF0" stroke-width="2" fill="rgba(0,255,240,0.12)" filter="drop-shadow(0 0 6px #00FFF0)"/>
+        <!-- решётка сетки -->
+        <line x1="40" y1="34" x2="60" y2="34" stroke="#00FFF0" stroke-width="0.6" opacity="0.55"/>
+        <line x1="40" y1="42" x2="60" y2="42" stroke="#00FFF0" stroke-width="0.6" opacity="0.55"/>
+        <line x1="40" y1="50" x2="60" y2="50" stroke="#00FFF0" stroke-width="0.6" opacity="0.55"/>
+        <line x1="40" y1="58" x2="60" y2="58" stroke="#00FFF0" stroke-width="0.6" opacity="0.55"/>
+        <line x1="40" y1="66" x2="60" y2="66" stroke="#00FFF0" stroke-width="0.6" opacity="0.55"/>
+        <!-- центральная капсула -->
+        <circle cx="50" cy="46" r="6" fill="rgba(0,255,240,0.25)" stroke="#00FFF0" stroke-width="1.2"/>
+        <circle cx="50" cy="46" r="2" fill="#00FFF0"/>
+      </svg>
+    </div>
+    <div class="name">СТУДИЯ</div>
+    <div class="descr">Студийный конденсаторный микрофон на пружинном подвесе. Профессионально, узнаваемо</div>
+    <div class="header-preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <ellipse cx="50" cy="50" rx="32" ry="36" stroke="#00FFF0" stroke-width="3" fill="rgba(0,255,240,0.06)"/>
+        <rect x="38" y="26" width="24" height="48" rx="12" stroke="#00FFF0" stroke-width="3" fill="rgba(0,255,240,0.18)"/>
+        <line x1="40" y1="42" x2="60" y2="42" stroke="#00FFF0" stroke-width="1.5"/>
+        <line x1="40" y1="58" x2="60" y2="58" stroke="#00FFF0" stroke-width="1.5"/>
+      </svg>
+      <span class="txt">ВЕЩАЙ</span>
+    </div>
+  </div>
+
+  <!-- 27. РЕТРО-МИК -->
+  <div class="card">
+    <div class="number">// ВАРИАНТ 27</div>
+    <div class="preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <!-- крепление -->
+        <line x1="50" y1="78" x2="50" y2="90" stroke="#00FFF0" stroke-width="2"/>
+        <rect x="42" y="88" width="16" height="4" rx="1" stroke="#00FFF0" stroke-width="1.5" fill="rgba(0,255,240,0.1)"/>
+        <!-- держатель U-образный -->
+        <path d="M30 50 L30 70 Q30 76 36 76 L64 76 Q70 76 70 70 L70 50"
+              stroke="#00FFF0" stroke-width="1.8" fill="none"/>
+        <!-- сам микрофон — круглая голова с решёткой -->
+        <circle cx="50" cy="44" r="22" stroke="#00FFF0" stroke-width="2" fill="rgba(0,255,240,0.1)" filter="drop-shadow(0 0 6px #00FFF0)"/>
+        <!-- вертикальные полосы решётки -->
+        <line x1="38" y1="28" x2="38" y2="60" stroke="#00FFF0" stroke-width="0.8" opacity="0.6"/>
+        <line x1="44" y1="24" x2="44" y2="64" stroke="#00FFF0" stroke-width="0.8" opacity="0.6"/>
+        <line x1="50" y1="22" x2="50" y2="66" stroke="#00FFF0" stroke-width="0.8" opacity="0.6"/>
+        <line x1="56" y1="24" x2="56" y2="64" stroke="#00FFF0" stroke-width="0.8" opacity="0.6"/>
+        <line x1="62" y1="28" x2="62" y2="60" stroke="#00FFF0" stroke-width="0.8" opacity="0.6"/>
+        <!-- горизонтальные акценты -->
+        <line x1="28" y1="44" x2="72" y2="44" stroke="#00FFF0" stroke-width="0.6" opacity="0.4"/>
+        <!-- табличка с лого -->
+        <rect x="40" y="38" width="20" height="12" rx="2" fill="rgba(0,255,240,0.2)" stroke="#00FFF0" stroke-width="1"/>
+        <text x="50" y="47" text-anchor="middle" font-family="Orbitron" font-weight="900" font-size="7" fill="#00FFF0" letter-spacing="1">ВЩ</text>
+      </svg>
+    </div>
+    <div class="name">РЕТРО-МИК</div>
+    <div class="descr">Винтажный радио-микрофон (стиль 30-х) с табличкой «ВЩ». Атмосферно, можно убрать буквы</div>
+    <div class="header-preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="44" r="24" stroke="#00FFF0" stroke-width="3.5" fill="rgba(0,255,240,0.15)"/>
+        <line x1="44" y1="26" x2="44" y2="62" stroke="#00FFF0" stroke-width="1.5"/>
+        <line x1="50" y1="22" x2="50" y2="66" stroke="#00FFF0" stroke-width="1.5"/>
+        <line x1="56" y1="26" x2="56" y2="62" stroke="#00FFF0" stroke-width="1.5"/>
+        <path d="M30 50 L30 72 Q30 78 36 78 L64 78 Q70 78 70 72 L70 50" stroke="#00FFF0" stroke-width="2.5" fill="none"/>
+      </svg>
+      <span class="txt">ВЕЩАЙ</span>
+    </div>
+  </div>
+
+  <!-- 28. ДИНАМИК ФРОНТАЛЬНЫЙ -->
+  <div class="card">
+    <div class="number">// ВАРИАНТ 28</div>
+    <div class="preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <!-- корпус -->
+        <rect x="14" y="14" width="72" height="72" rx="8" stroke="#00FFF0" stroke-width="2" fill="rgba(0,255,240,0.06)" filter="drop-shadow(0 0 8px #00FFF0)"/>
+        <!-- мембрана внешняя -->
+        <circle cx="50" cy="50" r="28" stroke="#00FFF0" stroke-width="1.8" fill="rgba(0,255,240,0.08)"/>
+        <!-- средний круг -->
+        <circle cx="50" cy="50" r="20" stroke="#00FFF0" stroke-width="1.2" fill="rgba(0,255,240,0.1)" opacity="0.7"/>
+        <!-- купол центральный -->
+        <circle cx="50" cy="50" r="10" fill="rgba(0,255,240,0.3)" stroke="#00FFF0" stroke-width="1.5"/>
+        <!-- блик на куполе -->
+        <ellipse cx="46" cy="46" rx="3" ry="2" fill="#ffffff" opacity="0.4"/>
+        <!-- крепёжные точки по 4 углам -->
+        <circle cx="22" cy="22" r="2" fill="#00FFF0"/>
+        <circle cx="78" cy="22" r="2" fill="#00FFF0"/>
+        <circle cx="22" cy="78" r="2" fill="#00FFF0"/>
+        <circle cx="78" cy="78" r="2" fill="#00FFF0"/>
+      </svg>
+    </div>
+    <div class="name">ДИНАМИК</div>
+    <div class="descr">Спикер вид спереди — концентрические круги мембраны. Простая геометрия, узнаваемо</div>
+    <div class="header-preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <rect x="14" y="14" width="72" height="72" rx="8" stroke="#00FFF0" stroke-width="3" fill="rgba(0,255,240,0.08)"/>
+        <circle cx="50" cy="50" r="28" stroke="#00FFF0" stroke-width="3" fill="rgba(0,255,240,0.12)"/>
+        <circle cx="50" cy="50" r="10" fill="#00FFF0"/>
+      </svg>
+      <span class="txt">ВЕЩАЙ</span>
+    </div>
+  </div>
+
+  <!-- 29. РАДИОСТАНЦИЯ (микрофон + антенна) -->
+  <div class="card">
+    <div class="number">// ВАРИАНТ 29</div>
+    <div class="preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <!-- мик-голова -->
+        <rect x="38" y="44" width="24" height="32" rx="12" stroke="#00FFF0" stroke-width="2" fill="rgba(0,255,240,0.1)" filter="drop-shadow(0 0 6px #00FFF0)"/>
+        <!-- решётка -->
+        <line x1="40" y1="52" x2="60" y2="52" stroke="#00FFF0" stroke-width="0.6" opacity="0.55"/>
+        <line x1="40" y1="60" x2="60" y2="60" stroke="#00FFF0" stroke-width="0.6" opacity="0.55"/>
+        <line x1="40" y1="68" x2="60" y2="68" stroke="#00FFF0" stroke-width="0.6" opacity="0.55"/>
+        <!-- ручка вниз -->
+        <line x1="50" y1="76" x2="50" y2="86" stroke="#00FFF0" stroke-width="2.5"/>
+        <line x1="44" y1="86" x2="56" y2="86" stroke="#00FFF0" stroke-width="2.5"/>
+        <!-- антенна — две линии вверх -->
+        <line x1="50" y1="44" x2="50" y2="20" stroke="#00FFF0" stroke-width="1.6"/>
+        <!-- кнопка на антенне -->
+        <circle cx="50" cy="20" r="3" fill="#00FFF0" filter="drop-shadow(0 0 6px #00FFF0)"/>
+        <!-- волны от антенны -->
+        <path d="M36 22 Q30 18 28 12" stroke="#00FFF0" stroke-width="1.3" fill="none" opacity="0.75" stroke-linecap="round"/>
+        <path d="M28 26 Q18 20 14 12" stroke="#00FFF0" stroke-width="1" fill="none" opacity="0.45" stroke-linecap="round"/>
+        <path d="M64 22 Q70 18 72 12" stroke="#00FFF0" stroke-width="1.3" fill="none" opacity="0.75" stroke-linecap="round"/>
+        <path d="M72 26 Q82 20 86 12" stroke="#00FFF0" stroke-width="1" fill="none" opacity="0.45" stroke-linecap="round"/>
+        <path d="M40 12 Q50 4 60 12" stroke="#00FFF0" stroke-width="1.4" fill="none" opacity="0.85" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="name">РАДИОСТАНЦИЯ</div>
+    <div class="descr">Микрофон с антенной и волнами в небо. «Голос в эфир» — буквально логотип сайта</div>
+    <div class="header-preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <rect x="38" y="44" width="24" height="32" rx="12" stroke="#00FFF0" stroke-width="3" fill="rgba(0,255,240,0.15)"/>
+        <line x1="50" y1="44" x2="50" y2="20" stroke="#00FFF0" stroke-width="3"/>
+        <circle cx="50" cy="20" r="4" fill="#00FFF0"/>
+        <path d="M40 12 Q50 4 60 12" stroke="#00FFF0" stroke-width="2.5" fill="none"/>
+      </svg>
+      <span class="txt">ВЕЩАЙ</span>
+    </div>
+  </div>
+
+  <!-- 30. ON AIR -->
+  <div class="card">
+    <div class="number">// ВАРИАНТ 30</div>
+    <div class="preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <!-- табличка ON AIR -->
+        <rect x="10" y="36" width="80" height="28" rx="4" stroke="#00FFF0" stroke-width="2" fill="rgba(0,255,240,0.12)" filter="drop-shadow(0 0 8px #00FFF0)"/>
+        <!-- внутренний контур -->
+        <rect x="14" y="40" width="72" height="20" rx="2" stroke="#00FFF0" stroke-width="0.6" fill="none" opacity="0.4"/>
+        <!-- текст «ON AIR» -->
+        <text x="50" y="55" text-anchor="middle" font-family="Orbitron" font-weight="900" font-size="13" fill="#00FFF0" letter-spacing="4" filter="drop-shadow(0 0 6px #00FFF0)" class="blink">В ЭФИРЕ</text>
+        <!-- кронштейны крепления -->
+        <line x1="50" y1="14" x2="50" y2="36" stroke="#00FFF0" stroke-width="1.5"/>
+        <circle cx="50" cy="14" r="2.5" fill="#00FFF0"/>
+        <!-- маленькая красная индикаторная лампа слева -->
+        <circle cx="20" cy="50" r="2.5" fill="#FF006E" filter="drop-shadow(0 0 6px #FF006E)" class="blink"/>
+        <circle cx="80" cy="50" r="2.5" fill="#FF006E" filter="drop-shadow(0 0 6px #FF006E)" class="blink"/>
+        <!-- декоративные волны вниз -->
+        <path d="M30 72 Q40 78 50 72 Q60 66 70 72" stroke="#00FFF0" stroke-width="1.2" fill="none" opacity="0.5"/>
+      </svg>
+    </div>
+    <div class="name">В ЭФИРЕ</div>
+    <div class="descr">Табличка «В ЭФИРЕ» с моргающей индикацией — атмосфера живой студии</div>
+    <div class="header-preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <rect x="10" y="36" width="80" height="28" rx="4" stroke="#00FFF0" stroke-width="3.5" fill="rgba(0,255,240,0.2)"/>
+        <text x="50" y="55" text-anchor="middle" font-family="Orbitron" font-weight="900" font-size="13" fill="#00FFF0" letter-spacing="3">В ЭФИРЕ</text>
+      </svg>
+      <span class="txt">ВЕЩАЙ</span>
+    </div>
+  </div>
+
+  <!-- 31. КОЛОНКА БОКОВАЯ -->
+  <div class="card">
+    <div class="number">// ВАРИАНТ 31</div>
+    <div class="preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <!-- корпус колонки -->
+        <rect x="20" y="14" width="36" height="72" rx="4" stroke="#00FFF0" stroke-width="2" fill="rgba(0,255,240,0.08)" filter="drop-shadow(0 0 6px #00FFF0)"/>
+        <!-- верхний твитер (маленький) -->
+        <circle cx="38" cy="28" r="6" stroke="#00FFF0" stroke-width="1.5" fill="rgba(0,255,240,0.15)"/>
+        <circle cx="38" cy="28" r="2" fill="#00FFF0"/>
+        <!-- средний драйвер -->
+        <circle cx="38" cy="48" r="10" stroke="#00FFF0" stroke-width="1.5" fill="rgba(0,255,240,0.15)"/>
+        <circle cx="38" cy="48" r="3.5" fill="#00FFF0"/>
+        <!-- басовый вуфер -->
+        <circle cx="38" cy="70" r="11" stroke="#00FFF0" stroke-width="1.5" fill="rgba(0,255,240,0.18)"/>
+        <circle cx="38" cy="70" r="4" fill="#00FFF0"/>
+        <!-- ребро жёсткости -->
+        <line x1="56" y1="20" x2="56" y2="80" stroke="#00FFF0" stroke-width="0.5" opacity="0.3"/>
+        <!-- волны звука сбоку (выходит из колонки) -->
+        <path d="M64 30 Q72 30 72 50 Q72 70 64 70" stroke="#00FFF0" stroke-width="1.6" fill="none" opacity="0.85" stroke-linecap="round"/>
+        <path d="M70 22 Q82 26 82 50 Q82 74 70 78" stroke="#00FFF0" stroke-width="1.3" fill="none" opacity="0.55" stroke-linecap="round"/>
+        <path d="M76 14 Q92 22 92 50 Q92 78 76 86" stroke="#00FFF0" stroke-width="1" fill="none" opacity="0.3" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="name">КОЛОНКА</div>
+    <div class="descr">Аудио-колонка в профиль с тремя драйверами и волнами вбок. Hi-Fi стиль</div>
+    <div class="header-preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <rect x="20" y="14" width="36" height="72" rx="4" stroke="#00FFF0" stroke-width="3" fill="rgba(0,255,240,0.12)"/>
+        <circle cx="38" cy="48" r="10" stroke="#00FFF0" stroke-width="2" fill="rgba(0,255,240,0.2)"/>
+        <circle cx="38" cy="70" r="11" stroke="#00FFF0" stroke-width="2" fill="rgba(0,255,240,0.25)"/>
+        <path d="M64 30 Q72 30 72 50 Q72 70 64 70" stroke="#00FFF0" stroke-width="2.5" fill="none"/>
+      </svg>
+      <span class="txt">ВЕЩАЙ</span>
+    </div>
+  </div>
+
+  <!-- 32. РАДИОПРИЁМНИК -->
+  <div class="card">
+    <div class="number">// ВАРИАНТ 32</div>
+    <div class="preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <!-- корпус -->
+        <rect x="10" y="22" width="80" height="56" rx="6" stroke="#00FFF0" stroke-width="2" fill="rgba(0,255,240,0.08)" filter="drop-shadow(0 0 6px #00FFF0)"/>
+        <!-- сетка спикера слева -->
+        <rect x="16" y="32" width="30" height="34" rx="2" fill="rgba(0,255,240,0.08)" stroke="#00FFF0" stroke-width="0.8"/>
+        <line x1="20" y1="38" x2="42" y2="38" stroke="#00FFF0" stroke-width="0.5" opacity="0.5"/>
+        <line x1="20" y1="44" x2="42" y2="44" stroke="#00FFF0" stroke-width="0.5" opacity="0.5"/>
+        <line x1="20" y1="50" x2="42" y2="50" stroke="#00FFF0" stroke-width="0.5" opacity="0.5"/>
+        <line x1="20" y1="56" x2="42" y2="56" stroke="#00FFF0" stroke-width="0.5" opacity="0.5"/>
+        <line x1="20" y1="62" x2="42" y2="62" stroke="#00FFF0" stroke-width="0.5" opacity="0.5"/>
+        <!-- шкала настройки справа -->
+        <rect x="52" y="32" width="32" height="14" rx="1" fill="rgba(0,255,240,0.18)" stroke="#00FFF0" stroke-width="0.8"/>
+        <line x1="58" y1="32" x2="58" y2="46" stroke="#00FFF0" stroke-width="0.6" opacity="0.4"/>
+        <line x1="64" y1="32" x2="64" y2="46" stroke="#00FFF0" stroke-width="0.6" opacity="0.4"/>
+        <line x1="70" y1="32" x2="70" y2="46" stroke="#00FFF0" stroke-width="0.6" opacity="0.4"/>
+        <line x1="76" y1="32" x2="76" y2="46" stroke="#00FFF0" stroke-width="0.6" opacity="0.4"/>
+        <!-- индикатор шкалы -->
+        <line x1="68" y1="30" x2="68" y2="48" stroke="#FF006E" stroke-width="1.5"/>
+        <!-- ручки -->
+        <circle cx="60" cy="60" r="6" stroke="#00FFF0" stroke-width="1.5" fill="rgba(0,255,240,0.15)"/>
+        <circle cx="60" cy="60" r="1.5" fill="#00FFF0"/>
+        <circle cx="76" cy="60" r="6" stroke="#00FFF0" stroke-width="1.5" fill="rgba(0,255,240,0.15)"/>
+        <circle cx="76" cy="60" r="1.5" fill="#00FFF0"/>
+        <!-- антенна -->
+        <line x1="84" y1="22" x2="92" y2="8" stroke="#00FFF0" stroke-width="1.5"/>
+        <circle cx="92" cy="8" r="2" fill="#00FFF0"/>
+      </svg>
+    </div>
+    <div class="name">ПРИЁМНИК</div>
+    <div class="descr">Винтажный радиоприёмник со шкалой настройки, ручками и антенной. Ламповая эпоха</div>
+    <div class="header-preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <rect x="10" y="22" width="80" height="56" rx="6" stroke="#00FFF0" stroke-width="3" fill="rgba(0,255,240,0.12)"/>
+        <rect x="16" y="32" width="30" height="34" rx="2" stroke="#00FFF0" stroke-width="2" fill="rgba(0,255,240,0.15)"/>
+        <rect x="52" y="32" width="32" height="14" stroke="#00FFF0" stroke-width="2" fill="rgba(0,255,240,0.2)"/>
+        <circle cx="60" cy="60" r="6" stroke="#00FFF0" stroke-width="2.5" fill="rgba(0,255,240,0.2)"/>
+        <circle cx="76" cy="60" r="6" stroke="#00FFF0" stroke-width="2.5" fill="rgba(0,255,240,0.2)"/>
+      </svg>
+      <span class="txt">ВЕЩАЙ</span>
+    </div>
+  </div>
+
+  <!-- 33. НАУШНИКИ -->
+  <div class="card">
+    <div class="number">// ВАРИАНТ 33</div>
+    <div class="preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <!-- дуга оголовья -->
+        <path d="M20 50 Q20 16 50 16 Q80 16 80 50" stroke="#00FFF0" stroke-width="2.5" fill="none" filter="drop-shadow(0 0 6px #00FFF0)"/>
+        <!-- внутренняя подкладка оголовья -->
+        <path d="M22 48 Q22 22 50 22 Q78 22 78 48" stroke="#00FFF0" stroke-width="0.6" fill="none" opacity="0.4"/>
+        <!-- левая чашка -->
+        <rect x="10" y="48" width="22" height="28" rx="6" stroke="#00FFF0" stroke-width="2" fill="rgba(0,255,240,0.12)" filter="drop-shadow(0 0 4px #00FFF0)"/>
+        <circle cx="21" cy="62" r="6" stroke="#00FFF0" stroke-width="1" fill="rgba(0,255,240,0.18)"/>
+        <circle cx="21" cy="62" r="2" fill="#00FFF0"/>
+        <!-- правая чашка -->
+        <rect x="68" y="48" width="22" height="28" rx="6" stroke="#00FFF0" stroke-width="2" fill="rgba(0,255,240,0.12)" filter="drop-shadow(0 0 4px #00FFF0)"/>
+        <circle cx="79" cy="62" r="6" stroke="#00FFF0" stroke-width="1" fill="rgba(0,255,240,0.18)"/>
+        <circle cx="79" cy="62" r="2" fill="#00FFF0"/>
+        <!-- волны звука внутри -->
+        <path d="M36 56 Q42 60 36 64" stroke="#00FFF0" stroke-width="1.2" fill="none" opacity="0.65"/>
+        <path d="M40 52 Q48 60 40 68" stroke="#00FFF0" stroke-width="1" fill="none" opacity="0.45"/>
+        <path d="M64 56 Q58 60 64 64" stroke="#00FFF0" stroke-width="1.2" fill="none" opacity="0.65"/>
+        <path d="M60 52 Q52 60 60 68" stroke="#00FFF0" stroke-width="1" fill="none" opacity="0.45"/>
+      </svg>
+    </div>
+    <div class="name">НАУШНИКИ</div>
+    <div class="descr">Студийные мониторные наушники с волнами внутри. Намёк на «слушай нас»</div>
+    <div class="header-preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <path d="M20 50 Q20 16 50 16 Q80 16 80 50" stroke="#00FFF0" stroke-width="4" fill="none"/>
+        <rect x="10" y="48" width="22" height="28" rx="6" stroke="#00FFF0" stroke-width="3" fill="rgba(0,255,240,0.18)"/>
+        <rect x="68" y="48" width="22" height="28" rx="6" stroke="#00FFF0" stroke-width="3" fill="rgba(0,255,240,0.18)"/>
+      </svg>
+      <span class="txt">ВЕЩАЙ</span>
+    </div>
+  </div>
+
+</div>
+
+<div class="note">
+  // итерируем сколько надо. напиши номер или попроси переделать //
+</div>
+
+</body>
+</html>

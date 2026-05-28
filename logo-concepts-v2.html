@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Концепты лого Вещай — v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #06060f;
+    color: #E0E8F0;
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 100vh;
+    padding: 40px 20px;
+    background-image:
+      linear-gradient(rgba(0,255,240,0.03) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(0,255,240,0.03) 1px,transparent 1px);
+    background-size: 40px 40px;
+  }
+  h1 {
+    font-family: 'Orbitron', monospace;
+    color: #00FFF0;
+    letter-spacing: 6px;
+    text-align: center;
+    margin-bottom: 12px;
+    text-shadow: 0 0 16px rgba(0,255,240,0.5);
+  }
+  .subtitle {
+    text-align: center;
+    color: #506080;
+    letter-spacing: 3px;
+    font-size: 11px;
+    margin-bottom: 50px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .card {
+    background: rgba(13,13,26,0.7);
+    border: 1px solid rgba(0,255,240,0.15);
+    border-radius: 12px;
+    padding: 28px 20px 20px;
+    text-align: center;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(0,255,240,0.5);
+    box-shadow: 0 8px 30px rgba(0,255,240,0.18);
+  }
+  .number {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: #00FFF0;
+    letter-spacing: 3px;
+    padding: 3px 10px;
+    border: 1px solid rgba(0,255,240,0.3);
+    border-radius: 4px;
+    margin-bottom: 16px;
+  }
+  .preview {
+    width: 140px;
+    height: 140px;
+    margin: 0 auto 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at center, rgba(0,255,240,0.05), transparent 70%);
+  }
+  .preview svg { width: 100%; height: 100%; }
+  .name {
+    font-family: 'Orbitron', monospace;
+    font-size: 14px;
+    letter-spacing: 3px;
+    color: #00FFF0;
+    margin-bottom: 6px;
+    text-shadow: 0 0 8px rgba(0,255,240,0.4);
+  }
+  .descr {
+    font-size: 10px;
+    color: #8892B0;
+    line-height: 1.6;
+    letter-spacing: 1px;
+  }
+  .header-preview {
+    margin-top: 18px;
+    padding: 10px 16px;
+    border-top: 1px dashed rgba(255,255,255,0.06);
+    display: flex; align-items: center; gap: 10px;
+    justify-content: center;
+  }
+  .header-preview svg { width: 28px; height: 28px; }
+  .header-preview .txt {
+    font-family: 'Orbitron', monospace;
+    font-size: 18px; font-weight: 900;
+    color: #00FFF0;
+    letter-spacing: 6px;
+    text-shadow: 0 0 10px rgba(0,255,240,0.6);
+  }
+  .note {
+    text-align: center;
+    color: #506080;
+    margin-top: 40px;
+    font-size: 11px;
+    letter-spacing: 2px;
+  }
+  @keyframes radarSweep {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.15); opacity: 1; }
+  }
+  .anim-rotate { transform-origin: 50px 50px; animation: radarSweep 4s linear infinite; }
+  .anim-pulse { transform-origin: 50px 50px; animation: pulse 2s ease-in-out infinite; }
+</style>
+</head>
+<body>
+
+<h1>ВЕЩАЙ // ЛОГО v2</h1>
+<div class="subtitle">// новые концепты — развитие сигнал/глаз/волна-направлений //</div>
+
+<div class="grid">
+
+  <!-- 07. РАДАР-РАЗВЁРТКА (анимированная) -->
+  <div class="card">
+    <div class="number">// ВАРИАНТ 07</div>
+    <div class="preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <!-- кольца -->
+        <circle cx="50" cy="50" r="42" stroke="#00FFF0" stroke-width="1.5" opacity="0.6" fill="rgba(0,255,240,0.04)"/>
+        <circle cx="50" cy="50" r="28" stroke="#00FFF0" stroke-width="0.8" opacity="0.35"/>
+        <circle cx="50" cy="50" r="14" stroke="#00FFF0" stroke-width="0.8" opacity="0.35"/>
+        <!-- крест осей -->
+        <line x1="8" y1="50" x2="92" y2="50" stroke="#00FFF0" stroke-width="0.5" opacity="0.3"/>
+        <line x1="50" y1="8" x2="50" y2="92" stroke="#00FFF0" stroke-width="0.5" opacity="0.3"/>
+        <!-- развёртка -->
+        <g class="anim-rotate">
+          <defs>
+            <linearGradient id="sweep" x1="50" y1="50" x2="92" y2="50" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stop-color="#00FFF0" stop-opacity="0"/>
+              <stop offset="1" stop-color="#00FFF0" stop-opacity="0.7"/>
+            </linearGradient>
+          </defs>
+          <path d="M50 50 L92 50 A42 42 0 0 0 71 14 Z" fill="url(#sweep)"/>
+          <line x1="50" y1="50" x2="92" y2="50" stroke="#00FFF0" stroke-width="2" stroke-linecap="round"/>
+        </g>
+        <!-- блипы -->
+        <circle cx="68" cy="34" r="2.5" fill="#00FFF0" filter="drop-shadow(0 0 4px #00FFF0)"/>
+        <circle cx="32" cy="62" r="2" fill="#00FFF0" opacity="0.7"/>
+        <circle cx="58" cy="76" r="1.8" fill="#00FFF0" opacity="0.5"/>
+        <!-- центр -->
+        <circle cx="50" cy="50" r="3" fill="#00FFF0" filter="drop-shadow(0 0 6px #00FFF0)"/>
+      </svg>
+    </div>
+    <div class="name">РАДАР</div>
+    <div class="descr">Радар-развёртка с блипами. Анимация по кругу — «сканирование эфира». Из стиля питомца-радара</div>
+    <div class="header-preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="50" r="42" stroke="#00FFF0" stroke-width="3"/>
+        <line x1="50" y1="50" x2="86" y2="22" stroke="#00FFF0" stroke-width="3.5"/>
+        <circle cx="50" cy="50" r="4" fill="#00FFF0"/>
+      </svg>
+      <span class="txt">ВЕЩАЙ</span>
+    </div>
+  </div>
+
+  <!-- 08. ПУЛЬСАР (анимированный) -->
+  <div class="card">
+    <div class="number">// ВАРИАНТ 08</div>
+    <div class="preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <!-- внешние пульсирующие кольца -->
+        <circle cx="50" cy="50" r="35" stroke="#00FFF0" stroke-width="1" opacity="0.25" fill="none"/>
+        <circle cx="50" cy="50" r="26" stroke="#00FFF0" stroke-width="1" opacity="0.4" fill="none"/>
+        <circle cx="50" cy="50" r="17" stroke="#00FFF0" stroke-width="1.5" opacity="0.6" fill="none"/>
+        <!-- 6 лучей -->
+        <g stroke="#00FFF0" stroke-width="2" stroke-linecap="round" filter="drop-shadow(0 0 4px #00FFF0)">
+          <line x1="50" y1="14" x2="50" y2="28"/>
+          <line x1="50" y1="72" x2="50" y2="86"/>
+          <line x1="14" y1="50" x2="28" y2="50"/>
+          <line x1="72" y1="50" x2="86" y2="50"/>
+          <line x1="24" y1="24" x2="34" y2="34"/>
+          <line x1="66" y1="66" x2="76" y2="76"/>
+          <line x1="76" y1="24" x2="66" y2="34"/>
+          <line x1="34" y1="66" x2="24" y2="76"/>
+        </g>
+        <!-- центральная пульсирующая сфера -->
+        <g class="anim-pulse">
+          <circle cx="50" cy="50" r="9" fill="#00FFF0" opacity="0.6" filter="drop-shadow(0 0 12px #00FFF0)"/>
+          <circle cx="50" cy="50" r="5" fill="#ffffff" opacity="0.9"/>
+        </g>
+      </svg>
+    </div>
+    <div class="name">ПУЛЬСАР</div>
+    <div class="descr">Пульсирующая сфера + 8 лучей-сигналов в стороны. Намёк на радио-источник в центре</div>
+    <div class="header-preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="50" r="35" stroke="#00FFF0" stroke-width="2" opacity="0.4"/>
+        <g stroke="#00FFF0" stroke-width="4" stroke-linecap="round">
+          <line x1="50" y1="14" x2="50" y2="28"/>
+          <line x1="50" y1="72" x2="50" y2="86"/>
+          <line x1="14" y1="50" x2="28" y2="50"/>
+          <line x1="72" y1="50" x2="86" y2="50"/>
+        </g>
+        <circle cx="50" cy="50" r="10" fill="#00FFF0"/>
+      </svg>
+      <span class="txt">ВЕЩАЙ</span>
+    </div>
+  </div>
+
+  <!-- 09. ОКО МАТРИЦЫ -->
+  <div class="card">
+    <div class="number">// ВАРИАНТ 09</div>
+    <div class="preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <!-- угловые скобки -->
+        <path d="M14 26 L14 14 L26 14" stroke="#00FFF0" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+        <path d="M74 14 L86 14 L86 26" stroke="#00FFF0" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+        <path d="M14 74 L14 86 L26 86" stroke="#00FFF0" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+        <path d="M74 86 L86 86 L86 74" stroke="#00FFF0" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+        <!-- глаз -->
+        <path d="M18 50 Q50 22 82 50 Q50 78 18 50 Z"
+              stroke="#00FFF0" stroke-width="2" fill="rgba(0,255,240,0.04)"
+              filter="drop-shadow(0 0 6px #00FFF0)"/>
+        <!-- внутренняя радужка -->
+        <circle cx="50" cy="50" r="14" stroke="#00FFF0" stroke-width="1" fill="none" opacity="0.6"/>
+        <circle cx="50" cy="50" r="11" fill="rgba(0,255,240,0.15)"/>
+        <!-- зрачок -->
+        <circle cx="50" cy="50" r="5" fill="#00FFF0" filter="drop-shadow(0 0 6px #00FFF0)"/>
+        <circle cx="51" cy="48" r="1.5" fill="#ffffff" opacity="0.9"/>
+        <!-- ресницы-сигналы (8 шт) -->
+        <g stroke="#00FFF0" stroke-width="1" stroke-linecap="round" opacity="0.55">
+          <line x1="50" y1="22" x2="50" y2="17"/>
+          <line x1="50" y1="78" x2="50" y2="83"/>
+          <line x1="38" y1="26" x2="36" y2="22"/>
+          <line x1="62" y1="26" x2="64" y2="22"/>
+          <line x1="38" y1="74" x2="36" y2="78"/>
+          <line x1="62" y1="74" x2="64" y2="78"/>
+        </g>
+        <!-- глитч-линия -->
+        <line x1="22" y1="50" x2="78" y2="50" stroke="#FF006E" stroke-width="0.5" opacity="0.4" stroke-dasharray="2 2"/>
+      </svg>
+    </div>
+    <div class="name">ОКО МАТРИЦЫ</div>
+    <div class="descr">Глаз внутри HUD-рамки, с зрачком-источником сигнала. Более детальный вариант №3</div>
+    <div class="header-preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <path d="M18 50 Q50 22 82 50 Q50 78 18 50 Z" stroke="#00FFF0" stroke-width="3" fill="rgba(0,255,240,0.08)"/>
+        <circle cx="50" cy="50" r="11" fill="#00FFF0"/>
+      </svg>
+      <span class="txt">ВЕЩАЙ</span>
+    </div>
+  </div>
+
+  <!-- 10. СПУТНИК -->
+  <div class="card">
+    <div class="number">// ВАРИАНТ 10</div>
+    <div class="preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <!-- солнечные панели слева -->
+        <rect x="14" y="38" width="20" height="24" stroke="#00FFF0" stroke-width="1.5" fill="rgba(0,255,240,0.05)"/>
+        <line x1="14" y1="46" x2="34" y2="46" stroke="#00FFF0" stroke-width="0.6" opacity="0.5"/>
+        <line x1="14" y1="54" x2="34" y2="54" stroke="#00FFF0" stroke-width="0.6" opacity="0.5"/>
+        <line x1="24" y1="38" x2="24" y2="62" stroke="#00FFF0" stroke-width="0.6" opacity="0.5"/>
+        <!-- солнечные панели справа -->
+        <rect x="66" y="38" width="20" height="24" stroke="#00FFF0" stroke-width="1.5" fill="rgba(0,255,240,0.05)"/>
+        <line x1="66" y1="46" x2="86" y2="46" stroke="#00FFF0" stroke-width="0.6" opacity="0.5"/>
+        <line x1="66" y1="54" x2="86" y2="54" stroke="#00FFF0" stroke-width="0.6" opacity="0.5"/>
+        <line x1="76" y1="38" x2="76" y2="62" stroke="#00FFF0" stroke-width="0.6" opacity="0.5"/>
+        <!-- корпус (центр) -->
+        <rect x="38" y="42" width="24" height="16" rx="2" stroke="#00FFF0" stroke-width="2" fill="rgba(0,255,240,0.12)" filter="drop-shadow(0 0 4px #00FFF0)"/>
+        <circle cx="50" cy="50" r="4" fill="#00FFF0"/>
+        <!-- антенна вверх -->
+        <line x1="50" y1="42" x2="50" y2="22" stroke="#00FFF0" stroke-width="1.5"/>
+        <circle cx="50" cy="20" r="2.5" fill="#00FFF0" filter="drop-shadow(0 0 4px #00FFF0)"/>
+        <!-- волны сигнала вниз -->
+        <path d="M44 62 Q50 70 56 62" stroke="#00FFF0" stroke-width="1.5" fill="none" opacity="0.8"/>
+        <path d="M40 64 Q50 78 60 64" stroke="#00FFF0" stroke-width="1.2" fill="none" opacity="0.55"/>
+        <path d="M36 66 Q50 86 64 66" stroke="#00FFF0" stroke-width="1" fill="none" opacity="0.3"/>
+      </svg>
+    </div>
+    <div class="name">СПУТНИК</div>
+    <div class="descr">Орбитальный спутник с антенной и сигналом вниз — «вещаем с орбиты»</div>
+    <div class="header-preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <rect x="14" y="38" width="20" height="24" stroke="#00FFF0" stroke-width="2.5"/>
+        <rect x="66" y="38" width="20" height="24" stroke="#00FFF0" stroke-width="2.5"/>
+        <rect x="38" y="42" width="24" height="16" rx="2" stroke="#00FFF0" stroke-width="3" fill="rgba(0,255,240,0.2)"/>
+        <line x1="50" y1="42" x2="50" y2="22" stroke="#00FFF0" stroke-width="2.5"/>
+        <circle cx="50" cy="20" r="3.5" fill="#00FFF0"/>
+      </svg>
+      <span class="txt">ВЕЩАЙ</span>
+    </div>
+  </div>
+
+  <!-- 11. ТРАНСМИТТЕР (треугольник + волны) -->
+  <div class="card">
+    <div class="number">// ВАРИАНТ 11</div>
+    <div class="preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <!-- треугольник передатчик -->
+        <polygon points="50,22 76,70 24,70" stroke="#00FFF0" stroke-width="2.5"
+                 fill="rgba(0,255,240,0.08)" filter="drop-shadow(0 0 8px #00FFF0)"/>
+        <!-- внутренний контур-сигнал -->
+        <polygon points="50,34 66,62 34,62" stroke="#00FFF0" stroke-width="1" fill="none" opacity="0.5"/>
+        <!-- центральная точка -->
+        <circle cx="50" cy="54" r="4" fill="#00FFF0" filter="drop-shadow(0 0 6px #00FFF0)"/>
+        <!-- волны вверх (3 дуги) -->
+        <path d="M38 18 Q50 8 62 18" stroke="#00FFF0" stroke-width="1.6" fill="none" opacity="0.85"/>
+        <path d="M30 16 Q50 -2 70 16" stroke="#00FFF0" stroke-width="1.2" fill="none" opacity="0.55"/>
+        <!-- точки на углах -->
+        <circle cx="50" cy="22" r="2" fill="#00FFF0"/>
+        <circle cx="76" cy="70" r="2" fill="#00FFF0"/>
+        <circle cx="24" cy="70" r="2" fill="#00FFF0"/>
+      </svg>
+    </div>
+    <div class="name">ТРАНСМИТТЕР</div>
+    <div class="descr">Треугольный передатчик с волнами вверх — простой, симметричный, геометричный</div>
+    <div class="header-preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <polygon points="50,22 76,70 24,70" stroke="#00FFF0" stroke-width="3.5" fill="rgba(0,255,240,0.12)"/>
+        <circle cx="50" cy="54" r="5" fill="#00FFF0"/>
+        <path d="M38 18 Q50 8 62 18" stroke="#00FFF0" stroke-width="2.5" fill="none"/>
+      </svg>
+      <span class="txt">ВЕЩАЙ</span>
+    </div>
+  </div>
+
+  <!-- 12. ОСЦИЛЛОГРАФ-X (мульти-волна) -->
+  <div class="card">
+    <div class="number">// ВАРИАНТ 12</div>
+    <div class="preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <!-- внешний контур скруглённый -->
+        <rect x="14" y="14" width="72" height="72" rx="16" stroke="#00FFF0" stroke-width="2"
+              fill="rgba(0,255,240,0.04)" filter="drop-shadow(0 0 6px #00FFF0)"/>
+        <!-- горизонтальная сетка -->
+        <line x1="20" y1="50" x2="80" y2="50" stroke="#00FFF0" stroke-width="0.4" opacity="0.25"/>
+        <line x1="20" y1="40" x2="80" y2="40" stroke="#00FFF0" stroke-width="0.3" opacity="0.15"/>
+        <line x1="20" y1="60" x2="80" y2="60" stroke="#00FFF0" stroke-width="0.3" opacity="0.15"/>
+        <!-- быстрая волна (передний слой, ярче) -->
+        <path d="M22 50 Q28 38 34 50 T46 50 Q52 62 58 50 T70 50 T78 50"
+              stroke="#00FFF0" stroke-width="2.4" fill="none" stroke-linecap="round"
+              filter="drop-shadow(0 0 5px #00FFF0)"/>
+        <!-- медленная волна (задний слой) -->
+        <path d="M22 50 Q40 32 58 50 Q76 68 78 50"
+              stroke="#00FFF0" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.4"/>
+        <!-- центральная подсветка -->
+        <circle cx="50" cy="50" r="3" fill="#FF006E" filter="drop-shadow(0 0 4px #FF006E)"/>
+      </svg>
+    </div>
+    <div class="name">ОСЦИЛЛОГРАФ+</div>
+    <div class="descr">Две наложенные волны разной частоты в скруглённой рамке. Доработка варианта №6</div>
+    <div class="header-preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <rect x="14" y="14" width="72" height="72" rx="16" stroke="#00FFF0" stroke-width="3" fill="rgba(0,255,240,0.08)"/>
+        <path d="M22 50 Q28 38 34 50 T46 50 Q52 62 58 50 T70 50 T78 50" stroke="#00FFF0" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+      </svg>
+      <span class="txt">ВЕЩАЙ</span>
+    </div>
+  </div>
+
+  <!-- 13. ВЫШКА-СИГНАЛ (доработка №4) -->
+  <div class="card">
+    <div class="number">// ВАРИАНТ 13</div>
+    <div class="preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <!-- мачта-ферма -->
+        <line x1="50" y1="86" x2="50" y2="34" stroke="#00FFF0" stroke-width="1.6" stroke-linecap="round"/>
+        <!-- решётчатая структура -->
+        <g stroke="#00FFF0" stroke-width="0.8" opacity="0.7">
+          <line x1="42" y1="86" x2="58" y2="86"/>
+          <line x1="44" y1="74" x2="56" y2="74"/>
+          <line x1="46" y1="62" x2="54" y2="62"/>
+          <line x1="47" y1="50" x2="53" y2="50"/>
+          <line x1="42" y1="86" x2="46" y2="62"/>
+          <line x1="58" y1="86" x2="54" y2="62"/>
+          <line x1="44" y1="74" x2="50" y2="62"/>
+          <line x1="56" y1="74" x2="50" y2="62"/>
+        </g>
+        <!-- треугольная антенна -->
+        <polygon points="50,30 46,42 54,42" fill="#00FFF0" filter="drop-shadow(0 0 4px #00FFF0)"/>
+        <!-- источник -->
+        <circle cx="50" cy="28" r="3" fill="#00FFF0" filter="drop-shadow(0 0 8px #00FFF0)"/>
+        <!-- волны слева -->
+        <path d="M30 30 Q22 24 22 18" stroke="#00FFF0" stroke-width="1.3" fill="none" opacity="0.7" stroke-linecap="round"/>
+        <path d="M22 38 Q12 32 8 22" stroke="#00FFF0" stroke-width="1" fill="none" opacity="0.45" stroke-linecap="round"/>
+        <!-- волны справа -->
+        <path d="M70 30 Q78 24 78 18" stroke="#00FFF0" stroke-width="1.3" fill="none" opacity="0.7" stroke-linecap="round"/>
+        <path d="M78 38 Q88 32 92 22" stroke="#00FFF0" stroke-width="1" fill="none" opacity="0.45" stroke-linecap="round"/>
+        <!-- волны вверх -->
+        <path d="M40 22 Q50 14 60 22" stroke="#00FFF0" stroke-width="1.5" fill="none" opacity="0.85" stroke-linecap="round"/>
+        <path d="M34 18 Q50 6 66 18" stroke="#00FFF0" stroke-width="1.1" fill="none" opacity="0.55" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="name">ВЫШКА++</div>
+    <div class="descr">Детализированная радио-вышка с решётчатой структурой и волнами во все стороны. Доработка №4</div>
+    <div class="header-preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <line x1="50" y1="86" x2="50" y2="34" stroke="#00FFF0" stroke-width="3"/>
+        <line x1="42" y1="86" x2="58" y2="86" stroke="#00FFF0" stroke-width="2.5"/>
+        <polygon points="50,30 44,44 56,44" fill="#00FFF0"/>
+        <path d="M40 22 Q50 12 60 22" stroke="#00FFF0" stroke-width="2.5" fill="none"/>
+      </svg>
+      <span class="txt">ВЕЩАЙ</span>
+    </div>
+  </div>
+
+  <!-- 14. ТЁМНОЕ ОКО (с волной-зрачком) -->
+  <div class="card">
+    <div class="number">// ВАРИАНТ 14</div>
+    <div class="preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <!-- внешний шестиугольник -->
+        <polygon points="50,8 86,30 86,70 50,92 14,70 14,30"
+                 stroke="#00FFF0" stroke-width="2" fill="rgba(0,255,240,0.05)"
+                 filter="drop-shadow(0 0 8px #00FFF0)"/>
+        <!-- внутренний шестиугольник пунктиром -->
+        <polygon points="50,18 76,33 76,67 50,82 24,67 24,33"
+                 stroke="#00FFF0" stroke-width="0.8" fill="none" opacity="0.4" stroke-dasharray="2 2"/>
+        <!-- горизонтальная щель -->
+        <path d="M22 50 Q50 30 78 50 Q50 70 22 50 Z" fill="rgba(0,255,240,0.12)" stroke="#00FFF0" stroke-width="1.6"/>
+        <!-- зрачок в форме осциллограммы -->
+        <path d="M30 50 Q34 44 38 50 T46 50 Q52 56 58 50 T66 50 T70 50"
+              stroke="#00FFF0" stroke-width="2.5" fill="none" stroke-linecap="round"
+              filter="drop-shadow(0 0 4px #00FFF0)"/>
+        <!-- угловые акценты -->
+        <circle cx="50" cy="8" r="2" fill="#00FFF0"/>
+        <circle cx="50" cy="92" r="2" fill="#00FFF0"/>
+      </svg>
+    </div>
+    <div class="name">ТЁМНОЕ ОКО</div>
+    <div class="descr">Глаз с волновым зрачком — сочетание идей №3 и №6. Слежение + вещание в одном символе</div>
+    <div class="header-preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <polygon points="50,8 86,30 86,70 50,92 14,70 14,30" stroke="#00FFF0" stroke-width="3" fill="rgba(0,255,240,0.08)"/>
+        <path d="M22 50 Q50 30 78 50 Q50 70 22 50 Z" fill="rgba(0,255,240,0.15)" stroke="#00FFF0" stroke-width="2.5"/>
+        <path d="M30 50 Q40 38 50 50 T70 50" stroke="#00FFF0" stroke-width="3" fill="none"/>
+      </svg>
+      <span class="txt">ВЕЩАЙ</span>
+    </div>
+  </div>
+
+  <!-- 15. СИГНАЛЬНЫЕ ТОЧКИ (созвездие) -->
+  <div class="card">
+    <div class="number">// ВАРИАНТ 15</div>
+    <div class="preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <!-- внешний круг -->
+        <circle cx="50" cy="50" r="42" stroke="#00FFF0" stroke-width="0.8" opacity="0.3" stroke-dasharray="3 4"/>
+        <!-- линии-связи между точками -->
+        <g stroke="#00FFF0" stroke-width="0.8" opacity="0.5">
+          <line x1="50" y1="22" x2="72" y2="38"/>
+          <line x1="72" y1="38" x2="68" y2="64"/>
+          <line x1="68" y1="64" x2="44" y2="72"/>
+          <line x1="44" y1="72" x2="26" y2="56"/>
+          <line x1="26" y1="56" x2="32" y2="32"/>
+          <line x1="32" y1="32" x2="50" y2="22"/>
+          <!-- к центру -->
+          <line x1="50" y1="50" x2="50" y2="22" opacity="0.4"/>
+          <line x1="50" y1="50" x2="72" y2="38" opacity="0.4"/>
+          <line x1="50" y1="50" x2="68" y2="64" opacity="0.4"/>
+          <line x1="50" y1="50" x2="44" y2="72" opacity="0.4"/>
+          <line x1="50" y1="50" x2="26" y2="56" opacity="0.4"/>
+          <line x1="50" y1="50" x2="32" y2="32" opacity="0.4"/>
+        </g>
+        <!-- узлы -->
+        <g fill="#00FFF0">
+          <circle cx="50" cy="22" r="3" filter="drop-shadow(0 0 4px #00FFF0)"/>
+          <circle cx="72" cy="38" r="3" filter="drop-shadow(0 0 4px #00FFF0)"/>
+          <circle cx="68" cy="64" r="3" filter="drop-shadow(0 0 4px #00FFF0)"/>
+          <circle cx="44" cy="72" r="3" filter="drop-shadow(0 0 4px #00FFF0)"/>
+          <circle cx="26" cy="56" r="3" filter="drop-shadow(0 0 4px #00FFF0)"/>
+          <circle cx="32" cy="32" r="3" filter="drop-shadow(0 0 4px #00FFF0)"/>
+        </g>
+        <!-- центральный hub -->
+        <circle cx="50" cy="50" r="5" fill="#00FFF0" filter="drop-shadow(0 0 8px #00FFF0)"/>
+        <circle cx="50" cy="50" r="2" fill="#06060f"/>
+      </svg>
+    </div>
+    <div class="name">СЕТЬ</div>
+    <div class="descr">6 узлов + центр в форме созвездия. Метафора сети, по которой разлетается сигнал</div>
+    <div class="header-preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <g stroke="#00FFF0" stroke-width="2">
+          <line x1="50" y1="22" x2="72" y2="38"/>
+          <line x1="72" y1="38" x2="68" y2="64"/>
+          <line x1="68" y1="64" x2="44" y2="72"/>
+          <line x1="44" y1="72" x2="26" y2="56"/>
+          <line x1="26" y1="56" x2="32" y2="32"/>
+          <line x1="32" y1="32" x2="50" y2="22"/>
+        </g>
+        <g fill="#00FFF0">
+          <circle cx="50" cy="22" r="4"/>
+          <circle cx="72" cy="38" r="4"/>
+          <circle cx="68" cy="64" r="4"/>
+          <circle cx="44" cy="72" r="4"/>
+          <circle cx="26" cy="56" r="4"/>
+          <circle cx="32" cy="32" r="4"/>
+        </g>
+        <circle cx="50" cy="50" r="6" fill="#00FFF0"/>
+      </svg>
+      <span class="txt">ВЕЩАЙ</span>
+    </div>
+  </div>
+
+</div>
+
+<div class="note">
+  // что нравится — пиши номер. можно сказать «объединить N и M» или «возьми N, но добавь X» //
+</div>
+
+</body>
+</html>

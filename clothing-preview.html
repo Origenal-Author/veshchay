@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Одежда питомцев — превью</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #06060f;
+    color: #E0E8F0;
+    font-family: 'JetBrains Mono', Courier, monospace;
+    min-height: 100vh;
+    padding: 30px 20px;
+  }
+  h1 { color: #00FFF0; letter-spacing: 6px; text-align: center; margin-bottom: 8px; font-size: 22px; }
+  .subtitle { text-align: center; color: #506080; letter-spacing: 3px; font-size: 11px; margin-bottom: 30px; }
+  .section-title {
+    color: #506080; letter-spacing: 4px; font-size: 12px;
+    margin: 24px auto 12px; text-align: center; max-width: 1200px;
+    border-top: 1px solid rgba(255,255,255,0.05); padding-top: 18px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    max-width: 1200px; margin: 0 auto;
+  }
+  .card {
+    background: rgba(13,13,26,0.7);
+    border: 1px solid rgba(0,255,240,0.15);
+    border-radius: 10px;
+    padding: 16px 12px;
+    text-align: center;
+  }
+  .canvas-wrap {
+    width: 160px; height: 160px;
+    margin: 0 auto 10px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  canvas {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+  }
+  .name { color: #00FFF0; font-size: 11px; letter-spacing: 2px; margin-bottom: 6px; font-weight: bold; }
+  .meta { color: #506080; font-size: 9px; letter-spacing: 1.5px; margin-bottom: 6px; }
+  .price {
+    display: inline-block;
+    color: #FFD700;
+    font-size: 10px;
+    padding: 2px 8px;
+    border: 1px solid rgba(255,215,0,0.4);
+    border-radius: 3px;
+    margin-bottom: 6px;
+  }
+  .descr { color: #8892B0; font-size: 9.5px; line-height: 1.4; margin-top: 4px; }
+  .style-cute   { color: #FF66CC; }
+  .style-cool   { color: #00FFF0; }
+  .style-evil   { color: #FF006E; }
+  .style-royal  { color: #FFD700; }
+  .style-casual { color: #00FF88; }
+  #error { color:#FF006E; padding:20px; max-width:800px; margin:0 auto; white-space:pre-wrap; font-size:12px; }
+</style>
+</head>
+<body>
+
+<h1>ШМОТКИ ПИТОМЦЕВ</h1>
+<div class="subtitle">// pixel 16x16 · цена в XP //</div>
+
+<div id="error"></div>
+<div id="root"></div>
+
+<script>
+try {
+
+const CLOTHING = [
+  { key:'bow_pink', name:'РОЗОВЫЙ БАНТИК', price:80, slot:'head', style:'cute', size:'medium', description:'милый розовый бант',
+    palette:{p:'#FF66CC',d:'#CC3399',w:'#FFCCEE'},
+    pixels:[
+      '................',
+      '................',
+      '................',
+      '..pp........pp..',
+      '.pppp......pppp.',
+      'ppwppp....pppwpp',
+      'pppppp....pppppp',
+      'pppppppddpppppp.',
+      '.dpppppddppppppd',
+      '..ppppddddpppp..',
+      '...pppdddpppp...',
+      '....pppppppp....',
+      '................',
+      '................',
+      '................',
+      '................'
+    ]
+  },
+  { key:'crown_gold', name:'КОРОНА', price:500, slot:'head', style:'royal', size:'large', description:'королевская корона',
+    palette:{g:'#FFD700',d:'#CC9900',r:'#FF3366'},
+    pixels:[
+      '................',
+      '................',
+      '....g.....g.....',
+      '..g.g..g..g.g...',
+      '..ggg.ggg.ggg...',
+      '..ggrggrgrggg...',
+      '..ggggggggggg...',
+      '..ddddddddddd...',
+      '..ddddddddddd...',
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+      '................'
+    ]
+  },
+  { key:'tophat', name:'ЦИЛИНДР', price:200, slot:'head', style:'cool', size:'large', description:'аристократичный цилиндр',
+    palette:{b:'#0A0A18',d:'#1A1A28',r:'#FF006E'},
+    pixels:[
+      '................',
+      '....bbbbbbbb....',
+      '....bdddddbb....',
+      '....bdddddbb....',
+      '....bdddddbb....',
+      '....brrrrrbb....',
+      '....bdddddbb....',
+      '..bbbbbbbbbbbb..',
+      '..bdddddddddb...',
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+      '................'
+    ]
+  },
+  { key:'beanie', name:'ШАПКА', price:100, slot:'head', style:'casual', size:'medium', description:'вязаная шапка',
+    palette:{r:'#FF006E',d:'#990044',w:'#FFFFFF'},
+    pixels:[
+      '................',
+      '......wwww......',
+      '.....rwwwwr.....',
+      '....rrrrrrrr....',
+      '...rdrrrrrrdr...',
+      '...rrrrrrrrrr...',
+      '...rdrrrrrrdr...',
+      '...rrrrrrrrrr...',
+      '..rrrdrrrrrdrr..',
+      '..rrrrrrrrrrrr..',
+      '..dddddddddddd..',
+      '................',
+      '................',
+      '................',
+      '................',
+      '................'
+    ]
+  },
+  { key:'horns', name:'РОЖКИ', price:300, slot:'head', style:'evil', size:'medium', description:'демонические рога',
+    palette:{r:'#FF006E',d:'#660033'},
+    pixels:[
+      '................',
+      '...r........r...',
+      '..rr........rr..',
+      '..rd........dr..',
+      '..rd........dr..',
+      '..rdd......ddr..',
+      '...rd......dr...',
+      '....rdrrrrdr....',
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+      '................'
+    ]
+  },
+  { key:'halo', name:'НИМБ', price:400, slot:'head', style:'royal', size:'large', description:'священный нимб',
+    palette:{g:'#FFD700',y:'#FFFFCC'},
+    pixels:[
+      '................',
+      '....ggggggg.....',
+      '...gyyyyyyyg....',
+      '...gy.....yg....',
+      '...gy.....yg....',
+      '...gyyyyyyyg....',
+      '....ggggggg.....',
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+      '................'
+    ]
+  },
+  { key:'sunglasses', name:'ОЧКИ', price:150, slot:'face', style:'cool', size:'medium', description:'крутые очки',
+    palette:{b:'#0A0A18',c:'#00FFF0'},
+    pixels:[
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+      '.bbbbb.bbbbb....',
+      '.bccbb.bccbb....',
+      '.bccbb.bccbb....',
+      '.bbbbb.bbbbb....',
+      '......bb........',
+      '................',
+      '................',
+      '................',
+      '................',
+      '................'
+    ]
+  },
+  { key:'heart_glasses', name:'ОЧКИ-СЕРДЕЧКИ', price:250, slot:'face', style:'cute', size:'medium', description:'розовые очки-сердечки',
+    palette:{p:'#FF66CC',r:'#FF3399'},
+    pixels:[
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+      '.p.p...p.p......',
+      'pppppp.pppppp...',
+      'rpppppp.pppppp..',
+      '.rpppp..rpppp...',
+      '..rpp....rpp....',
+      '...r......r.....',
+      '................',
+      '................',
+      '................',
+      '................'
+    ]
+  },
+  { key:'bowtie', name:'ГАЛСТУК-БАБОЧКА', price:120, slot:'neck', style:'cool', size:'small', description:'элегантный галстук',
+    palette:{r:'#FF006E',d:'#660033',y:'#FFD700'},
+    pixels:[
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+      '...rr......rr...',
+      '..rrrrr..rrrrr..',
+      '..rrdrryyrrdrr..',
+      '..rrrrr..rrrrr..',
+      '...rr......rr...',
+      '................',
+      '................'
+    ]
+  },
+  { key:'chain', name:'ЦЕПОЧКА', price:180, slot:'neck', style:'cool', size:'medium', description:'золотая цепь',
+    palette:{g:'#FFD700',d:'#CC9900'},
+    pixels:[
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+      '..gg........gg..',
+      '..dg.gg..gg.gd..',
+      '...gddggddggg...',
+      '.....gddddg.....',
+      '......gddg......',
+      '......gddg......',
+      '.......gg.......',
+      '................'
+    ]
+  },
+  { key:'scarf', name:'ШАРФ', price:90, slot:'neck', style:'casual', size:'medium', description:'тёплый шарф',
+    palette:{c:'#00FFF0',d:'#008888',w:'#FFFFFF'},
+    pixels:[
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+      '.cccccccccccccc.',
+      '.cwccccwwccccwc.',
+      '.dcdcddddddcdcd.',
+      '.cccccccccccccc.',
+      '....c......c....',
+      '....c......c....',
+      '....dc.....dc...',
+      '................'
+    ]
+  },
+  { key:'bracelet', name:'БРАСЛЕТИК', price:70, slot:'paw', style:'cute', size:'small', description:'милый браслетик',
+    palette:{p:'#FF66CC',y:'#FFD700',w:'#FFFFFF'},
+    pixels:[
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+      '.....pypypy.....',
+      '....p.y.y.yp....',
+      '....pypypypy....',
+      '.....p.y.y.p....',
+      '................'
+    ]
+  }
+];
+
+function drawItem(canvas, item) {
+  const N = 16;
+  const SIZE = 160;
+  canvas.width = SIZE;
+  canvas.height = SIZE;
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  const cell = SIZE / N;
+  ctx.clearRect(0, 0, SIZE, SIZE);
+  for (let y = 0; y < N; y++) {
+    const row = item.pixels[y] || '';
+    for (let x = 0; x < N; x++) {
+      const ch = row[x];
+      if (!ch || ch === '.' || !item.palette[ch]) continue;
+      ctx.fillStyle = item.palette[ch];
+      ctx.fillRect(Math.floor(x * cell), Math.floor(y * cell), Math.ceil(cell), Math.ceil(cell));
+    }
+  }
+}
+
+const SLOTS = { head: 'ГОЛОВА', face: 'ЛИЦО', neck: 'ШЕЯ', paw: 'ЛАПКА / АКСЕССУАР' };
+const root = document.getElementById('root');
+
+Object.keys(SLOTS).forEach(slot => {
+  const items = CLOTHING.filter(i => i.slot === slot);
+  if (items.length === 0) return;
+  const title = document.createElement('div');
+  title.className = 'section-title';
+  title.textContent = '// ' + SLOTS[slot] + ' //';
+  root.appendChild(title);
+
+  const grid = document.createElement('div');
+  grid.className = 'grid';
+  root.appendChild(grid);
+
+  items.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'card';
+
+    const wrap = document.createElement('div');
+    wrap.className = 'canvas-wrap';
+    const canvas = document.createElement('canvas');
+    wrap.appendChild(canvas);
+    card.appendChild(wrap);
+
+    const name = document.createElement('div');
+    name.className = 'name';
+    name.textContent = item.name;
+    card.appendChild(name);
+
+    const meta = document.createElement('div');
+    meta.className = 'meta';
+    meta.textContent = '// ' + item.style.toUpperCase() + ' · ' + item.size.toUpperCase();
+    card.appendChild(meta);
+
+    const price = document.createElement('span');
+    price.className = 'price style-' + item.style;
+    price.textContent = item.price + ' XP';
+    card.appendChild(price);
+
+    const descr = document.createElement('div');
+    descr.className = 'descr';
+    descr.textContent = item.description;
+    card.appendChild(descr);
+
+    grid.appendChild(card);
+    drawItem(canvas, item);
+  });
+});
+
+} catch(err) {
+  document.getElementById('error').textContent = 'ОШИБКА: ' + (err && err.message ? err.message : err) + '\n\n' + (err && err.stack ? err.stack : '');
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Одежда — разные стилистики</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #06060f;
+    color: #E0E8F0;
+    font-family: 'JetBrains Mono', Courier, monospace;
+    min-height: 100vh;
+    padding: 30px 20px;
+    background-image:
+      linear-gradient(rgba(0,255,240,0.03) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(0,255,240,0.03) 1px,transparent 1px);
+    background-size: 40px 40px;
+  }
+  h1 { color: #00FFF0; letter-spacing: 6px; text-align: center; margin-bottom: 6px; font-size: 22px; }
+  .subtitle { text-align: center; color: #506080; letter-spacing: 3px; font-size: 11px; margin-bottom: 36px; }
+
+  .collection-title {
+    color: #00FFF0; letter-spacing: 6px; font-size: 16px;
+    margin: 36px auto 6px; text-align: center; max-width: 1100px;
+    text-shadow: 0 0 12px rgba(0,255,240,0.5);
+  }
+  .collection-desc {
+    color: #8892B0; letter-spacing: 2px; font-size: 10px;
+    margin-bottom: 18px; text-align: center;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 14px;
+    max-width: 1100px; margin: 0 auto 20px;
+  }
+  .card {
+    background: rgba(13,13,26,0.7);
+    border: 1px solid rgba(0,255,240,0.15);
+    border-radius: 10px;
+    padding: 14px 10px;
+    text-align: center;
+  }
+  .canvas-wrap {
+    width: 144px; height: 144px;
+    margin: 0 auto 8px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px dashed rgba(255,255,255,0.06);
+    border-radius: 6px;
+  }
+  canvas, svg {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+  }
+  .name { color: #00FFF0; font-size: 11px; letter-spacing: 1.5px; margin-bottom: 4px; font-weight: bold; }
+  .descr { color: #8892B0; font-size: 9px; line-height: 1.3; margin-top: 4px; }
+  .style-tag {
+    display: inline-block;
+    font-size: 8px; padding: 2px 6px;
+    border: 1px solid; border-radius: 3px;
+    letter-spacing: 1px;
+  }
+  hr.divider {
+    max-width: 1100px;
+    margin: 50px auto 0;
+    border: none;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+
+  #error { color:#FF006E; padding:20px; max-width:800px; margin:0 auto; white-space:pre-wrap; font-size:12px; }
+</style>
+</head>
+<body>
+
+<h1>СТИЛИСТИКИ ОДЕЖДЫ</h1>
+<div class="subtitle">// 5 разных коллекций / эстетик — что зайдёт //</div>
+
+<div id="error"></div>
+<div id="root"></div>
+
+<script>
+try {
+
+// ─── СТИЛЬ A: PIXEL 16×16 (нынешний — для сравнения) ────────────────
+const COLLECTION_A = {
+  title: 'A · PIXEL 16×16 (текущий)',
+  desc: '// классический pixel art, плотные блоки //',
+  render: 'pixel',
+  items: [
+    { name:'БАНТИК', desc:'милый',
+      palette:{p:'#FF66CC',d:'#CC3399',w:'#FFCCEE'},
+      pixels:[
+        '................',
+        '................',
+        '..pp........pp..',
+        '.pppp......pppp.',
+        'ppwppp....pppwpp',
+        'pppppp....pppppp',
+        'pppppppddpppppp.',
+        '.dpppppddppppppd',
+        '..ppppddddpppp..',
+        '...pppdddpppp...',
+        '....pppppppp....',
+        '................',
+        '................',
+        '................',
+        '................',
+        '................',
+      ]
+    },
+    { name:'ЦИЛИНДР', desc:'аристократ',
+      palette:{b:'#0A0A18',d:'#1A1A28',r:'#FF006E'},
+      pixels:[
+        '................',
+        '....bbbbbbbb....',
+        '....bdddddbb....',
+        '....bdddddbb....',
+        '....brrrrrbb....',
+        '....bdddddbb....',
+        '..bbbbbbbbbbbb..',
+        '..bdddddddddb...',
+        '................',
+        '................',
+        '................',
+        '................',
+        '................',
+        '................',
+        '................',
+        '................',
+      ]
+    },
+  ]
+};
+
+// ─── СТИЛЬ B: PIXEL 8×8 (ретро/8-бит) ────────────────────────────────
+const COLLECTION_B = {
+  title: 'B · PIXEL 8×8 (8-бит ретро)',
+  desc: '// чище, минимум деталей — как Game Boy //',
+  render: 'pixel',
+  size: 8,
+  items: [
+    { name:'БАНТИК', desc:'мини-стиль',
+      palette:{p:'#FF66CC',w:'#FFCCEE'},
+      pixels:[
+        '........',
+        '.pp..pp.',
+        'pppwwppp',
+        'ppwppwpp',
+        'pppwwppp',
+        '.pp..pp.',
+        '........',
+        '........',
+      ]
+    },
+    { name:'ШАПКА', desc:'8-бит вязка',
+      palette:{r:'#FF006E',d:'#990044'},
+      pixels:[
+        '..rrrr..',
+        '.rrrrrr.',
+        'rrdrrdrr',
+        'rrrrrrrr',
+        'rrdrrdrr',
+        'rrrrrrrr',
+        'dddddddd',
+        '........',
+      ]
+    },
+  ]
+};
+
+// ─── СТИЛЬ C: ВЕКТОРНЫЙ NEON GLOW (как лого сайта) ──────────────────
+const COLLECTION_C = {
+  title: 'C · ВЕКТОРНЫЙ NEON',
+  desc: '// гладкие контуры + glow, в стиле сайта //',
+  render: 'vector',
+  items: [
+    { name:'БАНТИК', desc:'неоновый',
+      svg: `<svg viewBox="0 0 100 100" width="120" height="120">
+        <g stroke="#FF66CC" stroke-width="2" fill="none" filter="drop-shadow(0 0 8px #FF66CC)">
+          <path d="M50 50 L20 30 Q14 38 14 50 Q14 62 20 70 L50 50 Z" fill="rgba(255,102,204,0.15)"/>
+          <path d="M50 50 L80 30 Q86 38 86 50 Q86 62 80 70 L50 50 Z" fill="rgba(255,102,204,0.15)"/>
+          <circle cx="50" cy="50" r="6" fill="#FF66CC"/>
+        </g>
+      </svg>`
+    },
+    { name:'ОЧКИ', desc:'неоновые',
+      svg: `<svg viewBox="0 0 100 100" width="120" height="120">
+        <g stroke="#00FFF0" stroke-width="2.5" fill="rgba(0,255,240,0.1)" filter="drop-shadow(0 0 8px #00FFF0)">
+          <rect x="14" y="38" width="32" height="22" rx="4"/>
+          <rect x="54" y="38" width="32" height="22" rx="4"/>
+          <line x1="46" y1="49" x2="54" y2="49" stroke-width="2"/>
+        </g>
+      </svg>`
+    },
+    { name:'КОРОНА', desc:'неоновая',
+      svg: `<svg viewBox="0 0 100 100" width="120" height="120">
+        <g stroke="#FFD700" stroke-width="2" fill="rgba(255,215,0,0.18)" filter="drop-shadow(0 0 10px #FFD700)">
+          <path d="M14 70 L14 36 L30 52 L50 22 L70 52 L86 36 L86 70 Z"/>
+          <circle cx="50" cy="40" r="3" fill="#FF006E"/>
+        </g>
+      </svg>`
+    },
+  ]
+};
+
+// ─── СТИЛЬ D: GLITCH / ASCII-ART ────────────────────────────────────
+const COLLECTION_D = {
+  title: 'D · GLITCH / ASCII',
+  desc: '// глитчевый стиль — kaomoji-подобный, текстовый //',
+  render: 'ascii',
+  items: [
+    { name:'БАНТИК', desc:'ASCII',
+      text: '><', color: '#FF66CC', sub:'glitch'
+    },
+    { name:'ОЧКИ', desc:'ASCII',
+      text: '◘ ◘', color: '#00FFF0'
+    },
+    { name:'КОРОНА', desc:'ASCII',
+      text: '♔', color: '#FFD700'
+    },
+    { name:'РОЖКИ', desc:'ASCII',
+      text: '∧ ∧', color: '#FF006E'
+    },
+  ]
+};
+
+// ─── СТИЛЬ E: МУЛЬТФИЛЬМ (как у KAWAII Tamagotchi) ──────────────────
+const COLLECTION_E = {
+  title: 'E · СТИКЕР-СТИЛЬ',
+  desc: '// мягкие закруглённые формы, более «детский» вид //',
+  render: 'vector',
+  items: [
+    { name:'БАНТИК', desc:'стикер',
+      svg: `<svg viewBox="0 0 100 100" width="120" height="120">
+        <defs><radialGradient id="bowGrad"><stop offset="0" stop-color="#FFCCEE"/><stop offset="1" stop-color="#FF66CC"/></radialGradient></defs>
+        <ellipse cx="28" cy="50" rx="20" ry="14" fill="url(#bowGrad)" stroke="#CC3399" stroke-width="2.5"/>
+        <ellipse cx="72" cy="50" rx="20" ry="14" fill="url(#bowGrad)" stroke="#CC3399" stroke-width="2.5"/>
+        <ellipse cx="50" cy="50" rx="8" ry="10" fill="#CC3399"/>
+        <ellipse cx="48" cy="46" rx="2" ry="3" fill="#FFCCEE"/>
+      </svg>`
+    },
+    { name:'УШКИ', desc:'кошачьи',
+      svg: `<svg viewBox="0 0 100 100" width="120" height="120">
+        <defs><linearGradient id="earGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF66CC"/><stop offset="1" stop-color="#CC3399"/></linearGradient></defs>
+        <polygon points="20,70 30,30 48,68" fill="url(#earGrad)" stroke="#990044" stroke-width="2"/>
+        <polygon points="22,68 30,40 42,66" fill="#FFCCEE"/>
+        <polygon points="80,70 70,30 52,68" fill="url(#earGrad)" stroke="#990044" stroke-width="2"/>
+        <polygon points="78,68 70,40 58,66" fill="#FFCCEE"/>
+      </svg>`
+    },
+    { name:'СЕРДЕЧКО', desc:'аксессуар',
+      svg: `<svg viewBox="0 0 100 100" width="120" height="120">
+        <path d="M50 78 C20 58 10 40 22 28 C34 16 50 30 50 40 C50 30 66 16 78 28 C90 40 80 58 50 78 Z"
+              fill="#FF66CC" stroke="#990044" stroke-width="2" filter="drop-shadow(0 0 6px rgba(255,102,204,0.6))"/>
+        <ellipse cx="36" cy="34" rx="6" ry="4" fill="#FFCCEE" opacity="0.7"/>
+      </svg>`
+    },
+  ]
+};
+
+// ─── СТИЛЬ F: КОНТУРНЫЙ (LINE-ART) ──────────────────────────────────
+const COLLECTION_F = {
+  title: 'F · КОНТУРНЫЙ LINE-ART',
+  desc: '// только линии, минимализм — техно-стиль //',
+  render: 'vector',
+  items: [
+    { name:'БАНТИК', desc:'линия',
+      svg: `<svg viewBox="0 0 100 100" width="120" height="120">
+        <g stroke="#FF66CC" stroke-width="2" fill="none" stroke-linejoin="round" stroke-linecap="round">
+          <path d="M50 50 L18 32 Q12 50 18 68 Z"/>
+          <path d="M50 50 L82 32 Q88 50 82 68 Z"/>
+          <rect x="44" y="42" width="12" height="16" rx="2"/>
+        </g>
+      </svg>`
+    },
+    { name:'ШЛЯПА', desc:'контур',
+      svg: `<svg viewBox="0 0 100 100" width="120" height="120">
+        <g stroke="#00FFF0" stroke-width="2" fill="none" stroke-linejoin="round" stroke-linecap="round">
+          <line x1="14" y1="68" x2="86" y2="68"/>
+          <path d="M30 68 L30 32 Q30 24 50 24 Q70 24 70 32 L70 68"/>
+          <line x1="30" y1="58" x2="70" y2="58"/>
+        </g>
+      </svg>`
+    },
+    { name:'ОЧКИ', desc:'контур',
+      svg: `<svg viewBox="0 0 100 100" width="120" height="120">
+        <g stroke="#00FFF0" stroke-width="2" fill="none" stroke-linecap="round">
+          <circle cx="32" cy="50" r="14"/>
+          <circle cx="68" cy="50" r="14"/>
+          <line x1="46" y1="50" x2="54" y2="50"/>
+          <line x1="18" y1="46" x2="12" y2="42"/>
+          <line x1="82" y1="46" x2="88" y2="42"/>
+        </g>
+      </svg>`
+    },
+    { name:'ОЖЕРЕЛЬЕ', desc:'контур',
+      svg: `<svg viewBox="0 0 100 100" width="120" height="120">
+        <g stroke="#FFD700" stroke-width="2" fill="none" stroke-linecap="round">
+          <path d="M20 38 Q50 70 80 38"/>
+          <circle cx="50" cy="62" r="6" fill="rgba(255,215,0,0.2)"/>
+          <path d="M50 56 L50 50" stroke-width="1.5"/>
+        </g>
+      </svg>`
+    },
+  ]
+};
+
+// ─── RENDER ──────────────────────────────────────────────────────────
+function drawPixel(canvas, item, size) {
+  const N = size || 16;
+  const SIZE = 144;
+  canvas.width = SIZE;
+  canvas.height = SIZE;
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  const cell = SIZE / N;
+  for (let y = 0; y < N; y++) {
+    const row = item.pixels[y] || '';
+    for (let x = 0; x < N; x++) {
+      const ch = row[x];
+      if (!ch || ch === '.' || !item.palette[ch]) continue;
+      ctx.fillStyle = item.palette[ch];
+      ctx.fillRect(Math.floor(x * cell), Math.floor(y * cell), Math.ceil(cell), Math.ceil(cell));
+    }
+  }
+}
+
+const root = document.getElementById('root');
+
+function renderCollection(col) {
+  const title = document.createElement('div');
+  title.className = 'collection-title';
+  title.textContent = col.title;
+  root.appendChild(title);
+
+  const desc = document.createElement('div');
+  desc.className = 'collection-desc';
+  desc.textContent = col.desc;
+  root.appendChild(desc);
+
+  const grid = document.createElement('div');
+  grid.className = 'grid';
+  root.appendChild(grid);
+
+  col.items.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'card';
+
+    const wrap = document.createElement('div');
+    wrap.className = 'canvas-wrap';
+    card.appendChild(wrap);
+
+    if (col.render === 'pixel') {
+      const canvas = document.createElement('canvas');
+      wrap.appendChild(canvas);
+      drawPixel(canvas, item, col.size);
+    } else if (col.render === 'vector') {
+      wrap.innerHTML = item.svg;
+    } else if (col.render === 'ascii') {
+      const span = document.createElement('div');
+      span.style.fontSize = '52px';
+      span.style.color = item.color;
+      span.style.textShadow = '0 0 12px ' + item.color;
+      span.style.fontFamily = 'JetBrains Mono, monospace';
+      span.style.letterSpacing = '4px';
+      span.textContent = item.text;
+      if (item.sub === 'glitch') {
+        span.style.animation = 'glitch 0.6s steps(3) infinite';
+      }
+      wrap.appendChild(span);
+    }
+
+    const name = document.createElement('div');
+    name.className = 'name';
+    name.textContent = item.name;
+    card.appendChild(name);
+
+    const d = document.createElement('div');
+    d.className = 'descr';
+    d.textContent = item.desc;
+    card.appendChild(d);
+
+    grid.appendChild(card);
+  });
+
+  const hr = document.createElement('hr');
+  hr.className = 'divider';
+  root.appendChild(hr);
+}
+
+[COLLECTION_A, COLLECTION_B, COLLECTION_C, COLLECTION_D, COLLECTION_E, COLLECTION_F].forEach(renderCollection);
+
+} catch(err) {
+  document.getElementById('error').textContent = 'ОШИБКА: ' + (err && err.message ? err.message : err) + '\n\n' + (err && err.stack ? err.stack : '');
+}
+</script>
+
+</body>
+</html>

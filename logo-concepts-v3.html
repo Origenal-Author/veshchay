@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Концепты лого Вещай — v3</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #06060f;
+    color: #E0E8F0;
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 100vh;
+    padding: 40px 20px;
+    background-image:
+      linear-gradient(rgba(0,255,240,0.03) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(0,255,240,0.03) 1px,transparent 1px);
+    background-size: 40px 40px;
+  }
+  h1 {
+    font-family: 'Orbitron', monospace;
+    color: #00FFF0;
+    letter-spacing: 6px;
+    text-align: center;
+    margin-bottom: 12px;
+    text-shadow: 0 0 16px rgba(0,255,240,0.5);
+  }
+  .subtitle {
+    text-align: center;
+    color: #506080;
+    letter-spacing: 3px;
+    font-size: 11px;
+    margin-bottom: 50px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .card {
+    background: rgba(13,13,26,0.7);
+    border: 1px solid rgba(0,255,240,0.15);
+    border-radius: 12px;
+    padding: 28px 20px 20px;
+    text-align: center;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(0,255,240,0.5);
+    box-shadow: 0 8px 30px rgba(0,255,240,0.18);
+  }
+  .number {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: #00FFF0;
+    letter-spacing: 3px;
+    padding: 3px 10px;
+    border: 1px solid rgba(0,255,240,0.3);
+    border-radius: 4px;
+    margin-bottom: 16px;
+  }
+  .preview {
+    width: 140px;
+    height: 140px;
+    margin: 0 auto 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at center, rgba(0,255,240,0.05), transparent 70%);
+  }
+  .preview svg { width: 100%; height: 100%; }
+  .name {
+    font-family: 'Orbitron', monospace;
+    font-size: 14px;
+    letter-spacing: 3px;
+    color: #00FFF0;
+    margin-bottom: 6px;
+    text-shadow: 0 0 8px rgba(0,255,240,0.4);
+  }
+  .descr {
+    font-size: 10px;
+    color: #8892B0;
+    line-height: 1.6;
+    letter-spacing: 1px;
+  }
+  .header-preview {
+    margin-top: 18px;
+    padding: 10px 16px;
+    border-top: 1px dashed rgba(255,255,255,0.06);
+    display: flex; align-items: center; gap: 10px;
+    justify-content: center;
+  }
+  .header-preview svg { width: 28px; height: 28px; }
+  .header-preview .txt {
+    font-family: 'Orbitron', monospace;
+    font-size: 18px; font-weight: 900;
+    color: #00FFF0;
+    letter-spacing: 6px;
+    text-shadow: 0 0 10px rgba(0,255,240,0.6);
+  }
+  .note {
+    text-align: center;
+    color: #506080;
+    margin-top: 40px;
+    font-size: 11px;
+    letter-spacing: 2px;
+  }
+  @keyframes lighthouseSweep {
+    0%, 100% { transform: rotate(-25deg); opacity: 0.7; }
+    50% { transform: rotate(25deg); opacity: 1; }
+  }
+  @keyframes equaliz1 { 0%,100%{height:20px;y:40px}50%{height:50px;y:25px} }
+  @keyframes equaliz2 { 0%,100%{height:40px;y:30px}50%{height:25px;y:37px} }
+  @keyframes equaliz3 { 0%,100%{height:55px;y:22px}50%{height:35px;y:32px} }
+  @keyframes equaliz4 { 0%,100%{height:30px;y:35px}50%{height:50px;y:25px} }
+  @keyframes glitchH { 0%,100%{transform:translate(0,0)}33%{transform:translate(1px,-1px)}66%{transform:translate(-1px,1px)} }
+  .lighthouse-beam { transform-origin: 50px 70px; animation: lighthouseSweep 3s ease-in-out infinite; }
+  .eq-bar { animation: 1.4s ease-in-out infinite; }
+  .glitch-anim { animation: glitchH 0.4s steps(3,end) infinite; }
+</style>
+</head>
+<body>
+
+<h1>ВЕЩАЙ // ЛОГО v3</h1>
+<div class="subtitle">// совсем другие направления — звук, свет, ретро //</div>
+
+<div class="grid">
+
+  <!-- 16. МАЯК -->
+  <div class="card">
+    <div class="number">// ВАРИАНТ 16</div>
+    <div class="preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <!-- основание маяка -->
+        <polygon points="38,86 62,86 60,70 40,70" stroke="#00FFF0" stroke-width="1.6" fill="rgba(0,255,240,0.08)"/>
+        <!-- башня -->
+        <polygon points="40,70 60,70 58,42 42,42" stroke="#00FFF0" stroke-width="1.6" fill="rgba(0,255,240,0.06)"/>
+        <!-- полосы -->
+        <line x1="40" y1="56" x2="60" y2="56" stroke="#00FFF0" stroke-width="0.6" opacity="0.5"/>
+        <!-- лампа сверху -->
+        <rect x="40" y="34" width="20" height="8" stroke="#00FFF0" stroke-width="1.5" fill="rgba(0,255,240,0.15)"/>
+        <polygon points="40,34 60,34 56,28 44,28" stroke="#00FFF0" stroke-width="1.5" fill="rgba(0,255,240,0.1)"/>
+        <!-- источник света -->
+        <circle cx="50" cy="38" r="3" fill="#00FFF0" filter="drop-shadow(0 0 8px #00FFF0)"/>
+        <!-- луч анимированный -->
+        <g class="lighthouse-beam">
+          <path d="M50 38 L25 4 L75 4 Z" fill="url(#beamGrad)" opacity="0.55"/>
+          <defs>
+            <linearGradient id="beamGrad" x1="50" y1="38" x2="50" y2="4" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stop-color="#00FFF0" stop-opacity="0.8"/>
+              <stop offset="1" stop-color="#00FFF0" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+        </g>
+      </svg>
+    </div>
+    <div class="name">МАЯК</div>
+    <div class="descr">Маяк с лучом — вещает свет/сигнал в темноту. Анимированный сектор</div>
+    <div class="header-preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <polygon points="38,86 62,86 60,70 40,70" stroke="#00FFF0" stroke-width="3" fill="rgba(0,255,240,0.1)"/>
+        <polygon points="40,70 60,70 58,42 42,42" stroke="#00FFF0" stroke-width="3" fill="rgba(0,255,240,0.08)"/>
+        <rect x="40" y="34" width="20" height="8" stroke="#00FFF0" stroke-width="2.5" fill="rgba(0,255,240,0.2)"/>
+        <circle cx="50" cy="38" r="4" fill="#00FFF0"/>
+      </svg>
+      <span class="txt">ВЕЩАЙ</span>
+    </div>
+  </div>
+
+  <!-- 17. МИКРОФОН -->
+  <div class="card">
+    <div class="number">// ВАРИАНТ 17</div>
+    <div class="preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <!-- сетка микрофона -->
+        <rect x="38" y="18" width="24" height="36" rx="12" stroke="#00FFF0" stroke-width="2" fill="rgba(0,255,240,0.08)" filter="drop-shadow(0 0 6px #00FFF0)"/>
+        <!-- горизонтальные линии сетки -->
+        <line x1="38" y1="26" x2="62" y2="26" stroke="#00FFF0" stroke-width="0.6" opacity="0.5"/>
+        <line x1="38" y1="32" x2="62" y2="32" stroke="#00FFF0" stroke-width="0.6" opacity="0.5"/>
+        <line x1="38" y1="38" x2="62" y2="38" stroke="#00FFF0" stroke-width="0.6" opacity="0.5"/>
+        <line x1="38" y1="44" x2="62" y2="44" stroke="#00FFF0" stroke-width="0.6" opacity="0.5"/>
+        <!-- подставка-дуга -->
+        <path d="M30 50 Q30 64 50 64 Q70 64 70 50" stroke="#00FFF0" stroke-width="2" fill="none"/>
+        <!-- ножка -->
+        <line x1="50" y1="64" x2="50" y2="78" stroke="#00FFF0" stroke-width="2"/>
+        <!-- основание -->
+        <line x1="40" y1="78" x2="60" y2="78" stroke="#00FFF0" stroke-width="2"/>
+        <!-- звуковые дуги слева -->
+        <path d="M28 32 Q22 36 22 42" stroke="#00FFF0" stroke-width="1.4" fill="none" opacity="0.7"/>
+        <path d="M20 28 Q12 36 12 46" stroke="#00FFF0" stroke-width="1.1" fill="none" opacity="0.4"/>
+        <!-- звуковые дуги справа -->
+        <path d="M72 32 Q78 36 78 42" stroke="#00FFF0" stroke-width="1.4" fill="none" opacity="0.7"/>
+        <path d="M80 28 Q88 36 88 46" stroke="#00FFF0" stroke-width="1.1" fill="none" opacity="0.4"/>
+      </svg>
+    </div>
+    <div class="name">МИКРОФОН</div>
+    <div class="descr">Классический студийный микрофон с волнами звука по бокам. «Вещание» в прямом смысле</div>
+    <div class="header-preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <rect x="38" y="18" width="24" height="36" rx="12" stroke="#00FFF0" stroke-width="3" fill="rgba(0,255,240,0.15)"/>
+        <line x1="38" y1="30" x2="62" y2="30" stroke="#00FFF0" stroke-width="1.5" opacity="0.7"/>
+        <line x1="38" y1="42" x2="62" y2="42" stroke="#00FFF0" stroke-width="1.5" opacity="0.7"/>
+        <path d="M30 50 Q30 64 50 64 Q70 64 70 50" stroke="#00FFF0" stroke-width="3" fill="none"/>
+        <line x1="50" y1="64" x2="50" y2="82" stroke="#00FFF0" stroke-width="3"/>
+      </svg>
+      <span class="txt">ВЕЩАЙ</span>
+    </div>
+  </div>
+
+  <!-- 18. ЭКВАЛАЙЗЕР -->
+  <div class="card">
+    <div class="number">// ВАРИАНТ 18</div>
+    <div class="preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <!-- горизонтальная база -->
+        <line x1="14" y1="75" x2="86" y2="75" stroke="#00FFF0" stroke-width="1" opacity="0.4"/>
+        <!-- столбики эквалайзера -->
+        <rect class="eq-bar" style="animation-name: equaliz1" x="18" y="40" width="9" height="35" fill="#00FFF0" opacity="0.85" filter="drop-shadow(0 0 4px #00FFF0)"/>
+        <rect class="eq-bar" style="animation-name: equaliz2; animation-delay: 0.2s" x="32" y="30" width="9" height="45" fill="#00FFF0" opacity="0.85" filter="drop-shadow(0 0 4px #00FFF0)"/>
+        <rect class="eq-bar" style="animation-name: equaliz3; animation-delay: 0.4s" x="46" y="22" width="9" height="53" fill="#00FFF0" opacity="0.85" filter="drop-shadow(0 0 4px #00FFF0)"/>
+        <rect class="eq-bar" style="animation-name: equaliz4; animation-delay: 0.6s" x="60" y="35" width="9" height="40" fill="#00FFF0" opacity="0.85" filter="drop-shadow(0 0 4px #00FFF0)"/>
+        <rect class="eq-bar" style="animation-name: equaliz1; animation-delay: 0.8s" x="74" y="42" width="9" height="33" fill="#00FFF0" opacity="0.85" filter="drop-shadow(0 0 4px #00FFF0)"/>
+        <!-- декоративные точки сверху на каждом столбце -->
+        <circle cx="22.5" cy="36" r="1.5" fill="#FF006E"/>
+        <circle cx="36.5" cy="26" r="1.5" fill="#FF006E"/>
+        <circle cx="50.5" cy="18" r="1.5" fill="#FF006E"/>
+        <circle cx="64.5" cy="31" r="1.5" fill="#FF006E"/>
+        <circle cx="78.5" cy="38" r="1.5" fill="#FF006E"/>
+      </svg>
+    </div>
+    <div class="name">ЭКВАЛАЙЗЕР</div>
+    <div class="descr">5 столбцов спектра аудио, пульсирующих в такт. Розовые точки-пики сверху</div>
+    <div class="header-preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <rect x="18" y="42" width="10" height="33" fill="#00FFF0"/>
+        <rect x="32" y="30" width="10" height="45" fill="#00FFF0"/>
+        <rect x="46" y="20" width="10" height="55" fill="#00FFF0"/>
+        <rect x="60" y="34" width="10" height="41" fill="#00FFF0"/>
+        <rect x="74" y="44" width="10" height="31" fill="#00FFF0"/>
+      </svg>
+      <span class="txt">ВЕЩАЙ</span>
+    </div>
+  </div>
+
+  <!-- 19. МОРЗЕ -->
+  <div class="card">
+    <div class="number">// ВАРИАНТ 19</div>
+    <div class="preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <!-- внешний круг -->
+        <circle cx="50" cy="50" r="42" stroke="#00FFF0" stroke-width="1.5" opacity="0.7" fill="rgba(0,255,240,0.04)" filter="drop-shadow(0 0 6px #00FFF0)"/>
+        <!-- центральная горизонтальная ось -->
+        <line x1="20" y1="50" x2="80" y2="50" stroke="#00FFF0" stroke-width="0.6" opacity="0.3"/>
+        <!-- морзе ВЩ:  . - - -    - - . - -    но визуально это сильно длинно — упростим -->
+        <!-- Реально SOS: ... --- ... но у нас ВЕЩАЙ. Возьмём абстрактно: точка-тире-точка-тире-точка как ритм -->
+        <circle cx="24" cy="50" r="3" fill="#00FFF0" filter="drop-shadow(0 0 4px #00FFF0)"/>
+        <rect x="30" y="47" width="14" height="6" fill="#00FFF0" rx="1" filter="drop-shadow(0 0 4px #00FFF0)"/>
+        <rect x="48" y="47" width="14" height="6" fill="#00FFF0" rx="1" filter="drop-shadow(0 0 4px #00FFF0)"/>
+        <circle cx="68" cy="50" r="3" fill="#00FFF0" filter="drop-shadow(0 0 4px #00FFF0)"/>
+        <rect x="74" y="47" width="6" height="6" fill="#00FFF0" rx="1" filter="drop-shadow(0 0 4px #00FFF0)"/>
+        <!-- маленький текст «..  -  -  ..» сверху -->
+        <text x="50" y="22" text-anchor="middle" font-family="JetBrains Mono" font-size="6" fill="#00FFF0" opacity="0.5" letter-spacing="1">. — — . —</text>
+        <text x="50" y="80" text-anchor="middle" font-family="JetBrains Mono" font-size="6" fill="#00FFF0" opacity="0.5" letter-spacing="2">SOS · TX</text>
+      </svg>
+    </div>
+    <div class="name">МОРЗЕ</div>
+    <div class="descr">Точки и тире — азбука Морзе как символ ретро-вещания. С подписью SOS/TX</div>
+    <div class="header-preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="50" r="42" stroke="#00FFF0" stroke-width="3" fill="rgba(0,255,240,0.06)"/>
+        <circle cx="26" cy="50" r="4" fill="#00FFF0"/>
+        <rect x="32" y="46" width="16" height="8" fill="#00FFF0" rx="1"/>
+        <rect x="52" y="46" width="16" height="8" fill="#00FFF0" rx="1"/>
+        <circle cx="74" cy="50" r="4" fill="#00FFF0"/>
+      </svg>
+      <span class="txt">ВЕЩАЙ</span>
+    </div>
+  </div>
+
+  <!-- 20. ВИНИЛ -->
+  <div class="card">
+    <div class="number">// ВАРИАНТ 20</div>
+    <div class="preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <!-- пластинка -->
+        <circle cx="50" cy="50" r="42" stroke="#00FFF0" stroke-width="2" fill="rgba(0,255,240,0.06)" filter="drop-shadow(0 0 6px #00FFF0)"/>
+        <!-- дорожки -->
+        <circle cx="50" cy="50" r="36" stroke="#00FFF0" stroke-width="0.5" opacity="0.4"/>
+        <circle cx="50" cy="50" r="32" stroke="#00FFF0" stroke-width="0.5" opacity="0.35"/>
+        <circle cx="50" cy="50" r="28" stroke="#00FFF0" stroke-width="0.5" opacity="0.3"/>
+        <circle cx="50" cy="50" r="24" stroke="#00FFF0" stroke-width="0.5" opacity="0.25"/>
+        <!-- центральная этикетка -->
+        <circle cx="50" cy="50" r="14" fill="rgba(0,255,240,0.15)" stroke="#00FFF0" stroke-width="1.5"/>
+        <!-- центральная дырка -->
+        <circle cx="50" cy="50" r="2.5" fill="#06060f" stroke="#00FFF0" stroke-width="1"/>
+        <!-- блик/отражение -->
+        <path d="M30 32 Q45 24 60 30" stroke="#00FFF0" stroke-width="1" fill="none" opacity="0.4"/>
+        <!-- розовая полоска -->
+        <line x1="50" y1="36" x2="50" y2="40" stroke="#FF006E" stroke-width="1.5" opacity="0.7"/>
+      </svg>
+    </div>
+    <div class="name">ВИНИЛ</div>
+    <div class="descr">Пластинка с дорожками. Ретро-носитель, но в киберпанк-обработке. Чисто, узнаваемо</div>
+    <div class="header-preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="50" r="42" stroke="#00FFF0" stroke-width="3" fill="rgba(0,255,240,0.08)"/>
+        <circle cx="50" cy="50" r="32" stroke="#00FFF0" stroke-width="1.5" opacity="0.5"/>
+        <circle cx="50" cy="50" r="22" stroke="#00FFF0" stroke-width="1" opacity="0.4"/>
+        <circle cx="50" cy="50" r="14" fill="rgba(0,255,240,0.2)" stroke="#00FFF0" stroke-width="2.5"/>
+        <circle cx="50" cy="50" r="3" fill="#06060f" stroke="#00FFF0" stroke-width="1.5"/>
+      </svg>
+      <span class="txt">ВЕЩАЙ</span>
+    </div>
+  </div>
+
+  <!-- 21. TV-ГЛИТЧ -->
+  <div class="card">
+    <div class="number">// ВАРИАНТ 21</div>
+    <div class="preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <!-- ТВ-корпус -->
+        <rect x="14" y="22" width="72" height="56" rx="6" stroke="#00FFF0" stroke-width="2.5" fill="rgba(0,255,240,0.05)" filter="drop-shadow(0 0 6px #00FFF0)"/>
+        <!-- экран -->
+        <rect x="22" y="30" width="56" height="40" rx="2" fill="rgba(0,255,240,0.12)" stroke="#00FFF0" stroke-width="0.6"/>
+        <!-- горизонтальные сканлайны -->
+        <g stroke="#00FFF0" stroke-width="0.4" opacity="0.5">
+          <line x1="22" y1="36" x2="78" y2="36"/>
+          <line x1="22" y1="42" x2="78" y2="42"/>
+          <line x1="22" y1="48" x2="78" y2="48"/>
+          <line x1="22" y1="54" x2="78" y2="54"/>
+          <line x1="22" y1="60" x2="78" y2="60"/>
+          <line x1="22" y1="66" x2="78" y2="66"/>
+        </g>
+        <!-- глитч-полоса розовая -->
+        <rect x="22" y="44" width="56" height="4" fill="#FF006E" opacity="0.5" class="glitch-anim"/>
+        <!-- статика-точки -->
+        <g fill="#00FFF0">
+          <rect x="28" y="38" width="2" height="2"/>
+          <rect x="44" y="40" width="2" height="2"/>
+          <rect x="60" y="56" width="2" height="2"/>
+          <rect x="34" y="62" width="2" height="2"/>
+          <rect x="68" y="48" width="2" height="2"/>
+          <rect x="52" y="38" width="2" height="2"/>
+        </g>
+        <!-- антенны -->
+        <line x1="30" y1="22" x2="22" y2="10" stroke="#00FFF0" stroke-width="1.5"/>
+        <line x1="70" y1="22" x2="78" y2="10" stroke="#00FFF0" stroke-width="1.5"/>
+        <circle cx="22" cy="10" r="1.5" fill="#00FFF0"/>
+        <circle cx="78" cy="10" r="1.5" fill="#00FFF0"/>
+        <!-- ножки -->
+        <line x1="30" y1="78" x2="26" y2="90" stroke="#00FFF0" stroke-width="1.5"/>
+        <line x1="70" y1="78" x2="74" y2="90" stroke="#00FFF0" stroke-width="1.5"/>
+      </svg>
+    </div>
+    <div class="name">ТЕЛЕВИЗОР</div>
+    <div class="descr">Старый ТВ с антеннами, сканлайнами и розовой глитч-полосой. Чистая ретро-эстетика</div>
+    <div class="header-preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <rect x="14" y="22" width="72" height="56" rx="6" stroke="#00FFF0" stroke-width="3.5" fill="rgba(0,255,240,0.08)"/>
+        <rect x="22" y="30" width="56" height="40" rx="2" fill="rgba(0,255,240,0.18)" stroke="#00FFF0" stroke-width="1.5"/>
+        <line x1="30" y1="22" x2="22" y2="10" stroke="#00FFF0" stroke-width="2.5"/>
+        <line x1="70" y1="22" x2="78" y2="10" stroke="#00FFF0" stroke-width="2.5"/>
+      </svg>
+      <span class="txt">ВЕЩАЙ</span>
+    </div>
+  </div>
+
+  <!-- 22. РУПОР -->
+  <div class="card">
+    <div class="number">// ВАРИАНТ 22</div>
+    <div class="preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <!-- ручка рупора -->
+        <rect x="18" y="46" width="14" height="8" stroke="#00FFF0" stroke-width="1.6" fill="rgba(0,255,240,0.08)"/>
+        <!-- конус -->
+        <polygon points="32,38 32,62 60,72 60,28"
+                 stroke="#00FFF0" stroke-width="2" fill="rgba(0,255,240,0.1)"
+                 filter="drop-shadow(0 0 6px #00FFF0)"/>
+        <!-- внутренний контур -->
+        <line x1="38" y1="42" x2="55" y2="33" stroke="#00FFF0" stroke-width="0.6" opacity="0.5"/>
+        <line x1="38" y1="58" x2="55" y2="67" stroke="#00FFF0" stroke-width="0.6" opacity="0.5"/>
+        <!-- центральная точка -->
+        <circle cx="32" cy="50" r="2" fill="#00FFF0"/>
+        <!-- волны звука 3 дуги -->
+        <path d="M66 38 Q72 42 72 50 Q72 58 66 62" stroke="#00FFF0" stroke-width="1.8" fill="none" opacity="0.85"/>
+        <path d="M72 30 Q82 38 82 50 Q82 62 72 70" stroke="#00FFF0" stroke-width="1.4" fill="none" opacity="0.55"/>
+        <path d="M78 22 Q92 34 92 50 Q92 66 78 78" stroke="#00FFF0" stroke-width="1.1" fill="none" opacity="0.3"/>
+      </svg>
+    </div>
+    <div class="name">РУПОР</div>
+    <div class="descr">Мегафон с волнами звука — буквально «вещаю». Узнаваемый силуэт</div>
+    <div class="header-preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <rect x="18" y="46" width="14" height="8" stroke="#00FFF0" stroke-width="2.5" fill="rgba(0,255,240,0.15)"/>
+        <polygon points="32,38 32,62 60,72 60,28" stroke="#00FFF0" stroke-width="3" fill="rgba(0,255,240,0.15)"/>
+        <path d="M66 38 Q72 42 72 50 Q72 58 66 62" stroke="#00FFF0" stroke-width="2.5" fill="none"/>
+        <path d="M72 30 Q82 38 82 50 Q82 62 72 70" stroke="#00FFF0" stroke-width="2" fill="none" opacity="0.7"/>
+      </svg>
+      <span class="txt">ВЕЩАЙ</span>
+    </div>
+  </div>
+
+  <!-- 23. МОЛНИЯ -->
+  <div class="card">
+    <div class="number">// ВАРИАНТ 23</div>
+    <div class="preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <!-- внешний круг -->
+        <circle cx="50" cy="50" r="40" stroke="#00FFF0" stroke-width="1.5" opacity="0.5" fill="rgba(0,255,240,0.04)"/>
+        <!-- молния-зигзаг -->
+        <polygon points="56,16 36,52 50,52 44,84 64,46 50,46"
+                 fill="#00FFF0" filter="drop-shadow(0 0 12px #00FFF0)" stroke="#00FFF0" stroke-width="1.5" stroke-linejoin="round"/>
+        <!-- розовые отблески по бокам -->
+        <line x1="22" y1="30" x2="28" y2="36" stroke="#FF006E" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+        <line x1="78" y1="70" x2="72" y2="64" stroke="#FF006E" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+        <line x1="76" y1="26" x2="70" y2="32" stroke="#FF006E" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+        <line x1="24" y1="74" x2="30" y2="68" stroke="#FF006E" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+        <!-- маленькие искры -->
+        <circle cx="20" cy="50" r="1.5" fill="#00FFF0"/>
+        <circle cx="80" cy="50" r="1.5" fill="#00FFF0"/>
+        <circle cx="50" cy="14" r="1" fill="#00FFF0"/>
+        <circle cx="50" cy="86" r="1" fill="#00FFF0"/>
+      </svg>
+    </div>
+    <div class="name">МОЛНИЯ</div>
+    <div class="descr">Цифровой разряд в круге — энергия, быстрая передача данных. Яркий и заметный</div>
+    <div class="header-preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="50" r="40" stroke="#00FFF0" stroke-width="3" fill="rgba(0,255,240,0.06)"/>
+        <polygon points="56,16 36,52 50,52 44,84 64,46 50,46" fill="#00FFF0"/>
+      </svg>
+      <span class="txt">ВЕЩАЙ</span>
+    </div>
+  </div>
+
+  <!-- 24. ВОЛНОВОЙ ИМПУЛЬС (ЭКГ) -->
+  <div class="card">
+    <div class="number">// ВАРИАНТ 24</div>
+    <div class="preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <!-- скруглённый прямоугольник -->
+        <rect x="10" y="32" width="80" height="36" rx="8" stroke="#00FFF0" stroke-width="2" fill="rgba(0,255,240,0.04)" filter="drop-shadow(0 0 6px #00FFF0)"/>
+        <!-- горизонтальная нулевая линия -->
+        <line x1="14" y1="50" x2="86" y2="50" stroke="#00FFF0" stroke-width="0.6" opacity="0.3"/>
+        <!-- ЭКГ-сигнал -->
+        <path d="M14 50 L26 50 L30 50 L33 42 L36 58 L39 30 L42 68 L45 50 L50 50 L62 50 L66 50 L70 42 L74 58 L78 50 L86 50"
+              stroke="#00FFF0" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
+              filter="drop-shadow(0 0 6px #00FFF0)"/>
+        <!-- импульсные точки в пиках -->
+        <circle cx="39" cy="30" r="2" fill="#FF006E" filter="drop-shadow(0 0 4px #FF006E)"/>
+        <circle cx="42" cy="68" r="2" fill="#FF006E" filter="drop-shadow(0 0 4px #FF006E)"/>
+      </svg>
+    </div>
+    <div class="name">ИМПУЛЬС</div>
+    <div class="descr">ЭКГ-кардиограмма с пиками. Метафора живого сигнала, биения сети</div>
+    <div class="header-preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <rect x="10" y="32" width="80" height="36" rx="8" stroke="#00FFF0" stroke-width="3" fill="rgba(0,255,240,0.08)"/>
+        <path d="M14 50 L33 50 L38 38 L43 64 L48 30 L53 50 L86 50"
+              stroke="#00FFF0" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="txt">ВЕЩАЙ</span>
+    </div>
+  </div>
+
+  <!-- 25. МИКРОСХЕМА -->
+  <div class="card">
+    <div class="number">// ВАРИАНТ 25</div>
+    <div class="preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <!-- внешние ножки горизонтально -->
+        <g stroke="#00FFF0" stroke-width="1.5">
+          <line x1="6" y1="32" x2="20" y2="32"/>
+          <line x1="6" y1="42" x2="20" y2="42"/>
+          <line x1="6" y1="52" x2="20" y2="52"/>
+          <line x1="6" y1="62" x2="20" y2="62"/>
+          <line x1="80" y1="32" x2="94" y2="32"/>
+          <line x1="80" y1="42" x2="94" y2="42"/>
+          <line x1="80" y1="52" x2="94" y2="52"/>
+          <line x1="80" y1="62" x2="94" y2="62"/>
+        </g>
+        <!-- ножки вертикально -->
+        <g stroke="#00FFF0" stroke-width="1.5">
+          <line x1="32" y1="6" x2="32" y2="20"/>
+          <line x1="42" y1="6" x2="42" y2="20"/>
+          <line x1="52" y1="6" x2="52" y2="20"/>
+          <line x1="62" y1="6" x2="62" y2="20"/>
+          <line x1="32" y1="80" x2="32" y2="94"/>
+          <line x1="42" y1="80" x2="42" y2="94"/>
+          <line x1="52" y1="80" x2="52" y2="94"/>
+          <line x1="62" y1="80" x2="62" y2="94"/>
+        </g>
+        <!-- корпус -->
+        <rect x="20" y="20" width="60" height="60" rx="6" stroke="#00FFF0" stroke-width="2"
+              fill="rgba(0,255,240,0.08)" filter="drop-shadow(0 0 6px #00FFF0)"/>
+        <!-- треугольник-маркер 1-й ноги -->
+        <polygon points="26,26 32,26 26,32" fill="#00FFF0" opacity="0.6"/>
+        <!-- центральная точка-чип -->
+        <circle cx="50" cy="50" r="9" fill="rgba(0,255,240,0.2)" stroke="#00FFF0" stroke-width="1.5"/>
+        <circle cx="50" cy="50" r="3" fill="#00FFF0" filter="drop-shadow(0 0 6px #00FFF0)"/>
+        <!-- дорожки -->
+        <line x1="50" y1="41" x2="50" y2="20" stroke="#00FFF0" stroke-width="0.5" opacity="0.4"/>
+        <line x1="50" y1="59" x2="50" y2="80" stroke="#00FFF0" stroke-width="0.5" opacity="0.4"/>
+        <line x1="41" y1="50" x2="20" y2="50" stroke="#00FFF0" stroke-width="0.5" opacity="0.4"/>
+        <line x1="59" y1="50" x2="80" y2="50" stroke="#00FFF0" stroke-width="0.5" opacity="0.4"/>
+      </svg>
+    </div>
+    <div class="name">МИКРОСХЕМА</div>
+    <div class="descr">Микропроцессор с ножками. «Цифровое сердце» сайта. Чистый geek-стиль</div>
+    <div class="header-preview">
+      <svg viewBox="0 0 100 100" fill="none">
+        <g stroke="#00FFF0" stroke-width="2.5">
+          <line x1="6" y1="34" x2="20" y2="34"/>
+          <line x1="6" y1="50" x2="20" y2="50"/>
+          <line x1="6" y1="66" x2="20" y2="66"/>
+          <line x1="80" y1="34" x2="94" y2="34"/>
+          <line x1="80" y1="50" x2="94" y2="50"/>
+          <line x1="80" y1="66" x2="94" y2="66"/>
+        </g>
+        <rect x="20" y="20" width="60" height="60" rx="6" stroke="#00FFF0" stroke-width="3.5" fill="rgba(0,255,240,0.12)"/>
+        <circle cx="50" cy="50" r="9" fill="#00FFF0"/>
+      </svg>
+      <span class="txt">ВЕЩАЙ</span>
+    </div>
+  </div>
+
+</div>
+
+<div class="note">
+  // понравилось — назови номер. не понравилось — скажи о чём ещё подумать //
+</div>
+
+</body>
+</html>

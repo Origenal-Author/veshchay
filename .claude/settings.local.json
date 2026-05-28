@@ -57,7 +57,8 @@
       "Bash(\"C:\\\\Program Files\\\\Git\\\\bin\\\\git.exe\" reset --soft HEAD~1)",
       "Bash('C:\\\\Program Files\\\\Git\\\\bin\\\\git.exe' -C veshchay commit -m ' *)",
       "Bash(\"C:\\\\Program Files\\\\Git\\\\bin\\\\git.exe\" -C veshchay push origin HEAD:main)",
-      "Bash(\"C:\\\\Program Files\\\\Git\\\\bin\\\\git.exe\" add veshchay .claude/settings.local.json)"
+      "Bash(\"C:\\\\Program Files\\\\Git\\\\bin\\\\git.exe\" add veshchay .claude/settings.local.json)",
+      "Bash(npx next *)"
     ],
     "additionalDirectories": [
       "c:\\Users\\Администратор\\Desktop\\соц. сеть\\veshchay\\app\\api\\pets"
