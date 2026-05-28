@@ -16,48 +16,14 @@ interface Props {
   sleeping?: boolean  // спящий — canvas+лицо серые, одежда сохраняет цвет
 }
 
-// Координаты одежды per-type. У каждого вида голова в своём месте, поэтому
-// шапку/очки нельзя ставить общим cy — будет «парение».
-// cy = центр SVG; SVG-шапки имеют основную массу в нижней половине viewBox.
-const HEAD_POSITIONS: Record<PetType, { cx: number; cy: number; size: number }> = {
-  jellyfish: { cx: 0.50, cy: 0.09, size: 0.40 },  // на куполе
-  ghost:     { cx: 0.50, cy: 0.10, size: 0.42 },
-  hologram:  { cx: 0.50, cy: 0.12, size: 0.36 },
-  signal:    { cx: 0.50, cy: 0.10, size: 0.34 },
-  radar:     { cx: 0.50, cy: 0.06, size: 0.42 },
-  neuron:    { cx: 0.50, cy: 0.10, size: 0.36 },
-  plasma:    { cx: 0.50, cy: 0.25, size: 0.34 },
-  crystal:   { cx: 0.50, cy: 0.08, size: 0.40 },
-}
-
-// Очки — там, где глаза (FACE_AREA.cy). Размер зависит от размера головы.
-const FACE_POSITIONS: Record<PetType, { cx: number; cy: number; size: number }> = {
-  jellyfish: { cx: 0.50, cy: 0.34, size: 0.32 },
-  ghost:     { cx: 0.50, cy: 0.40, size: 0.36 },
-  hologram:  { cx: 0.50, cy: 0.48, size: 0.32 },
-  signal:    { cx: 0.50, cy: 0.31, size: 0.26 },
-  radar:     { cx: 0.50, cy: 0.49, size: 0.22 },
-  neuron:    { cx: 0.50, cy: 0.49, size: 0.28 },
-  plasma:    { cx: 0.50, cy: 0.49, size: 0.30 },
-  crystal:   { cx: 0.50, cy: 0.49, size: 0.26 },
-}
-
-// Шея/основание — для бантика/шарфа. Общий cy подходит большинству типов.
-const NECK_POSITIONS: Record<PetType, { cx: number; cy: number; size: number }> = {
-  jellyfish: { cx: 0.50, cy: 0.57, size: 0.40 },  // под куполом, над щупальцами
-  ghost:     { cx: 0.50, cy: 0.65, size: 0.46 },
-  hologram:  { cx: 0.50, cy: 0.72, size: 0.40 },
-  signal:    { cx: 0.50, cy: 0.50, size: 0.40 },
-  radar:     { cx: 0.50, cy: 0.78, size: 0.40 },
-  neuron:    { cx: 0.50, cy: 0.78, size: 0.40 },
-  plasma:    { cx: 0.50, cy: 0.68, size: 0.40 },
-  crystal:   { cx: 0.50, cy: 0.78, size: 0.40 },
-}
-
-function getClothingPos(slot: string, type: PetType) {
-  if (slot === 'head') return HEAD_POSITIONS[type]
-  if (slot === 'face') return FACE_POSITIONS[type]
-  if (slot === 'neck') return NECK_POSITIONS[type]
+// Позиции одежды per-type — привязаны к FACE_AREA[type].cy (центру лица).
+// Шапка — на 0.20 выше лица, очки — на лице, шарф/бант — на 0.20 ниже лица.
+// SVG main mass сидит вокруг своего центра (cy), а не в нижней половине.
+function getClothingPos(slot: string, type: PetType): { cx: number; cy: number; size: number } | null {
+  const faceCy = FACE_AREA[type].cy
+  if (slot === 'head') return { cx: 0.50, cy: Math.max(0.06, faceCy - 0.20), size: 0.34 }
+  if (slot === 'face') return { cx: 0.50, cy: faceCy,                        size: 0.28 }
+  if (slot === 'neck') return { cx: 0.50, cy: Math.min(0.88, faceCy + 0.20), size: 0.34 }
   return null
 }
 
