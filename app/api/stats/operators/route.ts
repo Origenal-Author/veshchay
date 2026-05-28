@@ -27,14 +27,22 @@ export async function GET() {
     .select('id', { count: 'exact', head: true })
 
   // Новых за последние 24 часа
-  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+  const since24 = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
   const { count: last24 } = await serviceClient
     .from('profiles')
     .select('id', { count: 'exact', head: true })
-    .gte('created_at', since)
+    .gte('created_at', since24)
+
+  // Сейчас в сети (presence.last_seen за последние 2 минуты)
+  const since2m = new Date(Date.now() - 2 * 60 * 1000).toISOString()
+  const { count: online } = await serviceClient
+    .from('presence')
+    .select('user_id', { count: 'exact', head: true })
+    .gte('last_seen', since2m)
 
   return NextResponse.json({
     total: total ?? 0,
     last24: last24 ?? 0,
+    online: online ?? 0,
   })
 }

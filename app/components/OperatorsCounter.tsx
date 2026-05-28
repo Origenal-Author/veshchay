@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 
-interface Stats { total: number; last24: number }
+interface Stats { total: number; last24: number; online: number }
 
 export default function OperatorsCounter() {
   const [stats, setStats] = useState<Stats | null>(null)
@@ -72,10 +72,12 @@ export default function OperatorsCounter() {
           animation: 'pulseLive 1.6s ease-in-out infinite',
         }}
       />
-      <span style={{ color: '#506080' }}>// ОПЕРАТОРОВ:</span>
+      <span style={{ color: '#506080' }}>// В СЕТИ:</span>
+      <span style={{ color: '#00FF88', fontWeight: 'bold' }}>{stats.online}</span>
+      <span style={{ color: '#506080' }}>/</span>
       <span style={{ color: '#00FFF0', fontWeight: 'bold' }}>{stats.total}</span>
       {stats.last24 > 0 && (
-        <span style={{ color: '#00FF88' }}>+{stats.last24}/24ч</span>
+        <span style={{ color: '#FFBD2E' }}>+{stats.last24}/24ч</span>
       )}
       <style>{`
         @keyframes pulseLive {
