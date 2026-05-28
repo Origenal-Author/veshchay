@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase-server'
 import { logout } from '@/app/auth/actions'
+import LogoutButton from '@/app/components/LogoutButton'
 
 async function createPlaylist(formData: FormData) {
   'use server'
@@ -45,7 +46,7 @@ export default async function PlaylistsPage() {
         <Link href="/" className="site-logo">ВЕЩАЙ</Link>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 10 }}>
           <Link href={`/profile/${user.id}`} className="btn-ghost-ui">ПРОФИЛЬ</Link>
-          <form action={logout}><button type="submit" className="btn-ghost-ui">ВЫЙТИ</button></form>
+          <LogoutButton action={logout} className="btn-ghost-ui" />
         </div>
       </header>
 
