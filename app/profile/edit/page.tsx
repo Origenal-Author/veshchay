@@ -177,11 +177,11 @@ export default function EditProfilePage() {
               value={bio}
               onChange={e => setBio(e.target.value)}
               placeholder="Расскажи кто ты в этом эфире..."
-              maxLength={300}
-              rows={4}
-              style={{ width: '100%', padding: '13px 16px', background: 'var(--surface)', border: '1px solid var(--border)', borderLeft: '3px solid var(--accent)', color: 'var(--text)', fontFamily: "'Exo 2',sans-serif", fontSize: 14, outline: 'none', resize: 'none' }}
+              maxLength={1000}
+              rows={6}
+              style={{ width: '100%', padding: '13px 16px', background: 'var(--surface)', border: '1px solid var(--border)', borderLeft: '3px solid var(--accent)', color: 'var(--text)', fontFamily: "'Exo 2',sans-serif", fontSize: 14, outline: 'none', resize: 'vertical', minHeight: 120 }}
             />
-            <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: 'var(--subtext)', textAlign: 'right', marginTop: 4 }}>{bio.length}/300</div>
+            <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: bio.length > 950 ? '#FF006E' : 'var(--subtext)', textAlign: 'right', marginTop: 4 }}>{bio.length}/1000</div>
           </div>
 
           {error && (
