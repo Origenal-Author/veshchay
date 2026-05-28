@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { getPetDef, type PetType, type PetVariant, type PetStage } from '@/lib/pets'
+import { CLOTHING } from '@/lib/clothing'
 
 interface Props {
   type: PetType
@@ -11,6 +12,16 @@ interface Props {
   face?: string  // если задан — стираем нарисованные глаза и показываем kaomoji DOM-overlay
   crying?: boolean  // показать капающие слёзы из глаз
   infected?: boolean  // заражённый — добавляем pink hue + glitch overlay
+  equipped?: string[] | null  // ключи надетой одежды
+}
+
+// Координаты одежды относительно зоны питомца. Slot-based, не зависит от типа.
+// Все значения в долях от размера PetCanvas.
+const CLOTHING_POSITIONS: Record<string, { cx: number; cy: number; size: number }> = {
+  head: { cx: 0.50, cy: 0.18, size: 0.55 },   // над головой/куполом
+  face: { cx: 0.50, cy: 0.42, size: 0.50 },   // на лице
+  neck: { cx: 0.50, cy: 0.65, size: 0.55 },   // на шее/основании
+  paw:  { cx: 0.50, cy: 0.82, size: 0.35 },   // нижний аксессуар
 }
 
 // Точная позиция центра «лица» и расстояния между глазами в относительных координатах (0..1).
@@ -649,7 +660,7 @@ const DRAW_MAP: Record<PetType, DrawFn> = {
 }
 
 // ── КОМПОНЕНТ ─────────────────────────────────────────────────────────────────
-export default function PetCanvas({ type, variant, stage, size = 120, face, crying, infected }: Props) {
+export default function PetCanvas({ type, variant, stage, size = 120, face, crying, infected, equipped }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animRef = useRef<number>(0)
   const tRef = useRef(0)
@@ -752,6 +763,26 @@ export default function PetCanvas({ type, variant, stage, size = 120, face, cryi
           {face}
         </div>
       )}
+      {/* Надетая одежда — поверх питомца */}
+      {equipped && equipped.length > 0 && stage !== 'egg' && equipped.map(key => {
+        const item = CLOTHING.find(c => c.key === key)
+        if (!item) return null
+        const pos = CLOTHING_POSITIONS[item.slot]
+        const itemSize = size * pos.size
+        return (
+          <svg key={key}
+            viewBox="0 0 100 100"
+            width={itemSize} height={itemSize}
+            style={{
+              position: 'absolute',
+              left: `calc(${pos.cx * 100}% - ${itemSize / 2}px)`,
+              top: `calc(${pos.cy * 100}% - ${itemSize / 2}px)`,
+              pointerEvents: 'none',
+            }}
+            dangerouslySetInnerHTML={{ __html: item.svg }}
+          />
+        )
+      })}
       {/* Слёзы из глаз */}
       {crying && stage !== 'egg' && (() => {
         const tearTop = (offset + (fa.cy + 0.02) * scale) * 100

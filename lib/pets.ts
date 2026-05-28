@@ -27,6 +27,7 @@ export interface Pet {
   created_at: string
   infected_by?: string | null
   infected_at?: string | null
+  equipped?: string[] | null  // ключи надетой одежды
 }
 
 export const PET_DEFS: PetDef[] = [

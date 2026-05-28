@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import PetCanvas from '@/app/components/PetCanvas'
 import SnakeGame from '@/app/components/SnakeGame'
 import HealMinigame from '@/app/components/HealMinigame'
+import ClothingShop from '@/app/components/ClothingShop'
 import { checkAchievements } from '@/app/components/AchievementToast'
 import { getMaxPets } from '@/lib/xp'
 import {
@@ -376,6 +377,23 @@ function PetHabitat({ pet, onUpdate, onDelete, onDesktopOpen }: {
   const [wakeClicks, setWakeClicks] = useState(0)
   const lastActivityRef = useRef(Date.now())
   const SLEEP_AFTER_MS = 90_000  // 90 секунд без активности → засыпает
+
+  // Магазин одежды
+  const [shopOpen, setShopOpen] = useState(false)
+
+  function onEquipChange(newEquipped: string[]) {
+    onUpdate({ ...pet, equipped: newEquipped })
+  }
+
+  function onShopMessage(text: string, m: string) {
+    bumpActivity()
+    setMood(m as Mood)
+    addParticle(text.slice(0, 80))
+    setLastReply(text)
+    if (replyTimerRef.current) clearTimeout(replyTimerRef.current)
+    replyTimerRef.current = setTimeout(() => setLastReply(null), 6000)
+    setTimeout(() => setMood('idle'), 2200)
+  }
 
   // Лечение заражения — мини-игра
   const [healingMode, setHealingMode] = useState(false)
@@ -955,6 +973,7 @@ function PetHabitat({ pet, onUpdate, onDelete, onDesktopOpen }: {
                 size={180}
                 face={pet.stage === 'egg' ? undefined : moodFace(mood, isVirus)}
                 infected={!!pet.infected_by}
+                equipped={pet.equipped}
               />
             )}
           </div>
@@ -1094,6 +1113,15 @@ function PetHabitat({ pet, onUpdate, onDelete, onDesktopOpen }: {
                 {challenge ? '⛔ РЕШИ ЗАДАНИЕ' : talking ? '⏳ ДУМАЕТ...' : '💬 СКАЗАТЬ'}
               </button>
             )}
+            {/* Шмотки — только для baby/adult */}
+            {pet.stage !== 'egg' && (
+              <button
+                onClick={() => setShopOpen(true)}
+                style={{ ...actionBtn, flex: 1, borderColor: '#FF66CC', color: '#FF66CC' }}
+              >
+                👕 ШМОТКИ
+              </button>
+            )}
             {/* Выгул — только для baby/adult */}
             {pet.stage !== 'egg' && (
               <button
@@ -1151,6 +1179,16 @@ function PetHabitat({ pet, onUpdate, onDelete, onDesktopOpen }: {
           pet={pet}
           onRename={pet.stage !== 'egg' ? openRename : undefined}
           onHeal={pet.infected_by ? () => setHealingMode(true) : undefined}
+        />
+      )}
+
+      {/* Магазин одежды */}
+      {shopOpen && (
+        <ClothingShop
+          pet={pet}
+          onClose={() => setShopOpen(false)}
+          onEquipChange={onEquipChange}
+          onMessage={onShopMessage}
         />
       )}
 

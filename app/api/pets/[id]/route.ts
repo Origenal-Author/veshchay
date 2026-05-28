@@ -80,22 +80,15 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   return NextResponse.json({ pet: updated, xpGain: 15 })
 }
 
-// PATCH — обновить имя питомца
+// PATCH — обновить питомца: имя или надетая одежда
 export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const body = await req.json().catch(() => null) as { name?: string | null } | null
+  const body = await req.json().catch(() => null) as { name?: string | null; equipped?: string[] } | null
   if (body === null) return NextResponse.json({ error: 'Bad request' }, { status: 400 })
-
-  // Нормализуем имя
-  const rawName = (body.name ?? '').toString().trim()
-  if (rawName.length > 24) {
-    return NextResponse.json({ error: 'Имя слишком длинное (макс. 24)' }, { status: 400 })
-  }
-  const newName: string | null = rawName.length === 0 ? null : rawName
 
   // Проверяем владение
   const { data: pet } = await supabase
@@ -104,8 +97,39 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
+  const updates: Record<string, unknown> = {}
+
+  // Имя
+  if ('name' in body) {
+    const rawName = (body.name ?? '').toString().trim()
+    if (rawName.length > 24) {
+      return NextResponse.json({ error: 'Имя слишком длинное (макс. 24)' }, { status: 400 })
+    }
+    updates.name = rawName.length === 0 ? null : rawName
+  }
+
+  // Одежда — проверяем, что все ключи куплены пользователем
+  if ('equipped' in body && Array.isArray(body.equipped)) {
+    const equipped = body.equipped.slice(0, 4)  // максимум 4 слота
+    if (equipped.length > 0) {
+      const { data: owned } = await supabase
+        .from('user_clothing').select('item_key').eq('user_id', user.id)
+      const ownedSet = new Set((owned ?? []).map(r => r.item_key as string))
+      for (const key of equipped) {
+        if (!ownedSet.has(key)) {
+          return NextResponse.json({ error: `Не куплено: ${key}` }, { status: 400 })
+        }
+      }
+    }
+    updates.equipped = equipped
+  }
+
+  if (Object.keys(updates).length === 0) {
+    return NextResponse.json({ error: 'Nothing to update' }, { status: 400 })
+  }
+
   const { data: updated, error } = await serviceClient
-    .from('pets').update({ name: newName }).eq('id', id).select().single()
+    .from('pets').update(updates).eq('id', id).select().single()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   return NextResponse.json({ pet: updated })
