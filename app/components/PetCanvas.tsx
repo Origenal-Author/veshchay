@@ -287,8 +287,9 @@ function drawHologram(ctx: CanvasRenderingContext2D, w: number, h: number, t: nu
 }
 
 function drawGhost(ctx: CanvasRenderingContext2D, w: number, h: number, t: number, isVirus: boolean, C: string) {
-  const cx = w / 2, floatY = Math.sin(t * 0.04) * 5
-  const cy = h * 0.42 + floatY
+  // floatY вынесен в CSS-анимацию обёртки PetCanvas — лицо/одежда движутся синхронно
+  const cx = w / 2
+  const cy = h * 0.42
   const bw = w * 0.28, bh = h * 0.28
   const tailY = cy + bh * 0.45
   const tw = isVirus ? Math.sin(t * 0.18) * 4 : Math.sin(t * 0.07) * 2
@@ -332,8 +333,9 @@ function drawGhost(ctx: CanvasRenderingContext2D, w: number, h: number, t: numbe
 }
 
 function drawJellyfish(ctx: CanvasRenderingContext2D, w: number, h: number, t: number, isVirus: boolean, C: string) {
-  const cx = w / 2, floatY = Math.sin(t * 0.035) * 4
-  const cy = h * 0.35 + floatY
+  // floatY вынесен в CSS-анимацию обёртки PetCanvas — лицо/одежда движутся синхронно
+  const cx = w / 2
+  const cy = h * 0.35
   const bw = w * 0.26, bh = h * 0.22
 
   // Щупальца
