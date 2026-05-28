@@ -25,6 +25,8 @@ export interface Pet {
   feed_count: number
   name: string | null
   created_at: string
+  infected_by?: string | null
+  infected_at?: string | null
 }
 
 export const PET_DEFS: PetDef[] = [

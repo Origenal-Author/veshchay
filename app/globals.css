@@ -570,6 +570,18 @@ body[data-weather="fog"] .site-header { background: rgba(7,10,14,0.90); }
   100% { transform: translateY(40px) scale(0.6); opacity: 0; }
 }
 
+@keyframes infectedPulse {
+  0%, 100% { transform: scale(1)    rotate(0deg); }
+  25%      { transform: scale(1.02) rotate(0.5deg); }
+  50%      { transform: scale(0.98) rotate(-0.5deg); }
+  75%      { transform: scale(1.01) rotate(0.3deg); }
+}
+
+@keyframes infectedAura {
+  0%, 100% { opacity: 0.4; transform: scale(0.95); }
+  50%      { opacity: 0.9; transform: scale(1.1); }
+}
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to   { opacity: 1; }

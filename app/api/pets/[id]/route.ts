@@ -46,6 +46,40 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }
   return NextResponse.json({ ok: true, unlockAt, achievementUnlocked })
 }
 
+// POST — лечить заражённого питомца (вызывается после успешной мини-игры)
+export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
+  const { id } = await ctx.params
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const body = await req.json().catch(() => null) as { action?: string } | null
+  if (body?.action !== 'heal') return NextResponse.json({ error: 'Bad request' }, { status: 400 })
+
+  // Проверяем владение питомцем и факт заражения
+  const { data: pet } = await supabase
+    .from('pets').select('id, user_id, infected_by').eq('id', id).single()
+  if (!pet || pet.user_id !== user.id)
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  if (!pet.infected_by)
+    return NextResponse.json({ error: 'Not infected' }, { status: 400 })
+
+  // Сбрасываем заражение
+  const { data: updated, error } = await serviceClient
+    .from('pets').update({ infected_by: null, infected_at: null }).eq('id', id).select().single()
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  // +15 XP за успешное лечение
+  const { data: profile } = await supabase.from('profiles').select('xp').eq('id', user.id).single()
+  if (profile) {
+    const { getRank } = await import('@/lib/xp')
+    const nx = (profile.xp ?? 0) + 15
+    await supabase.from('profiles').update({ xp: nx, rank: getRank(nx) }).eq('id', user.id)
+  }
+
+  return NextResponse.json({ pet: updated, xpGain: 15 })
+}
+
 // PATCH — обновить имя питомца
 export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params

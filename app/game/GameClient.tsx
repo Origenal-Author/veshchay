@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import PetCanvas from '@/app/components/PetCanvas'
 import SnakeGame from '@/app/components/SnakeGame'
+import HealMinigame from '@/app/components/HealMinigame'
 import { checkAchievements } from '@/app/components/AchievementToast'
 import { getMaxPets } from '@/lib/xp'
 import {
@@ -178,7 +179,7 @@ function FloatingSymbols({ isVirus, C }: { isVirus: boolean; C: string }) {
 }
 
 // ── ИНФО ПИТОМЦА ──────────────────────────────────────────────────────────────
-function PetInfo({ pet, onRename }: { pet: Pet; onRename?: () => void }) {
+function PetInfo({ pet, onRename, onHeal }: { pet: Pet; onRename?: () => void; onHeal?: () => void }) {
   const def = getPetDef(pet.type)
   const isVirus = pet.variant === 'virus'
   const C = isVirus ? def.colorVirus : def.color
@@ -231,6 +232,35 @@ function PetInfo({ pet, onRename }: { pet: Pet; onRename?: () => void }) {
       <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 10, color: '#506080', letterSpacing: 2 }}>
         {isVirus ? '// ВИРУС — проказник //' : '// КОД — безобидный //'}
       </div>
+
+      {/* Статус заражения + кнопка лечить */}
+      {pet.infected_by && onHeal && (
+        <div style={{
+          padding: '10px 14px', borderRadius: 8,
+          border: '1px solid #FF006E',
+          background: 'rgba(255,0,110,0.06)',
+          boxShadow: '0 0 12px rgba(255,0,110,0.15)',
+          display: 'flex', alignItems: 'center', gap: 12,
+          animation: 'infectedPulse 2s ease-in-out infinite',
+        }}>
+          <span style={{ fontSize: 22 }}>🦠</span>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontFamily: 'Orbitron,monospace', fontSize: 11, letterSpacing: 3, color: '#FF006E' }}>
+              ЗАРАЖЁН ВИРУСОМ
+            </div>
+            <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 9, color: '#8892B0', marginTop: 3 }}>
+              питомец постепенно мутирует — нужно лечить
+            </div>
+          </div>
+          <button onClick={onHeal} style={{
+            padding: '8px 14px', borderRadius: 6,
+            border: '1px solid #00FF88', color: '#00FF88',
+            background: 'rgba(0,255,136,0.08)',
+            fontFamily: 'Orbitron,monospace', fontSize: 10, letterSpacing: 2,
+            cursor: 'pointer', whiteSpace: 'nowrap',
+          }}>🩺 ЛЕЧИТЬ</button>
+        </div>
+      )}
 
       <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
@@ -346,6 +376,22 @@ function PetHabitat({ pet, onUpdate, onDelete, onDesktopOpen }: {
   const [wakeClicks, setWakeClicks] = useState(0)
   const lastActivityRef = useRef(Date.now())
   const SLEEP_AFTER_MS = 90_000  // 90 секунд без активности → засыпает
+
+  // Лечение заражения — мини-игра
+  const [healingMode, setHealingMode] = useState(false)
+
+  async function finalizeHeal() {
+    try {
+      const res = await fetch(`/api/pets/${pet.id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'heal' }),
+      })
+      const data = await res.json()
+      if (data.pet) onUpdate(data.pet)
+    } catch { /* ignore */ }
+    setHealingMode(false)
+  }
 
   // Переименование питомца
   const [renameMode, setRenameMode] = useState(false)
@@ -908,6 +954,7 @@ function PetHabitat({ pet, onUpdate, onDelete, onDesktopOpen }: {
                 stage={pet.stage}
                 size={180}
                 face={pet.stage === 'egg' ? undefined : moodFace(mood, isVirus)}
+                infected={!!pet.infected_by}
               />
             )}
           </div>
@@ -1099,7 +1146,22 @@ function PetHabitat({ pet, onUpdate, onDelete, onDesktopOpen }: {
       )}
 
       {/* Инфо питомца */}
-      {!collapsed && <PetInfo pet={pet} onRename={pet.stage !== 'egg' ? openRename : undefined} />}
+      {!collapsed && (
+        <PetInfo
+          pet={pet}
+          onRename={pet.stage !== 'egg' ? openRename : undefined}
+          onHeal={pet.infected_by ? () => setHealingMode(true) : undefined}
+        />
+      )}
+
+      {/* Мини-игра лечения */}
+      {healingMode && (
+        <HealMinigame
+          petName={pet.name || getPetDef(pet.type).nameRu}
+          onDone={finalizeHeal}
+          onClose={() => setHealingMode(false)}
+        />
+      )}
 
       {/* МОДАЛКА ИМЕНИ */}
       {renameMode && (

@@ -10,6 +10,7 @@ interface Props {
   size?: number
   face?: string  // если задан — стираем нарисованные глаза и показываем kaomoji DOM-overlay
   crying?: boolean  // показать капающие слёзы из глаз
+  infected?: boolean  // заражённый — добавляем pink hue + glitch overlay
 }
 
 // Точная позиция центра «лица» и расстояния между глазами в относительных координатах (0..1).
@@ -648,7 +649,7 @@ const DRAW_MAP: Record<PetType, DrawFn> = {
 }
 
 // ── КОМПОНЕНТ ─────────────────────────────────────────────────────────────────
-export default function PetCanvas({ type, variant, stage, size = 120, face, crying }: Props) {
+export default function PetCanvas({ type, variant, stage, size = 120, face, crying, infected }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animRef = useRef<number>(0)
   const tRef = useRef(0)
@@ -715,8 +716,28 @@ export default function PetCanvas({ type, variant, stage, size = 120, face, cryi
   const fontSize = Math.max(9, size * baseScale * charScale)
 
   return (
-    <div style={{ position: 'relative', display: 'inline-block', width: size, height: size }}>
+    <div style={{
+      position: 'relative', display: 'inline-block', width: size, height: size,
+      filter: infected ? 'hue-rotate(280deg) saturate(1.4) brightness(1.05)' : undefined,
+      animation: infected ? 'infectedPulse 1.6s ease-in-out infinite' : undefined,
+    }}>
       <canvas ref={canvasRef} style={{ display: 'block' }} />
+      {infected && (
+        <>
+          {/* Заражённая аура */}
+          <div style={{
+            position: 'absolute', inset: -8, borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(255,0,110,0.15) 0%, transparent 70%)',
+            pointerEvents: 'none', animation: 'infectedAura 1.8s ease-in-out infinite',
+          }} />
+          {/* Глитч-полосы */}
+          <div style={{
+            position: 'absolute', inset: 0, pointerEvents: 'none',
+            background: 'repeating-linear-gradient(0deg, transparent, transparent 8px, rgba(255,0,110,0.08) 8px, rgba(255,0,110,0.08) 9px)',
+            mixBlendMode: 'screen',
+          }} />
+        </>
+      )}
       {face && stage !== 'egg' && (
         <div style={{
           position: 'absolute', left: '50%', top: `${cyPct}%`,
