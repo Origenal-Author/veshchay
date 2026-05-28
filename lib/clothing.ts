@@ -166,7 +166,19 @@ const REACTIONS_VIRUS: Record<ClothingStyle, { mood: string; messages: string[] 
   casual:  { mood: 'idle',    messages: ['сойдёт', 'окей, ношу', 'не самое худшее', 'нормально'] },
 }
 
+// Индивидуальные реакции на конкретные предметы (переопределяют style-based)
+const REACTION_OVERRIDES: Record<string, { kod?: { mood: string; messages: string[] }; virus?: { mood: string; messages: string[] } }> = {
+  crown_gold: {
+    virus: { mood: 'happy', messages: ['Кланийся, смертный! LOL', 'теперь все на колени', 'Я ПРАВИТЕЛЬ ХАОСА', 'хах, признай моё величие'] },
+  },
+}
+
 export function pickReactionMessage(item: ClothingItem, isVirus: boolean): { text: string; mood: string } {
+  const ov = REACTION_OVERRIDES[item.key]
+  const ovReaction = ov && (isVirus ? ov.virus : ov.kod)
+  if (ovReaction) {
+    return { text: ovReaction.messages[Math.floor(Math.random() * ovReaction.messages.length)], mood: ovReaction.mood }
+  }
   const table = isVirus ? REACTIONS_VIRUS : REACTIONS_KOD
   const r = table[item.style]
   return { text: r.messages[Math.floor(Math.random() * r.messages.length)], mood: r.mood }
