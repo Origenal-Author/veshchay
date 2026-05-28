@@ -29,7 +29,7 @@ export default function BytesBadge() {
   return (
     <div style={{
       position: 'fixed',
-      top: 14,
+      top: 60,
       right: 14,
       zIndex: 7500,
       padding: '6px 12px 6px 8px',
