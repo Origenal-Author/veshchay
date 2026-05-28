@@ -1769,7 +1769,7 @@ function FakeAds({ onAllClosed }: { onAllClosed: () => void }) {
 }
 
 // ── ГЛАВНЫЙ КОМПОНЕНТ ─────────────────────────────────────────────────────────
-type Phase = 'locked' | 'choose' | 'opening' | 'revealed' | 'manage'
+type Phase = 'choose' | 'opening' | 'revealed' | 'manage'
 const BOX_LABELS = ['КОНТЕЙНЕР А', 'КОНТЕЙНЕР Б', 'КОНТЕЙНЕР В']
 
 interface Props { userId: string; xp: number; initialPets: Pet[]; petsUnlockAt?: string | null }
@@ -1778,7 +1778,7 @@ export default function GameClient({ userId, xp, initialPets, petsUnlockAt }: Pr
   const [pets, setPets] = useState<Pet[]>(initialPets)
   const [activePet, setActivePet] = useState(0)
   const [phase, setPhase] = useState<Phase>(
-    initialPets.length > 0 ? 'manage' : xp < 500 ? 'locked' : 'choose'
+    initialPets.length > 0 ? 'manage' : 'choose'
   )
   const [selected, setSelected] = useState<number | null>(null)
   const [newPet, setNewPet] = useState<Pet | null>(null)
@@ -1805,7 +1805,7 @@ export default function GameClient({ userId, xp, initialPets, petsUnlockAt }: Pr
     setPets(prev => {
       const next = prev.filter(p => p.id !== id)
       if (activePet >= next.length) setActivePet(Math.max(0, next.length - 1))
-      if (next.length === 0) setPhase(xp < 500 ? 'locked' : 'choose')
+      if (next.length === 0) setPhase('choose')
       return next
     })
     // Сразу обновляем cooldown локально
@@ -1828,7 +1828,7 @@ export default function GameClient({ userId, xp, initialPets, petsUnlockAt }: Pr
       checkAchievements()
     } else {
       setClaimError(data.error || 'Ошибка')
-      setPhase(pets.length > 0 ? 'manage' : xp < 500 ? 'locked' : 'choose')
+      setPhase(pets.length > 0 ? 'manage' : 'choose')
     }
     setLoading(false)
   }
@@ -1844,27 +1844,7 @@ export default function GameClient({ userId, xp, initialPets, petsUnlockAt }: Pr
   // Может ли пользователь получить ещё питомца
   const lastPet = pets[pets.length - 1]
   const maxPets = getMaxPets(xp)
-  const canGetMore = pets.length < maxPets && (pets.length === 0 || lastPet?.stage === 'adult') && xp >= 500
-
-  // ── LOCKED ──
-  if (phase === 'locked') return (
-    <div style={pageStyle}>
-      <div style={titleStyle}>ИНКУБАТОР</div>
-      <div style={{ textAlign: 'center', marginTop: 80 }}>
-        <div style={{ fontSize: 56, marginBottom: 24 }}>🔒</div>
-        <div style={{ fontFamily: 'Orbitron,monospace', fontSize: 18, color: '#8892B0', letterSpacing: 4 }}>ДОСТУП ЗАКРЫТ</div>
-        <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 12, color: '#506080', marginTop: 12, letterSpacing: 2 }}>
-          Достигни ранга <span style={{ color: '#00FF88' }}>ВЗЛОМЩИК</span> (500 XP)
-        </div>
-        <div style={{ width: 240, height: 4, background: 'rgba(255,255,255,0.08)', borderRadius: 2, margin: '16px auto 0' }}>
-          <div style={{ width: `${Math.min(100, (xp / 500) * 100)}%`, height: '100%', background: '#00FF88', borderRadius: 2, boxShadow: '0 0 8px #00FF88' }} />
-        </div>
-        <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 11, color: '#506080', marginTop: 8 }}>
-          {xp} / 500 XP
-        </div>
-      </div>
-    </div>
-  )
+  const canGetMore = pets.length < maxPets && (pets.length === 0 || lastPet?.stage === 'adult')
 
   // ── CHOOSE ──
   if (phase === 'choose') return (

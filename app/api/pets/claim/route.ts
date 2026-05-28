@@ -12,8 +12,8 @@ export async function POST() {
   const { data: profile } = await supabase
     .from('profiles').select('xp').eq('id', user.id).single()
 
-  if (!profile || (profile.xp || 0) < 500) {
-    return NextResponse.json({ error: 'Ранг слишком низкий' }, { status: 403 })
+  if (!profile) {
+    return NextResponse.json({ error: 'Профиль не найден' }, { status: 404 })
   }
 
   const { data: pets } = await supabase

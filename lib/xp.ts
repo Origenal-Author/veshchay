@@ -30,6 +30,6 @@ export function getMaxPets(xp: number): number {
   if (xp >= 2000)  return 5  // ПРИЗРАК
   if (xp >= 1000)  return 4  // АГЕНТ
   if (xp >= 500)   return 3  // ВЗЛОМЩИК
-  if (xp >= 200)   return 1  // ОПЕРАТИВНИК
-  return 0
+  if (xp >= 200)   return 2  // ОПЕРАТИВНИК
+  return 1                    // СТАТИЧЕСКИЙ ШУМ / ПИНГ
 }
