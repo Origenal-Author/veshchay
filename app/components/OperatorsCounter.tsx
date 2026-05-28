@@ -6,14 +6,23 @@ interface Stats { total: number; last24: number }
 
 export default function OperatorsCounter() {
   const [stats, setStats] = useState<Stats | null>(null)
+  const [forbidden, setForbidden] = useState(false)
   const [hovered, setHovered] = useState(false)
 
   useEffect(() => {
     let active = true
+    let iv: ReturnType<typeof setInterval> | null = null
 
     async function fetchStats() {
       try {
         const res = await fetch('/api/stats/operators', { cache: 'no-store' })
+        if (res.status === 401 || res.status === 403) {
+          if (active) {
+            setForbidden(true)
+            if (iv) clearInterval(iv)
+          }
+          return
+        }
         if (!res.ok) return
         const data = await res.json()
         if (active) setStats(data)
@@ -21,11 +30,11 @@ export default function OperatorsCounter() {
     }
 
     fetchStats()
-    const iv = setInterval(fetchStats, 30_000) // polling каждые 30 сек
-    return () => { active = false; clearInterval(iv) }
+    iv = setInterval(fetchStats, 30_000) // polling каждые 30 сек
+    return () => { active = false; if (iv) clearInterval(iv) }
   }, [])
 
-  if (!stats) return null
+  if (forbidden || !stats) return null
 
   return (
     <div
