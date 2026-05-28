@@ -25,14 +25,14 @@ const CLOTHING_POSITIONS: Record<string, { cx: number; cy: number; size: number 
   neck: { cx: 0.50, cy: 0.60, size: 0.50 },   // на шее/основании
 }
 
-// Браслет: координаты ЗАВИСЯТ от типа — нужна конечность/щупальце/антенна.
-// null = у питомца нет подходящей конечности → браслет не доступен.
-// swing = добавляем CSS-анимацию покачивания (для гибких щупалец).
-export const PAW_POSITIONS: Record<PetType, { cx: number; cy: number; size: number; swing?: boolean } | null> = {
-  jellyfish: { cx: 0.36, cy: 0.66, size: 0.14, swing: true },   // ближе к телу, на щупальце
-  ghost:     { cx: 0.36, cy: 0.66, size: 0.14, swing: true },   // на хвосте, ближе к телу
-  hologram:  { cx: 0.26, cy: 0.20, size: 0.12 },                 // на антенне (уменьшено)
-  signal:    { cx: 0.28, cy: 0.50, size: 0.14, swing: true },   // на голове сбоку
+// Браслет: ТОЛЬКО у медузы (jellyfish) — единственный тип с настоящими щупальцами.
+// null = у питомца нет конечности → браслет недоступен.
+// tentacleIndex = индекс щупальца, на которое надевается браслет (для синхронной анимации).
+export const PAW_POSITIONS: Record<PetType, { cx: number; cy: number; size: number; tentacleIndex?: number } | null> = {
+  jellyfish: { cx: 0.353, cy: 0.71, size: 0.14, tentacleIndex: 1 },  // на 2-м щупальце слева, в середине
+  ghost:     null,  // нет рук/щупалец
+  hologram:  null,  // нет рук/щупалец
+  signal:    null,  // нет рук/щупалец
   radar:     null,
   neuron:    null,
   plasma:    null,
@@ -678,6 +678,7 @@ const DRAW_MAP: Record<PetType, DrawFn> = {
 // ── КОМПОНЕНТ ─────────────────────────────────────────────────────────────────
 export default function PetCanvas({ type, variant, stage, size = 120, face, crying, infected, equipped, sleeping }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const pawRef = useRef<SVGSVGElement>(null)
   const animRef = useRef<number>(0)
   const tRef = useRef(0)
   const faceRef = useRef(face)
@@ -720,6 +721,16 @@ export default function PetCanvas({ type, variant, stage, size = 120, face, cryi
       }
 
       _hideEyes = false
+
+      // Синхронизируем браслет с движением щупальца (только для jellyfish)
+      if (pawRef.current && type === 'jellyfish') {
+        const tentacleIndex = PAW_POSITIONS.jellyfish?.tentacleIndex ?? 1
+        // Та же формула что в drawJellyfish: wave = sin(t*0.06 + i*0.9) * 6
+        // В середине щупальца смещение ≈ 0.625 * wave (по quadraticCurveTo)
+        const wave = Math.sin(t * 0.06 + tentacleIndex * 0.9) * 6 * 0.625
+        pawRef.current.style.transform = `translateX(${wave.toFixed(2)}px)`
+      }
+
       tRef.current++
       animRef.current = requestAnimationFrame(animate)
     }
@@ -794,9 +805,10 @@ export default function PetCanvas({ type, variant, stage, size = 120, face, cryi
         const pos = item.slot === 'paw' ? PAW_POSITIONS[type] : CLOTHING_POSITIONS[item.slot]
         if (!pos) return null   // у этого типа нет конечности для браслета
         const itemSize = size * pos.size
-        const swing = item.slot === 'paw' && 'swing' in pos && pos.swing
+        const isPaw = item.slot === 'paw'
         return (
           <svg key={key}
+            ref={isPaw ? pawRef : undefined}
             viewBox="0 0 100 100"
             width={itemSize} height={itemSize}
             style={{
@@ -804,8 +816,7 @@ export default function PetCanvas({ type, variant, stage, size = 120, face, cryi
               left: `calc(${pos.cx * 100}% - ${itemSize / 2}px)`,
               top: `calc(${pos.cy * 100}% - ${itemSize / 2}px)`,
               pointerEvents: 'none',
-              animation: swing ? 'pawSwing 2.4s ease-in-out infinite' : undefined,
-              transformOrigin: 'center top',
+              willChange: isPaw ? 'transform' : undefined,
             }}
             dangerouslySetInnerHTML={{ __html: item.svg }}
           />

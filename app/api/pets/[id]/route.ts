@@ -125,17 +125,23 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
         .from('pets').select('type').eq('id', id).single()
       const petType = petData?.type as keyof typeof PAW_POSITIONS | undefined
 
+      // Тихо отфильтровываем браслеты у типов без конечности —
+      // нужно для уже сохранённых paw на ghost/hologram/signal до сужения PAW_POSITIONS.
+      const filtered: string[] = []
       for (const key of equipped) {
         if (!ownedSet.has(key)) {
           return NextResponse.json({ error: `Не куплено: ${key}` }, { status: 400 })
         }
         const item = findClothing(key)
         if (item?.slot === 'paw' && petType && PAW_POSITIONS[petType] === null) {
-          return NextResponse.json({ error: 'У этого питомца нет подходящей конечности' }, { status: 400 })
+          continue
         }
+        filtered.push(key)
       }
+      updates.equipped = filtered
+    } else {
+      updates.equipped = equipped
     }
-    updates.equipped = equipped
   }
 
   if (Object.keys(updates).length === 0) {
