@@ -23,7 +23,20 @@ const CLOTHING_POSITIONS: Record<string, { cx: number; cy: number; size: number 
   head: { cx: 0.50, cy: 0.12, size: 0.42 },   // над головой/куполом
   face: { cx: 0.50, cy: 0.38, size: 0.42 },   // на лице
   neck: { cx: 0.50, cy: 0.60, size: 0.50 },   // на шее/основании
-  paw:  { cx: 0.42, cy: 0.72, size: 0.18 },   // на конечности/щупальце
+}
+
+// Браслет: координаты ЗАВИСЯТ от типа — нужна конечность/щупальце/антенна.
+// null = у питомца нет подходящей конечности → браслет не доступен.
+// swing = добавляем CSS-анимацию покачивания (для гибких щупалец).
+export const PAW_POSITIONS: Record<PetType, { cx: number; cy: number; size: number; swing?: boolean } | null> = {
+  jellyfish: { cx: 0.38, cy: 0.74, size: 0.22, swing: true },
+  ghost:     { cx: 0.35, cy: 0.82, size: 0.22, swing: true },
+  hologram:  { cx: 0.28, cy: 0.22, size: 0.18 },
+  signal:    { cx: 0.30, cy: 0.62, size: 0.20, swing: true },
+  radar:     null,
+  neuron:    null,
+  plasma:    null,
+  crystal:   null,
 }
 
 // Точная позиция центра «лица» и расстояния между глазами в относительных координатах (0..1).
@@ -777,8 +790,11 @@ export default function PetCanvas({ type, variant, stage, size = 120, face, cryi
       {equipped && equipped.length > 0 && stage !== 'egg' && equipped.map(key => {
         const item = CLOTHING.find(c => c.key === key)
         if (!item) return null
-        const pos = CLOTHING_POSITIONS[item.slot]
+        // Для слота paw — позиция зависит от типа питомца (нужна конечность)
+        const pos = item.slot === 'paw' ? PAW_POSITIONS[type] : CLOTHING_POSITIONS[item.slot]
+        if (!pos) return null   // у этого типа нет конечности для браслета
         const itemSize = size * pos.size
+        const swing = item.slot === 'paw' && 'swing' in pos && pos.swing
         return (
           <svg key={key}
             viewBox="0 0 100 100"
@@ -788,6 +804,8 @@ export default function PetCanvas({ type, variant, stage, size = 120, face, cryi
               left: `calc(${pos.cx * 100}% - ${itemSize / 2}px)`,
               top: `calc(${pos.cy * 100}% - ${itemSize / 2}px)`,
               pointerEvents: 'none',
+              animation: swing ? 'pawSwing 2.4s ease-in-out infinite' : undefined,
+              transformOrigin: 'center top',
             }}
             dangerouslySetInnerHTML={{ __html: item.svg }}
           />

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { CLOTHING, type ClothingItem, type ClothingSlot } from '@/lib/clothing'
+import { PAW_POSITIONS } from '@/app/components/PetCanvas'
 import type { Pet } from '@/lib/pets'
 
 const SLOT_LABELS: Record<ClothingSlot, string> = {
@@ -80,6 +81,8 @@ export default function ClothingShop({ pet, onClose, onEquipChange, onMessage }:
   }
 
   const itemsInSlot = CLOTHING.filter(c => c.slot === activeSlot)
+  // Для слота paw — проверяем что у питомца есть конечность
+  const pawAvailable = activeSlot !== 'paw' || PAW_POSITIONS[pet.type] !== null
 
   return (
     <div onClick={onClose} style={{
@@ -130,6 +133,17 @@ export default function ClothingShop({ pet, onClose, onEquipChange, onMessage }:
           </div>
         )}
 
+        {!pawAvailable && (
+          <div style={{
+            margin: '10px 16px 0', padding: '10px 14px', borderRadius: 6,
+            border: '1px dashed rgba(255,189,46,0.4)',
+            background: 'rgba(255,189,46,0.06)',
+            color: '#FFBD2E', fontSize: 10, letterSpacing: 1, lineHeight: 1.5,
+          }}>
+            ⚠ у этого питомца нет подходящей конечности — браслет невозможно надеть
+          </div>
+        )}
+
         {/* Сетка предметов */}
         <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
           {loading ? (
@@ -164,15 +178,16 @@ export default function ClothingShop({ pet, onClose, onEquipChange, onMessage }:
                     {isOwned ? (
                       <button
                         onClick={() => toggleEquip(item)}
-                        disabled={busy === item.key}
+                        disabled={busy === item.key || (item.slot === 'paw' && !pawAvailable)}
+                        title={item.slot === 'paw' && !pawAvailable ? 'Нет подходящей конечности' : undefined}
                         style={{
                           width: '100%', padding: '6px', borderRadius: 4,
                           border: `1px solid ${isEquipped ? '#FF006E' : '#00FF88'}`,
                           background: isEquipped ? 'rgba(255,0,110,0.1)' : 'rgba(0,255,136,0.1)',
                           color: isEquipped ? '#FF006E' : '#00FF88',
                           fontFamily: 'Orbitron,monospace', fontSize: 9, letterSpacing: 2,
-                          cursor: busy === item.key ? 'default' : 'pointer',
-                          opacity: busy === item.key ? 0.5 : 1,
+                          cursor: (busy === item.key || (item.slot === 'paw' && !pawAvailable)) ? 'default' : 'pointer',
+                          opacity: (busy === item.key || (item.slot === 'paw' && !pawAvailable)) ? 0.4 : 1,
                         }}
                       >
                         {busy === item.key ? '...' : isEquipped ? '✕ СНЯТЬ' : '✓ НАДЕТЬ'}
