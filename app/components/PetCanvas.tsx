@@ -13,6 +13,7 @@ interface Props {
   crying?: boolean  // показать капающие слёзы из глаз
   infected?: boolean  // заражённый — добавляем pink hue + glitch overlay
   equipped?: string[] | null  // ключи надетой одежды
+  sleeping?: boolean  // спящий — canvas+лицо серые, одежда сохраняет цвет
 }
 
 // Координаты одежды относительно зоны питомца. Slot-based, не зависит от типа.
@@ -662,7 +663,7 @@ const DRAW_MAP: Record<PetType, DrawFn> = {
 }
 
 // ── КОМПОНЕНТ ─────────────────────────────────────────────────────────────────
-export default function PetCanvas({ type, variant, stage, size = 120, face, crying, infected, equipped }: Props) {
+export default function PetCanvas({ type, variant, stage, size = 120, face, crying, infected, equipped, sleeping }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animRef = useRef<number>(0)
   const tRef = useRef(0)
@@ -737,7 +738,11 @@ export default function PetCanvas({ type, variant, stage, size = 120, face, cryi
         ? undefined
         : (infected ? 'infectedPulse 1.6s ease-in-out infinite' : 'petIdleFloat 3s ease-in-out infinite'),
     }}>
-      <canvas ref={canvasRef} style={{ display: 'block' }} />
+      <canvas ref={canvasRef} style={{
+        display: 'block',
+        filter: sleeping ? 'grayscale(1) brightness(0.55)' : undefined,
+        transition: 'filter 0.5s ease',
+      }} />
       {infected && (
         <>
           {/* Заражённая аура */}

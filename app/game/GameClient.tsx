@@ -948,8 +948,7 @@ function PetHabitat({ pet, onUpdate, onDelete, onDesktopOpen }: {
               transition: 'transform 0.35s cubic-bezier(0.34,1.56,0.64,1), filter 0.5s ease',
               transform: petTransform,
               cursor: mood === 'sleeping' ? 'pointer' : 'default',
-              filter: mood === 'sleeping' ? 'grayscale(1) brightness(0.55)' :
-                      mood === 'happy' ? `drop-shadow(0 0 18px ${C})` :
+              filter: mood === 'happy' ? `drop-shadow(0 0 18px ${C})` :
                       mood === 'annoyed' ? 'drop-shadow(0 0 10px rgba(255,0,80,0.6))' : 'none',
             }}
           >
@@ -974,6 +973,7 @@ function PetHabitat({ pet, onUpdate, onDelete, onDesktopOpen }: {
                 face={pet.stage === 'egg' ? undefined : moodFace(mood, isVirus)}
                 infected={!!pet.infected_by}
                 equipped={pet.equipped}
+                sleeping={mood === 'sleeping'}
               />
             )}
           </div>
