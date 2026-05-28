@@ -16,7 +16,7 @@ export async function GET() {
 
   let owned: string[] = []
   if (user) {
-    const { data: rows } = await supabase
+    const { data: rows } = await serviceClient
       .from('user_clothing').select('item_key').eq('user_id', user.id)
     owned = (rows ?? []).map(r => r.item_key as string)
   }
@@ -37,7 +37,7 @@ export async function POST(req: Request) {
   if (!item) return NextResponse.json({ error: 'Item not found' }, { status: 404 })
 
   // Уже куплено?
-  const { data: existing } = await supabase
+  const { data: existing } = await serviceClient
     .from('user_clothing').select('id').eq('user_id', user.id).eq('item_key', body.itemKey).maybeSingle()
   if (existing) return NextResponse.json({ error: 'Уже куплено' }, { status: 400 })
 

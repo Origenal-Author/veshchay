@@ -112,7 +112,8 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   if ('equipped' in body && Array.isArray(body.equipped)) {
     const equipped = body.equipped.slice(0, 4)  // максимум 4 слота
     if (equipped.length > 0) {
-      const { data: owned } = await supabase
+      // Используем serviceClient — RLS на user_clothing блокирует authenticated
+      const { data: owned } = await serviceClient
         .from('user_clothing').select('item_key').eq('user_id', user.id)
       const ownedSet = new Set((owned ?? []).map(r => r.item_key as string))
       for (const key of equipped) {
