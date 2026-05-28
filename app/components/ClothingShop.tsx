@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { CLOTHING, type ClothingItem, type ClothingSlot } from '@/lib/clothing'
 import { PAW_POSITIONS } from '@/app/components/PetCanvas'
+import ByteIcon from '@/app/components/ByteIcon'
 import type { Pet } from '@/lib/pets'
 
 const SLOT_LABELS: Record<ClothingSlot, string> = {
@@ -205,7 +206,12 @@ export default function ClothingShop({ pet, onClose, onEquipChange, onMessage }:
                           opacity: busy === item.key ? 0.5 : 1,
                         }}
                       >
-                        {busy === item.key ? '...' : `${item.price} XP`}
+                        {busy === item.key
+                          ? '...'
+                          : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, justifyContent: 'center' }}>
+                              <ByteIcon size={12} glow={false} />
+                              {item.price}
+                            </span>}
                       </button>
                     )}
                   </div>

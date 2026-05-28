@@ -37,6 +37,12 @@ export async function POST(req: Request) {
     .select()
     .single()
 
+  // Питомец дорос до взрослого → +200 байтов
+  if (newStage === 'adult' && pet.stage !== 'adult') {
+    const { awardBytes } = await import('@/lib/bytes')
+    await awardBytes(user.id, 200, 'pet_grew')
+  }
+
   // +1 XP игроку за кормёжку + трекинг квеста
   if (action === 'feed') {
     const { data: p } = await supabase.from('profiles').select('xp').eq('id', user.id).single()

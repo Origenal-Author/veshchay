@@ -14,6 +14,7 @@ import HideOnMessages from '@/app/components/HideOnMessages'
 import IdleWormHost from '@/app/components/IdleWormHost'
 import OperatorsCounter from '@/app/components/OperatorsCounter'
 import PresenceHeartbeat from '@/app/components/PresenceHeartbeat'
+import BytesBadge from '@/app/components/BytesBadge'
 
 export const metadata: Metadata = {
   title: 'ВЕЩАЙ',
@@ -33,6 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <IdleWormHost />
           <PresenceHeartbeat />
           <HideOnMessages>
+            <BytesBadge />
             <OperatorsCounter />
           </HideOnMessages>
           <HideOnMessages>

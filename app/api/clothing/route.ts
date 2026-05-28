@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase-server'
 import { createClient as createSupabase } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import { CLOTHING, findClothing } from '@/lib/clothing'
-import { getRank } from '@/lib/xp'
+import { spendBytes } from '@/lib/bytes'
 
 const serviceClient = createSupabase(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -41,16 +41,11 @@ export async function POST(req: Request) {
     .from('user_clothing').select('id').eq('user_id', user.id).eq('item_key', body.itemKey).maybeSingle()
   if (existing) return NextResponse.json({ error: 'Уже куплено' }, { status: 400 })
 
-  // Хватает XP?
-  const { data: profile } = await supabase
-    .from('profiles').select('xp').eq('id', user.id).single()
-  const xp = profile?.xp ?? 0
-  if (xp < item.price) return NextResponse.json({ error: 'Не хватает XP' }, { status: 400 })
+  // Списываем БАЙТЫ (раньше было XP — теперь отдельная валюта)
+  const { ok, newBytes } = await spendBytes(user.id, item.price)
+  if (!ok) return NextResponse.json({ error: 'Не хватает байтов' }, { status: 400 })
 
-  // Списываем XP и записываем покупку
-  const newXp = xp - item.price
-  await serviceClient.from('profiles').update({ xp: newXp, rank: getRank(newXp) }).eq('id', user.id)
   await serviceClient.from('user_clothing').insert({ user_id: user.id, item_key: body.itemKey })
 
-  return NextResponse.json({ ok: true, newXp })
+  return NextResponse.json({ ok: true, newBytes })
 }

@@ -69,12 +69,14 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     .from('pets').update({ infected_by: null, infected_at: null }).eq('id', id).select().single()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  // +15 XP за успешное лечение
+  // +15 XP и +30 байтов за успешное лечение
   const { data: profile } = await supabase.from('profiles').select('xp').eq('id', user.id).single()
   if (profile) {
     const { getRank } = await import('@/lib/xp')
+    const { awardBytes } = await import('@/lib/bytes')
     const nx = (profile.xp ?? 0) + 15
     await supabase.from('profiles').update({ xp: nx, rank: getRank(nx) }).eq('id', user.id)
+    await awardBytes(user.id, 30, 'heal_win')
   }
 
   return NextResponse.json({ pet: updated, xpGain: 15 })

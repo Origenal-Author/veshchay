@@ -3,6 +3,7 @@ import { createClient as createSupabase } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import { getQuestDef } from '@/lib/quests'
 import { getRank } from '@/lib/xp'
+import { awardBytes } from '@/lib/bytes'
 
 const serviceClient = createSupabase(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -63,10 +64,14 @@ export async function POST(req: Request) {
   const newXp = (profile.xp ?? 0) + def.xp
   await supabase.from('profiles').update({ xp: newXp, rank: getRank(newXp) }).eq('id', user.id)
 
+  // Award bytes — квесты дают приятный бонус валюты
+  const bytesReward = Math.max(50, Math.round(def.xp * 2))
+  await awardBytes(user.id, bytesReward, 'quest')
+
   // Mark claimed
   const newClaimed = [...(dq.claimed_keys as string[]), questKey]
   await serviceClient.from('daily_quests').update({ claimed_keys: newClaimed })
     .eq('user_id', user.id).eq('quest_date', today)
 
-  return NextResponse.json({ ok: true, xpGained: def.xp })
+  return NextResponse.json({ ok: true, xpGained: def.xp, bytesGained: bytesReward })
 }

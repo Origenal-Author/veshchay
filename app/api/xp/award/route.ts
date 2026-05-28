@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase-server'
 import { NextResponse } from 'next/server'
 import { getRank, calcBioXp } from '@/lib/xp'
+import { awardBytes } from '@/lib/bytes'
 
 const STREAK_BONUSES: Record<number, number> = { 3: 15, 7: 30, 14: 60 }
 const VIEW_MILESTONES: Record<number, number> = { 10: 15, 100: 40, 1000: 100 }
@@ -51,6 +52,7 @@ export async function POST(req: Request) {
     case 'squash_bug': {
       updates.bugs_squashed = (profile.bugs_squashed ?? 0) + 1
       gain = 3
+      await awardBytes(user.id, 10, 'bug_killed')
       break
     }
 
@@ -58,6 +60,7 @@ export async function POST(req: Request) {
       const { count } = await supabase
         .from('videos').select('*', { count: 'exact', head: true }).eq('user_id', user.id)
       gain = (count ?? 0) <= 1 ? 15 : 10
+      await awardBytes(user.id, 50, 'upload')
       break
     }
 
@@ -106,6 +109,7 @@ export async function POST(req: Request) {
     // Вызывается от имени ЦЕЛЕВОГО пользователя — например владелец видео получает XP за реакцию
     case 'got_follower': {
       gain = 5
+      await awardBytes(user.id, 25, 'follower')
       break
     }
 

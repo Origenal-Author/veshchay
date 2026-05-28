@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase-server'
 import { createClient as createSupabase } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import { getRank } from '@/lib/xp'
+import { awardBytes } from '@/lib/bytes'
 
 const serviceClient = createSupabase(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -54,9 +55,10 @@ export async function POST(req: Request) {
   let infectedPetId: string | null = null
 
   if (success) {
-    // +20 XP атакующему
+    // +20 XP + 100 байтов атакующему
     const newXp = (attacker.xp ?? 0) + 20
     await supabase.from('profiles').update({ xp: newXp, rank: getRank(newXp) }).eq('id', user.id)
+    await awardBytes(user.id, 100, 'attack_win')
 
     // Помечаем жертву взломанной на 24ч
     const hackedUntil = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
