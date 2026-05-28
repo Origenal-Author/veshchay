@@ -42,7 +42,7 @@ export default function OperatorsCounter() {
       onMouseLeave={() => setHovered(false)}
       style={{
         position: 'fixed',
-        top: 16,
+        bottom: 16,
         right: 16,
         zIndex: 7500,
         padding: '8px 14px',
