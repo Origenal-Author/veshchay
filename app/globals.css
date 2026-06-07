@@ -709,3 +709,85 @@ body[data-weather="fog"] .site-header { background: rgba(7,10,14,0.90); }
   /* NavTabs */
   nav button { padding: 10px 10px !important; font-size: 9px !important; }
 }
+
+/* ══ ПИРАТСКИЙ СИГНАЛ ══════════════════════════════════════════════════════ */
+
+:root { --pirate: #FF2D55; --pirate-glow: rgba(255,45,85,0.3); }
+
+/* бегущая полоса перехвата по странице */
+.pir-scan {
+  position: fixed; left: 0; right: 0; height: 120px; z-index: 90; pointer-events: none;
+  background: linear-gradient(180deg, transparent, rgba(255,45,85,0.06), transparent);
+  animation: pirScan 6s linear infinite;
+}
+@keyframes pirScan { 0% { top: -120px; } 100% { top: 100%; } }
+
+/* баннер с радаром */
+.pir-banner {
+  margin: 22px 32px; border: 1px solid rgba(255,45,85,0.3);
+  background: linear-gradient(90deg, rgba(255,45,85,0.10), transparent 60%);
+  padding: 22px 26px; position: relative; overflow: hidden;
+  display: flex; align-items: center; gap: 24px;
+}
+.pir-radar {
+  width: 84px; height: 84px; flex-shrink: 0; border-radius: 50%;
+  border: 1px solid rgba(255,45,85,0.4); position: relative;
+  background: radial-gradient(circle, rgba(255,45,85,0.12), transparent 70%);
+}
+.pir-radar::before {
+  content: ''; position: absolute; inset: 0; border-radius: 50%;
+  background: conic-gradient(from 0deg, rgba(255,45,85,0.45), transparent 80px);
+  animation: pirSpin 2.4s linear infinite;
+}
+.pir-radar::after {
+  content: ''; position: absolute; left: 50%; top: 50%; width: 6px; height: 6px;
+  border-radius: 50%; background: var(--pirate); transform: translate(-50%,-50%);
+  box-shadow: 0 0 10px var(--pirate);
+}
+@keyframes pirSpin { 100% { transform: rotate(360deg); } }
+.pir-title {
+  font-family: 'Orbitron', monospace; font-weight: 900; font-size: 30px; letter-spacing: 3px;
+  margin: 0 0 8px; color: var(--text); text-shadow: 0 0 24px rgba(255,45,85,0.4);
+}
+.pir-title .g { color: var(--pirate); animation: pirGlitch 3.5s infinite; }
+@keyframes pirGlitch {
+  0%,92%,100% { text-shadow: 0 0 24px rgba(255,45,85,0.4); }
+  93% { text-shadow: 2px 0 var(--accent), -2px 0 var(--pirate); }
+  96% { text-shadow: -2px 0 var(--accent), 2px 0 var(--pirate); }
+}
+.pir-blink { animation: pirBlink 1.4s infinite; }
+@keyframes pirBlink { 50% { opacity: .3; } }
+
+/* карточки пиратской ленты — малиновый акцент */
+.pir-card { border-color: rgba(255,45,85,0.18) !important; }
+.pir-card:hover {
+  border-color: var(--pirate) !important;
+  box-shadow: 0 0 24px var(--pirate-glow), 0 8px 32px rgba(0,0,0,0.5) !important;
+}
+.pir-card::before { background: linear-gradient(90deg, transparent, var(--pirate), transparent) !important; }
+.pir-card .play-icon { border-color: var(--pirate) !important; box-shadow: 0 0 20px var(--pirate-glow) !important; }
+
+.pir-badge {
+  position: absolute; top: 7px; left: 7px; font-size: 9px; letter-spacing: 1px; padding: 3px 7px;
+  background: rgba(6,6,18,0.85); color: var(--pirate); border: 1px solid rgba(255,45,85,0.4);
+  display: flex; align-items: center; gap: 4px; font-family: 'JetBrains Mono', monospace; z-index: 2;
+}
+.pir-badge .d {
+  width: 5px; height: 5px; border-radius: 50%; background: var(--pirate);
+  box-shadow: 0 0 6px var(--pirate); animation: pirBlink 1.2s infinite;
+}
+.pir-yt {
+  position: absolute; top: 7px; right: 7px; font-size: 9px; padding: 2px 6px;
+  background: rgba(6,6,18,0.85); color: #fff; border: 1px solid rgba(255,255,255,0.2);
+  font-weight: 700; font-family: 'JetBrains Mono', monospace; z-index: 2;
+}
+.pir-thumb-lines {
+  position: absolute; inset: 0; pointer-events: none; opacity: .4;
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,0.18) 0 2px, transparent 2px 4px);
+}
+
+@media (max-width: 640px) {
+  .pir-banner { margin: 12px 14px; padding: 16px 16px; gap: 14px; }
+  .pir-radar { width: 60px; height: 60px; }
+  .pir-title { font-size: 20px; }
+}
