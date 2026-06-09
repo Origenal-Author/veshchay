@@ -92,6 +92,12 @@ export default function LoginPage() {
             </button>
           </form>
 
+          <div style={{ marginTop: 14, textAlign: 'center' }}>
+            <Link href="/auth/forgot" style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, color: 'var(--subtext)', textDecoration: 'none' }}>
+              Забыли пароль?
+            </Link>
+          </div>
+
           <div style={{ marginTop: 24, paddingTop: 24, borderTop: '1px solid var(--border)', textAlign: 'center', fontFamily: "'JetBrains Mono',monospace", fontSize: 12, color: 'var(--subtext)' }}>
             Нет аккаунта?{' '}
             <Link href="/auth/register" style={{ color: 'var(--accent2)', textDecoration: 'none' }}>

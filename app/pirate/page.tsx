@@ -69,7 +69,7 @@ export default async function Pirate({ searchParams }: { searchParams: Promise<{
           {user ? (
             <>
               <span className="hide-mobile" style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, color: 'var(--accent2)', whiteSpace: 'nowrap' }}>
-                {user.user_metadata?.username || user.email}
+                {user.user_metadata?.username || 'аноним'}
               </span>
               <Link href="/videos/upload" className="btn-primary-ui">+ ВИДЕО</Link>
               <Link href="/leaderboard" className="btn-ghost-ui hide-mobile">ТОП</Link>

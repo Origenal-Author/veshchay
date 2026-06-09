@@ -136,6 +136,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 10 }}>
           {isOwner && <Link href="/history" className="btn-ghost-ui">ИСТОРИЯ</Link>}
           {isOwner && <Link href="/clans/create" className="btn-ghost-ui">⬡ КЛАН</Link>}
+          {isOwner && <Link href="/settings" className="btn-ghost-ui">⚙ НАСТРОЙКИ</Link>}
           {isOwner && <Link href="/profile/edit" className="btn-primary-ui">РЕДАКТИРОВАТЬ</Link>}
           <Link href="/" className="btn-ghost-ui">← ГЛАВНАЯ</Link>
         </div>
@@ -178,6 +179,11 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
               {profile.verified && <VerifiedBadge size={20} />}
             </h1>
             {profile.bio && <p style={{ fontFamily: "'Exo 2',sans-serif", fontSize: 14, color: 'var(--subtext)', lineHeight: 1.6 }}>{profile.bio}</p>}
+            {profile.public_email && (
+              <a href={`mailto:${profile.public_email}`} style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, color: 'var(--accent)', textDecoration: 'none', marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                ✉ {profile.public_email}
+              </a>
+            )}
           </div>
 
           {/* Кнопка мониторинга + XP */}
