@@ -6,20 +6,22 @@ import PuzzleGate from '@/app/components/PuzzleGate'
 export default function ProfileClient({
   profileId,
   currentUserId,
+  gateEnabled = true,
   children,
 }: {
   profileId: string
   currentUserId: string | null
+  gateEnabled?: boolean
   children: React.ReactNode
 }) {
   const isOwner = profileId === currentUserId
-  const [unlocked, setUnlocked] = useState(isOwner)
+  const [unlocked, setUnlocked] = useState(isOwner || !gateEnabled)
 
   useEffect(() => {
-    if (isOwner) return
+    if (isOwner || !gateEnabled) { setUnlocked(true); return }
     const key = `profile_unlocked_${profileId}`
     if (sessionStorage.getItem(key)) setUnlocked(true)
-  }, [isOwner, profileId])
+  }, [isOwner, profileId, gateEnabled])
 
   function handleSolve() {
     sessionStorage.setItem(`profile_unlocked_${profileId}`, '1')

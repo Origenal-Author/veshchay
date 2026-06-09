@@ -9,11 +9,17 @@ export default function PresenceHeartbeat() {
   useEffect(() => {
     const supabase = createClient()
     let stopped = false
+    let hidden: boolean | null = null   // настройка «скрыть онлайн-статус», читаем 1 раз
 
     async function tick() {
       if (stopped) return
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
+      if (hidden === null) {
+        const { data: prof } = await supabase.from('profiles').select('settings').eq('id', user.id).single()
+        hidden = !!(prof?.settings?.online_hidden)
+      }
+      if (hidden) return
       await supabase.from('presence').upsert({
         user_id: user.id,
         last_seen: new Date().toISOString(),

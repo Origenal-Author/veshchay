@@ -30,6 +30,16 @@ export default function VideoPlayer({ src }: Props) {
     setIsMobile(window.innerWidth < 600)
   }, [])
 
+  // Автоплей (настройка пользователя)
+  useEffect(() => {
+    try {
+      if (localStorage.getItem('veshchay_autoplay') === '1') {
+        const v = videoRef.current
+        if (v) v.play().then(() => setPlaying(true)).catch(() => {})
+      }
+    } catch {}
+  }, [])
+
   // Авто-скрытие контролов
   function resetHideTimer() {
     setShowControls(true)

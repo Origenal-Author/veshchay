@@ -205,10 +205,20 @@ export function WeatherProvider({ children }: { children: React.ReactNode }) {
   }
 
   useEffect(() => {
-    const initial = getDefaultWeather()
     generateFog()
     generateStars()
     generateClouds()
+
+    // Зафиксированная пользователем тема (настройки) — приоритет, без авто
+    let locked: string | null = null
+    try { locked = localStorage.getItem('veshchay_theme_lock') } catch {}
+    const valid: WeatherType[] = ['night', 'clear', 'rain', 'snow', 'storm', 'fog', 'cloudy']
+    if (locked && (valid as string[]).includes(locked)) {
+      setWeather(locked as WeatherType)
+      return
+    }
+
+    const initial = getDefaultWeather()
     setWeather(initial)
     fetchRealWeather().then(real => { if (real !== initial) setWeather(real) }).catch(() => {})
   }, [])

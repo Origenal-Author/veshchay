@@ -24,6 +24,11 @@ export async function POST(req: Request) {
     .maybeSingle()
   if (!fr) return NextResponse.json({ error: 'Not friends' }, { status: 403 })
 
+  // Владелец мог отключить одалживание в настройках
+  const { data: ownerProfile } = await supabase.from('profiles').select('settings').eq('id', ownerId).single()
+  if (ownerProfile?.settings?.allow_borrow === false)
+    return NextResponse.json({ error: 'Владелец отключил одалживание питомцев' }, { status: 403 })
+
   // Проверяем что питомец принадлежит владельцу и не яйцо
   const { data: pet } = await supabase.from('pets').select('*').eq('id', petId).eq('user_id', ownerId).maybeSingle()
   if (!pet) return NextResponse.json({ error: 'Pet not found' }, { status: 404 })

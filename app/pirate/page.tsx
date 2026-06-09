@@ -39,6 +39,13 @@ export default async function Pirate({ searchParams }: { searchParams: Promise<{
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
+  // Контент-фильтр (настройка пользователя)
+  let hiddenTags: string[] = []
+  if (user) {
+    const { data: me } = await supabase.from('profiles').select('settings').eq('id', user.id).single()
+    if (Array.isArray(me?.settings?.content_filter)) hiddenTags = me!.settings.content_filter
+  }
+
   let query = supabase
     .from('videos')
     .select('*')
@@ -47,6 +54,7 @@ export default async function Pirate({ searchParams }: { searchParams: Promise<{
     .limit(40)
   if (q) query = query.ilike('title', `%${q}%`)
   if (genre) query = query.eq('genre', genre)
+  if (hiddenTags.length) query = query.or(`content_tag.is.null,content_tag.not.in.(${hiddenTags.join(',')})`)
   const { data: videos } = await query
 
   const userIds = [...new Set((videos || []).map(v => v.user_id))]

@@ -126,7 +126,11 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
   const nextRank = getNextRank(xp)
   const progress = nextRank ? Math.round((xp / nextRank.xp) * 100) : 100
   const specialRole = SPECIAL_ROLES[profile.role ?? ''] ?? null
-  const displayColor = specialRole?.color ?? rankInfo.color
+  const settings = profile.settings ?? {}
+  const customAccent: string | undefined = typeof settings.accent_color === 'string' ? settings.accent_color : undefined
+  const allowBorrow = settings.allow_borrow === false ? false : true
+  const gateEnabled = settings.gate_disabled ? false : true
+  const displayColor = customAccent ?? specialRole?.color ?? rankInfo.color
   const displayRank = specialRole?.label ?? rankInfo.rank
 
   const profileContent = (
@@ -204,7 +208,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                   currentUserId={user?.id ?? null}
                 />
                 {user && <AttackButton targetId={id} targetUsername={profile.username || 'аноним'} />}
-                <BorrowPetButton ownerId={id} ownerName={profile.username || 'аноним'} isFriend={friendStatus === 'friends'} />
+                <BorrowPetButton ownerId={id} ownerName={profile.username || 'аноним'} isFriend={friendStatus === 'friends'} allowBorrow={allowBorrow} />
                 {friendStatus === 'friends' && user && (
                   <a href={`/messages/${id}`} style={{
                     fontFamily: "'JetBrains Mono',monospace", fontSize: 10, letterSpacing: 2,
@@ -369,7 +373,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
   )
 
   return (
-    <ProfileClient profileId={id} currentUserId={user?.id ?? null}>
+    <ProfileClient profileId={id} currentUserId={user?.id ?? null} gateEnabled={gateEnabled}>
       {profileContent}
     </ProfileClient>
   )

@@ -10,16 +10,16 @@ const PET_NAMES: Record<string, string> = {
 }
 
 export default function BorrowPetButton({
-  ownerId, ownerName, isFriend,
+  ownerId, ownerName, isFriend, allowBorrow = true,
 }: {
-  ownerId: string; ownerName: string; isFriend: boolean
+  ownerId: string; ownerName: string; isFriend: boolean; allowBorrow?: boolean
 }) {
   const [open, setOpen] = useState(false)
   const [pets, setPets] = useState<Pet[]>([])
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
 
-  if (!isFriend) return null
+  if (!isFriend || !allowBorrow) return null
 
   async function openModal() {
     setLoading(true)
